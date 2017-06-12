@@ -16,12 +16,12 @@ public class Token {
     private int _line;
     private int _position;
 
-    public Token(TokenType type, String content, int offset, int line, int position) {
-        this._type = type;
-        this._content = content;
-        this._offset = offset;
-        this._line = line;
-        this._position = position;
+    public Token(TokenType type, String content, int line, int column, int position) {
+        _type = type;
+        _content = content;
+        _offset = column;
+        _line = line;
+        _position = position;
     }
 
     public TokenType getType() {
