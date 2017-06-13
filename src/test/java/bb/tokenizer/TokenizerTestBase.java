@@ -36,9 +36,4 @@ abstract public class TokenizerTestBase {
     }
 
 
-    @Test
-    public void tempTest() {
-
-    }
-
 }

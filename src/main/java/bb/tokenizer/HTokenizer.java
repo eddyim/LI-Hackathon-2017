@@ -18,8 +18,7 @@ public class HTokenizer implements ITokenizer {
         while (loc.pos < chars.length) {
             if (chars[loc.pos] == '<') {
                 loc.pos++;
-                if (chars[loc.pos] == '%') {
-                    //is a statement
+                if (chars[loc.pos] == '%') { //is a statement
                     loc.pos++;
                     result.add(getStatementToken(str, chars, loc));
                 } else {
@@ -30,8 +29,7 @@ public class HTokenizer implements ITokenizer {
 
             else if (chars[loc.pos] == '$') {
                 loc.pos++;
-                if (chars[loc.pos] == '{') {
-                    //is an expression
+                if (chars[loc.pos] == '{') {  //is an expression
                     loc.pos++;
                     result.add(getExprToken(str, chars, loc));
                 } else {
@@ -40,25 +38,26 @@ public class HTokenizer implements ITokenizer {
                 }
             }
 
-            else if (chars[loc.pos] == '\n') {
-                loc.line++;
-                loc.col = 0;
-            }
-            else if (chars[loc.pos] == '\t') {
-                loc.col++;
-            }
-            else if (chars[loc.pos] == ' ') {}
-
-            //is a string statement
-            else {
+            else if (!adjustLoc(chars, loc)) {  //is a string statement
                 result.add(getStringContentToken(str, chars, loc));
             }
-
             loc.pos++;
-
         }
-
         return result;
+    }
+
+    private boolean adjustLoc(char[] chars, location loc) {
+        if (chars[loc.pos] == '\n') {
+            loc.line++;
+            loc.col = 0;
+            return true;
+        } if (chars[loc.pos] == '\t') {
+            loc.col++;
+            return true;
+        } if (chars[loc.pos] == ' ') {
+            return true;
+        }
+        return false;
     }
 
     //start with the pos after the <%, end with it at the > in the %>
@@ -67,11 +66,11 @@ public class HTokenizer implements ITokenizer {
         int end;
         //TODO: catch the error
         while (true) {
-            if (chars[loc.pos] == '%' && chars[loc.pos + 1] == '>') {
-                end = loc.pos - 1;
-                loc.pos++;
+            if (chars[loc.pos-1] == '%' && chars[loc.pos] == '>') {
+                end = loc.pos - 2;
                 break;
             }
+            adjustLoc(chars, loc);
             loc.pos++;
         }
         //@TODO: nums
@@ -89,6 +88,7 @@ public class HTokenizer implements ITokenizer {
                 end = loc.pos - 1;
                 break;
             }
+            adjustLoc(chars, loc);
             loc.pos++;
         }
         //@TODO: nums
@@ -106,6 +106,7 @@ public class HTokenizer implements ITokenizer {
                 end = loc.pos;
                 break;
             }
+            adjustLoc(chars, loc);
             loc.pos++;
         }
         //TODO: nums
