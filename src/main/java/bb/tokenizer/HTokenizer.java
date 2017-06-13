@@ -8,69 +8,85 @@ public class HTokenizer implements ITokenizer {
         int line = 0;
         int col = 0;
         int pos = 0;
+        char[] chars;
+
+        location(char[] chars) {
+            this.chars = chars;
+        }
+
+        char getCurr() {
+            return chars[pos];
+        }
+
+        char getNext() {
+            return chars[pos + 1];
+        }
+
+        char getPrev() {
+            return chars[pos - 1];
+        }
     }
 
     public List<Token> tokenize(String str) {
         ArrayList<Token> result = new ArrayList<Token>();
-        location loc = new location();
-        char[] chars = str.toCharArray();
+        location loc = new location(str.toCharArray());
 
-        while (loc.pos < chars.length) {
-            if (chars[loc.pos] == '<') {
+        while (loc.pos < str.length()) {
+            if (loc.getCurr() == '<') {
                 loc.pos++;
-                if (chars[loc.pos] == '%') { //is a statement
+                if (loc.getCurr() == '%') { //is a statement
                     loc.pos++;
-                    result.add(getStatementToken(str, chars, loc));
+                    result.add(getStatementToken(str, loc));
                 } else {
                     loc.pos--;
-                    result.add(getStringContentToken(str, chars, loc));
+                    result.add(getStringContentToken(str, loc));
                 }
             }
 
-            else if (chars[loc.pos] == '$') {
+            else if (loc.getCurr() == '$') {
                 loc.pos++;
-                if (chars[loc.pos] == '{') {  //is an expression
+                if (loc.getCurr() == '{') {  //is an expression
                     loc.pos++;
-                    result.add(getExprToken(str, chars, loc));
+                    result.add(getExprToken(str, loc));
                 } else {
                     loc.pos--;
-                    result.add(getStringContentToken(str, chars, loc));
+                    result.add(getStringContentToken(str, loc));
                 }
             }
 
-            else if (!adjustLoc(chars, loc)) {  //is a string statement
-                result.add(getStringContentToken(str, chars, loc));
+            else if (!adjustLoc(loc)) {  //is a string statement
+                result.add(getStringContentToken(str, loc));
             }
             loc.pos++;
         }
         return result;
     }
 
-    private boolean adjustLoc(char[] chars, location loc) {
-        if (chars[loc.pos] == '\n') {
+    private boolean adjustLoc(location loc) {
+        if (loc.getCurr() == '\n') {
             loc.line++;
             loc.col = 0;
             return true;
-        } if (chars[loc.pos] == '\t') {
+        } if (loc.getCurr() == '\t') {
             loc.col++;
             return true;
-        } if (chars[loc.pos] == ' ') {
+        } if (loc.getCurr() == ' ') {
             return true;
         }
         return false;
     }
 
     //start with the pos after the <%, end with it at the > in the %>
-    private Token getStatementToken(String str, char[] chars, location loc) {
+    private Token getStatementToken(String str, location loc) {
         int start = loc.pos;
         int end;
         //TODO: catch the error
         while (true) {
-            if (chars[loc.pos-1] == '%' && chars[loc.pos] == '>') {
+            if (loc.getPrev() == '%' && loc.getCurr() == '>') {
                 end = loc.pos - 2;
                 break;
             }
-            adjustLoc(chars, loc);
+            adjustLoc(loc);
             loc.pos++;
         }
         //@TODO: nums
@@ -79,36 +95,37 @@ public class HTokenizer implements ITokenizer {
 
     //@TODO: is repetitive, consolidate
     //start with the pos after the ${, end with it at the }
-    private Token getExprToken(String str, char[] chars, location loc) {
+    private Token getExprToken(String str, location loc) {
         int start = loc.pos;
         int end;
         //TODO: catch the error
         while (true) {
-            if (chars[loc.pos] == '}') {
+            if (loc.getCurr() == '}') {
                 end = loc.pos - 1;
                 break;
             }
-            adjustLoc(chars, loc);
+            adjustLoc(loc);
             loc.pos++;
         }
         //@TODO: nums
         return new Token(Token.TokenType.EXPRESSION, str.substring(start, end).trim(), 0, 0, 0);
     }
 
-    private Token getStringContentToken(String str, char[] chars, location loc) {
+    private Token getStringContentToken(String str, location loc) {
         //TODO: catch the error
         int start = loc.pos;
-        int end = chars.length;
-        while (loc.pos < chars.length) {
-            if ((chars[loc.pos] == '<' && chars[loc.pos + 1] == '%') ||
-                    (chars[loc.pos] == '$' && chars[loc.pos + 1] == '{')) {
+        int end = 0;
+        while (loc.pos < loc.chars.length) {
+            if ((loc.getCurr() == '<' && loc.getNext() == '%') ||
+                    (loc.getCurr() == '$' && loc.getNext() == '{')) {
                 loc.pos--;
-                end = loc.pos;
                 break;
+            } else {
+                adjustLoc(loc);
+                loc.pos++;
             }
-            adjustLoc(chars, loc);
-            loc.pos++;
         }
+        end = loc.pos;
         //TODO: nums
         return new Token(Token.TokenType.STRING_CONTENT ,str.substring(start, end), 0, 0, 0);
     }
