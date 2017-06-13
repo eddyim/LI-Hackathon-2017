@@ -97,9 +97,6 @@ abstract public class TokenizerTestBase {
         assertEquals("'\"hello }\"'", nestedDoubleExpression.get(1).getContent());
 
     }
-
-
->>>>>>> b01aad992341c67150dd11f770024cfb75271c21
     public void asssertTokenTypesAre(List<Token> tokenize, TokenType... stringContent) {
         assertEquals(tokenize.size(), stringContent.length);
         for (int i = 0; i < tokenize.size(); i++) {
