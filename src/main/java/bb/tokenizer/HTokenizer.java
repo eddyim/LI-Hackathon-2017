@@ -5,8 +5,8 @@ import java.util.List;
 
 public class HTokenizer implements ITokenizer {
     private class location {
-        int line = 0;
-        int col = 0;
+        int line = 1;
+        int col = 1;
         int pos = 0;
         char[] chars;
 
@@ -73,7 +73,7 @@ public class HTokenizer implements ITokenizer {
     private boolean adjustLoc(location loc) {
         if (loc.getCurr() == '\n') {
             loc.line++;
-            loc.col = 0;
+            loc.col = 1;
             int spaces = 0;
             while (loc.getNext() == ' ') {
                 loc.pos++;
@@ -107,7 +107,7 @@ public class HTokenizer implements ITokenizer {
             loc.pos++;
         }
         //@TODO: nums
-        return new Token(Token.TokenType.STATEMENT, str.substring(start, end).trim(), 0, 0, 0);
+        return new Token(Token.TokenType.STATEMENT, str.substring(start, end), loc.line, loc.col, start);
     }
 
     //@TODO: is repetitive, consolidate
@@ -125,7 +125,7 @@ public class HTokenizer implements ITokenizer {
             loc.pos++;
         }
         //@TODO: nums
-        return new Token(Token.TokenType.EXPRESSION, str.substring(start, end).trim(), 0, 0, 0);
+        return new Token(Token.TokenType.EXPRESSION, str.substring(start, end), loc.line, loc.col, start);
     }
 
     private Token getStringContentToken(String str, location loc) {
@@ -144,7 +144,7 @@ public class HTokenizer implements ITokenizer {
         }
         end = loc.pos;
         //TODO: nums
-        return new Token(Token.TokenType.STRING_CONTENT ,str.substring(start, end), 0, 0, 0);
+        return new Token(Token.TokenType.STRING_CONTENT ,str.substring(start, end), loc.line, loc.col, start);
     }
 
 }
