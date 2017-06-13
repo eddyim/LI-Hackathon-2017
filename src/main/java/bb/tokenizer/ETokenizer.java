@@ -112,7 +112,7 @@ public class ETokenizer implements ITokenizer {
                 }
             } else if (quoteState == 0) {
                 if (current == '>' && previous == '%') {
-                    Token currentToken = new Token(STATEMENT, str.substring(0, index - 1), tokenStartLine, tokenStartCol, position);
+                    Token currentToken = new Token(STATEMENT, str.substring(0, index - 1).trim(), tokenStartLine, tokenStartCol, position);
                     tokens.add(currentToken);
                     return str.substring(index + 1);
                 }
@@ -160,7 +160,7 @@ public class ETokenizer implements ITokenizer {
             }
             else if (quoteState == 0) {
                 if (current.equals('}')) {
-                    Token currentToken = new Token(EXPRESSION, str.substring(0, index), tokenStartLine, tokenStartCol, position);
+                    Token currentToken = new Token(EXPRESSION, str.substring(0, index).trim(), tokenStartLine, tokenStartCol, position);
                     tokens.add(currentToken);
                     return str.substring(index + 1);
                 } else if (index < str.length() - 1 && current == '{' && previous == '$') {
