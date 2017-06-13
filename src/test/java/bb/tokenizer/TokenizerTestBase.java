@@ -37,7 +37,6 @@ abstract public class TokenizerTestBase {
         assertContentsAre(tokenizer.tokenize("<html>${2 + 2}</html>"),"<html>", "2 + 2", "</html>");
     }
 
-    @Test
     public void lineColPosTest() {
         ITokenizer  tokenizer = createTokenizer();
         assertEquals(Collections.emptyList(), tokenizer.tokenize(""));
@@ -97,6 +96,7 @@ abstract public class TokenizerTestBase {
         assertEquals("'\"hello }\"'", nestedDoubleExpression.get(1).getContent());
 
     }
+
     public void asssertTokenTypesAre(List<Token> tokenize, TokenType... stringContent) {
         assertEquals(tokenize.size(), stringContent.length);
         for (int i = 0; i < tokenize.size(); i++) {
