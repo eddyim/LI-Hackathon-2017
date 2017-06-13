@@ -51,7 +51,7 @@ abstract public class TokenizerTestBase {
         assertLineColPosAre(tokenizer.tokenize("<html>${2 + 2}</html>"),1, 1, 0, 1, 9, 8, 1, 15, 14);
 
         //assertLineColPosAre(tokenizer.tokenize("<html><% if(true) { %> foo <% } else { %> bar <% } %></html>"),
-                1, 1, 0, 1, 1, 8, 1, 1, 14);
+        //        1, 1, 0, 1, 1, 8, 1, 1, 14);
 
     }
 
