@@ -35,6 +35,10 @@ abstract public class TokenizerTestBase {
         assertEquals(tokenizer.tokenize("<html></html>").get(0).getContent(),"<html></html>");
 
         assertContentsAre(tokenizer.tokenize("<html>${2 + 2}</html>"),"<html>", "2 + 2", "</html>");
+
+        assertContentsAre(tokenizer.tokenize("<html><% if(true) { %> foo <% } else { %> bar <% } %></html>"),
+                "<html>", "if(true) {", " foo ", "} else {", " bar ", "}", "</html>");
+
     }
 
     public void lineColPosTest() {
@@ -43,7 +47,11 @@ abstract public class TokenizerTestBase {
 
         assertLineColPosAre(tokenizer.tokenize("<html></html>"),1, 1, 0);
 
-        assertLineColPosAre(tokenizer.tokenize("<html>${2 + 2}</html>"),1, 1, 0, 1, 1, 8, 1, 1, 14);
+        assertLineColPosAre(tokenizer.tokenize("<html>${2 + 2}</html>"),1, 1, 0, 1, 9, 8, 1, 15, 14);
+
+        //assertLineColPosAre(tokenizer.tokenize("<html><% if(true) { %> foo <% } else { %> bar <% } %></html>"),
+        //        1, 1, 0, 1, 1, 8, 1, 1, 14);
+
     }
 
     private void assertLineColPosAre(List<Token> tokenize, int ... vals) {
