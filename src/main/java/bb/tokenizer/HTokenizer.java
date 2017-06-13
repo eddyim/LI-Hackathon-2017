@@ -25,6 +25,14 @@ public class HTokenizer implements ITokenizer {
         char getPrev() {
             return chars[pos - 1];
         }
+
+        void advance() {
+            pos++;
+        }
+
+        void retreat() {
+            pos--;
+        }
     }
 
     public List<Token> tokenize(String str) {
@@ -66,6 +74,15 @@ public class HTokenizer implements ITokenizer {
         if (loc.getCurr() == '\n') {
             loc.line++;
             loc.col = 0;
+            int spaces = 0;
+            while (loc.getNext() == ' ') {
+                loc.pos++;
+                spaces++;
+                if (spaces == 4) {
+                    spaces = 0;
+                    loc.col++;
+                }
+            }
             return true;
         } if (loc.getCurr() == '\t') {
             loc.col++;
