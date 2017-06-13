@@ -100,7 +100,7 @@ public class HTokenizer implements ITokenizer {
         //TODO: catch the error
         while (true) {
             if (loc.getPrev() == '%' && loc.getCurr() == '>') {
-                end = loc.pos - 2;
+                end = loc.pos - 1;
                 break;
             }
             adjustLoc(loc);
@@ -118,7 +118,7 @@ public class HTokenizer implements ITokenizer {
         //TODO: catch the error
         while (true) {
             if (loc.getCurr() == '}') {
-                end = loc.pos - 1;
+                end = loc.pos;
                 break;
             }
             adjustLoc(loc);
@@ -135,7 +135,6 @@ public class HTokenizer implements ITokenizer {
         while (loc.pos < loc.chars.length) {
             if ((loc.getCurr() == '<' && loc.getNext() == '%') ||
                     (loc.getCurr() == '$' && loc.getNext() == '{')) {
-                loc.pos--;
                 break;
             } else {
                 adjustLoc(loc);
@@ -143,6 +142,7 @@ public class HTokenizer implements ITokenizer {
             }
         }
         end = loc.pos;
+        loc.pos--;
         //TODO: nums
         return new Token(Token.TokenType.STRING_CONTENT ,str.substring(start, end), loc.line, loc.col, start);
     }
