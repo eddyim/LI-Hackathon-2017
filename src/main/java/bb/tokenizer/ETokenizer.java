@@ -24,13 +24,14 @@ public class ETokenizer implements ITokenizer {
 
     /** Creates the next token from the given String, and adds it to tokens. */
     private String addNextToken(String str, ArrayList<Token> tokens) {
-        if (getNextTokenType(str).equals("STRING_CONTENT")) {
+        String nextToken = getNextTokenType(str);
+        if (nextToken.equals("STRING_CONTENT")) {
             return addStringContent(str, tokens);
-        } else if (getNextTokenType(str).equals("STATEMENT")) {
+        } else if (nextToken.equals("STATEMENT")) {
             return addStatement(str.substring(2), tokens);
-        } else if (getNextTokenType(str).equals("EXPRESSION")) {
+        } else if (nextToken.equals("EXPRESSION")) {
             return addExpression(str.substring(2), tokens);
-        } else if (getNextTokenType(str).equals("DIRECTIVE")) {
+        } else if (nextToken.equals("DIRECTIVE")) {
             return addDirective(str, tokens);
         }
         throw new RuntimeException("Error at line " + line + "and column " + column);
@@ -81,7 +82,6 @@ public class ETokenizer implements ITokenizer {
     /** Helper method: Given that the next token to add is a STATEMENT,
      *  correctly processes the token, adds it to tokens, and returns a string
      *  with the token removed.*/
-    //TODO: Support quotations within statements
     //TODO: Support proper indexing so that position is correct
     private String addStatement(String str, ArrayList<Token> tokens) {
         int index = 0;
