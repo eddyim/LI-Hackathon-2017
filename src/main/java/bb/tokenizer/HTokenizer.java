@@ -43,6 +43,9 @@ public class HTokenizer implements ITokenizer {
         char getNext() {
             return chars[curr.pos + 1];
         }
+        char getNextNext() {
+            return chars[curr.pos + 2];
+        }
         char getPrev() {
             return chars[curr.pos - 1];
         }
@@ -55,6 +58,13 @@ public class HTokenizer implements ITokenizer {
         }
         int getLineLastSEorD() {
             return endOfLastSEorD.line;
+        }
+
+        boolean hasNext() {
+            return (curr.pos + 1 < chars.length);
+        }
+        boolean hasNextNext() {
+            return (curr.pos + 2 < chars.length);
         }
 
         void advance() {
@@ -94,7 +104,7 @@ public class HTokenizer implements ITokenizer {
             }
             advance();
 
-            while (!quotes.empty() && getPos() < chars.length) {
+            while (!quotes.empty() && hasNext()) {
                 adjustLoc();
                 if (this.getCurr() == '"' && this.getPrev() != '\\') {
                     if (quotes.peek() == '"') {
@@ -120,18 +130,21 @@ public class HTokenizer implements ITokenizer {
         ArrayList<Token> result = new ArrayList<Token>();
         State state = new State(str.toCharArray());
 
-        while (state.getPos() < str.length()) {
+        while (state.getPos() < state.chars.length) {
             state.adjustLoc();
             if (state.getCurr() == '<') {
-                //@TODO: if there is no next you need to make it a string content token
-                if (state.getNext() == '%') { //is a statement
-                    result.add(getStatementToken(str, state));
+                if (state.hasNext() && state.getNext() == '%') { //is a statement or directive
+                    //@TODO: if there is no nextnext it is a(n incomplete) statement
+                    if (state.hasNextNext() && state.getNextNext() == '@') {
+                        result.add(getDirectiveToken(str, state));
+                    } else {
+                        result.add(getStatementToken(str, state));
+                    }
                 } else {
                     result.add(getStringContentToken(str, state));
                 }
             } else if (state.getCurr() == '$') {
-                //@TODO: if there is no next you need to make it a string content token
-                if (state.getNext() == '{') {  //is an expression
+                if (state.hasNext() && state.getNext() == '{') {  //is an expression
                     result.add(getExprToken(str, state));
                 } else {
                     result.add(getStringContentToken(str, state));
@@ -143,7 +156,31 @@ public class HTokenizer implements ITokenizer {
         return result;
     }
 
+    //start with the pos st the < in <%@, end with it at the > in the %>
+    private Token getDirectiveToken(String str, State state) {
+        Location start = state.copyCurrLoc();
+        int end;
+        state.advance();
+        state.advance();
+        state.advance();
 
+        //TODO: catch the error
+        while (true) {
+            state.adjustLoc();
+            if (state.getPrev() == '%' && state.getCurr() == '>') {
+                end = state.getPos();
+                break;
+            }
+            else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                state.passQuotes();
+            } else {
+                state.advance();
+            }
+        }
+        state.endOfLastSEorD = state.copyCurrLoc();
+        state.advance();
+        return new Token(Token.TokenType.DIRECTIVE, str.substring(start.pos + 3, end - 1).trim(), start.line, start.col, start.pos);
+    }
 
     //start with the pos st the < in <%, end with it at the > in the %>
     private Token getStatementToken(String str, State state) {
@@ -198,8 +235,8 @@ public class HTokenizer implements ITokenizer {
         int end;
         while (state.getPos() < state.chars.length) {
             state.adjustLoc();
-            if ((state.getCurr() == '<' && state.getNext() == '%') ||
-                    (state.getCurr() == '$' && state.getNext() == '{')) {
+            if (state.hasNext() && ((state.getCurr() == '<' && state.getNext() == '%') ||
+                    (state.getCurr() == '$' && state.getNext() == '{'))) {
                 break;
             }
             state.advance();

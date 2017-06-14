@@ -222,7 +222,7 @@ abstract public class TokenizerTestBase {
         assertEquals(tokenize.size(), stringContent.length);
         for (int i = 0; i < tokenize.size(); i++) {
             Token token = tokenize.get(i);
-            assertEquals(token.getType(), stringContent[i]);
+            assertEquals(stringContent[i], token.getType());
         }
     }
 }
