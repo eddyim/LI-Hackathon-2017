@@ -2,6 +2,7 @@ package bb.tokenizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class HTokenizer implements ITokenizer {
     private class Location {
@@ -83,6 +84,35 @@ public class HTokenizer implements ITokenizer {
             return new Location(curr.line, curr.col, curr.pos);
         }
 
+        void passQuotes() {
+            Stack<Character> quotes = new Stack<Character>();
+
+            if (this.getCurr() == '"') {
+                quotes.push('"');
+            } else if (this.getCurr() == '\''){
+                quotes.push('\'');
+            }
+            advance();
+
+            while (!quotes.empty() && getPos() < chars.length) {
+                adjustLoc();
+                if (this.getCurr() == '"' && this.getPrev() != '\\') {
+                    if (quotes.peek() == '"') {
+                        quotes.pop();
+                    } else {
+                        quotes.push('"');
+                    }
+                } else if (this.getCurr() == '\''){
+                    if (quotes.peek() == '\'') {
+                        quotes.pop();
+                    } else {
+                        quotes.push('\'');
+                    }
+                }
+                advance();
+            }
+        }
+
     }
 
 
@@ -115,10 +145,12 @@ public class HTokenizer implements ITokenizer {
 
 
 
-    //start with the pos after the <%, end with it at the > in the %>
+    //start with the pos st the < in <%, end with it at the > in the %>
     private Token getStatementToken(String str, State state) {
         Location start = state.copyCurrLoc();
         int end;
+        state.advance();
+        state.advance();
 
         //TODO: catch the error
         while (true) {
@@ -127,7 +159,11 @@ public class HTokenizer implements ITokenizer {
                 end = state.getPos();
                 break;
             }
-            state.advance();
+            else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                state.passQuotes();
+            } else {
+                state.advance();
+            }
         }
         state.endOfLastSEorD = state.copyCurrLoc();
         state.advance();
@@ -138,6 +174,8 @@ public class HTokenizer implements ITokenizer {
     private Token getExprToken(String str, State state) {
         Location start = state.copyCurrLoc();
         int end;
+        state.advance();
+        state.advance();
 
         //TODO: catch the error
         while (true) {
@@ -145,8 +183,11 @@ public class HTokenizer implements ITokenizer {
             if (state.getCurr() == '}') {
                 end = state.getPos();
                 break;
+            }else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                state.passQuotes();
+            } else {
+                state.advance();
             }
-            state.advance();
         }
         state.endOfLastSEorD = state.copyCurrLoc();
         state.advance();
