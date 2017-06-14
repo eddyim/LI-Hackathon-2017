@@ -37,27 +37,28 @@ public class ETokenizer implements ITokenizer {
         } else if (nextToken == EXPRESSION) {
             return addExpression(str.substring(2), tokens);
         } else if (nextToken == DIRECTIVE) {
-            return addDirective(str, tokens);
+            return addDirective(str.substring(3), tokens);
         }
         throw new RuntimeException("Error at line " + line + "and column " + column);
     }
 
     /** Returns the correct token type to be parsed. */
     private TokenType getNextTokenType(String str) {
-        if (str.length() >= 2) {
-            if (str.charAt(0) == '<' && str.charAt(1) == '%') {
-                return STATEMENT;
-            }
-            if (str.charAt(0) == '$' && str.charAt(1) == '{') {
-                return EXPRESSION;
-            }
+        if (str.indexOf("<%@") == 0) {
+            return DIRECTIVE;
+        } else if (str.indexOf("<%") == 0) {
+            return STATEMENT;
+        } else if (str.indexOf("${") == 0) {
+            return EXPRESSION;
+        } else {
+            return STRING_CONTENT;
         }
-        return STRING_CONTENT;
     }
 
     /** Helper method: Given that the next token to add is a STRING_CONTENT,
      *  correctly processes the token, adds it to tokens, and returns a string
-     *  with the token removed. */
+     *  with the token removed.
+     *  */
     private String addStringContent(String str, ArrayList<Token> tokens) {
         int index = 0;
         int tokenStartCol = column;
@@ -125,14 +126,8 @@ public class ETokenizer implements ITokenizer {
                     throw new RuntimeException("Attempted to open new expression within statement");
                 }
             }
-            if (current == 10) {
-                line += 1;
-                column = 0;
-            }
-            index += 1;
-            position += 1;
-            column += 1;
-        }
+            advancePosition(current);
+            index += 1;        }
         throw new RuntimeException("Error: Statement beginning at col " + tokenStartCol + " and line " + tokenStartLine + "is not closed");
     }
 
@@ -175,19 +170,59 @@ public class ETokenizer implements ITokenizer {
                     throw new RuntimeException("Attempted to open new statement within statement");
                 }
             }
-            if (current == 10) {
-                line += 1;
-                column = 0;
-            }
-            index += 1;
-            position += 1;
-            column += 1;
-        }
+            advancePosition(current);
+            index += 1;        }
         throw new RuntimeException("Error: Expression beginning at col " + tokenStartCol + " and line " + tokenStartLine + "is not closed");
     }
 
     private String addDirective(String str, ArrayList<Token> tokens) {
-        return null;
+        int index = 0;
+        int tokenStartCol = column;
+        int tokenStartLine = line;
+        int tokenStartPos = position;
+        Character current = null;
+        Character previous;
+        int quoteState = 0;
+        while (index < str.length()) {
+            previous = current;
+            current = str.charAt(index);
+            if (current == '"') {
+                if (quoteState == 1 && previous != '\\') {
+                    quoteState = 0;
+                } else if (quoteState == 0) {
+                    quoteState = 1;
+                }
+            } else if (current == '\'') {
+                if (quoteState == 2 && previous != '\\') {
+                    quoteState = 0;
+                } else if (quoteState == 0) {
+                    quoteState = 2;
+                }
+            } else if (quoteState == 0) {
+                if (current == '>' && previous == '%') {
+                    Token currentToken = new Token(DIRECTIVE, str.substring(0, index - 1).trim(), tokenStartLine, tokenStartCol, tokenStartPos);
+                    tokens.add(currentToken);
+                    return str.substring(index + 1);
+                }
+                if (current == '%' && previous == '<') {
+                    throw new RuntimeException("Attempted to open new statement within directive");
+                }
+                if (current == '{' && previous == '$') {
+                    throw new RuntimeException("Attempted to open new expression within directive");
+                }
+            }
+            advancePosition(current);
+            index += 1;
+        }
+        throw new RuntimeException("Error: Directive beginning at col " + tokenStartCol + " and line " + tokenStartLine + "is not closed");
     }
 
+    private void advancePosition(char current) {
+        if (current == 10) {
+            line += 1;
+            column = 0;
+        }
+        position += 1;
+        column += 1;
+    }
 }
