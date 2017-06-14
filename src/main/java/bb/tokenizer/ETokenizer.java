@@ -62,17 +62,18 @@ public class ETokenizer implements ITokenizer {
         int index = 0;
         int tokenStartCol = column;
         int tokenStartLine = line;
+        int tokenStartPos = position;
         Character current = null;
         Character previous;
-        while (index < str.length() - 1) {
+        while (index < str.length()) {
             previous = current;
             current = str.charAt(index);
             if ((current == '%' && previous == '<') || (current == '{' && previous == '$')) {
-                Token currentToken = new Token(STRING_CONTENT, str.substring(0, index - 1), tokenStartLine, tokenStartCol, position);
+                Token currentToken = new Token(STRING_CONTENT, str.substring(0, index - 1), tokenStartLine, tokenStartCol, tokenStartPos);
                 tokens.add(currentToken);
                 return str.substring(index - 1);
             }
-            if (current == 12) {
+            if (current == 10) {
                 line += 1;
                 column = 0;
             }
@@ -92,10 +93,11 @@ public class ETokenizer implements ITokenizer {
         int index = 0;
         int tokenStartCol = column;
         int tokenStartLine = line;
+        int tokenStartPos = position;
         Character current = null;
         Character previous;
         int quoteState = 0;
-        while (index < str.length() - 1) {
+        while (index < str.length()) {
             previous = current;
             current = str.charAt(index);
             if (current == '"') {
@@ -112,15 +114,18 @@ public class ETokenizer implements ITokenizer {
                 }
             } else if (quoteState == 0) {
                 if (current == '>' && previous == '%') {
-                    Token currentToken = new Token(STATEMENT, str.substring(0, index - 1).trim(), tokenStartLine, tokenStartCol, position);
+                    Token currentToken = new Token(STATEMENT, str.substring(0, index - 1).trim(), tokenStartLine, tokenStartCol, tokenStartPos);
                     tokens.add(currentToken);
                     return str.substring(index + 1);
                 }
                 if (current == '%' && previous == '<') {
                     throw new RuntimeException("Attempted to open new statement within statement");
                 }
+                if (current == '{' && previous == '$') {
+                    throw new RuntimeException("Attempted to open new expression within statement");
+                }
             }
-            if (current == 12) {
+            if (current == 10) {
                 line += 1;
                 column = 0;
             }
@@ -139,6 +144,7 @@ public class ETokenizer implements ITokenizer {
         int index = 0;
         int tokenStartCol = column;
         int tokenStartLine = line;
+        int tokenStartPos = position;
         Character current = null;
         Character previous;
         int quoteState = 0;
@@ -160,14 +166,16 @@ public class ETokenizer implements ITokenizer {
             }
             else if (quoteState == 0) {
                 if (current.equals('}')) {
-                    Token currentToken = new Token(EXPRESSION, str.substring(0, index).trim(), tokenStartLine, tokenStartCol, position);
+                    Token currentToken = new Token(EXPRESSION, str.substring(0, index).trim(), tokenStartLine, tokenStartCol, tokenStartPos);
                     tokens.add(currentToken);
                     return str.substring(index + 1);
-                } else if (index < str.length() - 1 && current == '{' && previous == '$') {
+                } else if (current == '{' && previous == '$') {
                     throw new RuntimeException("Error: Attempted to open new expression within expression");
+                } else if (current == '%' && previous == '<') {
+                    throw new RuntimeException("Attempted to open new statement within statement");
                 }
             }
-            if (current == 12) {
+            if (current == 10) {
                 line += 1;
                 column = 0;
             }
