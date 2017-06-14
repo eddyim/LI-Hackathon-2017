@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 
+import static bb.tokenizer.Token.TokenType.*;
 import static org.junit.Assert.*;
 
 abstract public class TokenizerTestBase {
@@ -17,14 +18,14 @@ abstract public class TokenizerTestBase {
         ITokenizer  tokenizer = createTokenizer();
         assertEquals(Collections.emptyList(), tokenizer.tokenize(""));
 
-        asssertTokenTypesAre(tokenizer.tokenize("<html></html>"), TokenType.STRING_CONTENT);
+        asssertTokenTypesAre(tokenizer.tokenize("<html></html>"), STRING_CONTENT);
 
         asssertTokenTypesAre(tokenizer.tokenize("<html>${2 + 2}</html>"),
-                TokenType.STRING_CONTENT, TokenType.EXPRESSION, TokenType.STRING_CONTENT);
+                STRING_CONTENT, TokenType.EXPRESSION, STRING_CONTENT);
 
         asssertTokenTypesAre(tokenizer.tokenize("<html><% if(true) { %> foo <% } else { %> bar <% } %></html>"),
-                TokenType.STRING_CONTENT, TokenType.STATEMENT, TokenType.STRING_CONTENT, TokenType.STATEMENT,
-                TokenType.STRING_CONTENT, TokenType.STATEMENT, TokenType.STRING_CONTENT);
+                STRING_CONTENT, STATEMENT, STRING_CONTENT, STATEMENT,
+                STRING_CONTENT, STATEMENT, STRING_CONTENT);
     }
 
     @Test
@@ -82,7 +83,28 @@ abstract public class TokenizerTestBase {
         } catch (RuntimeException e) {
             errorCaught = true;
         }
-        assertEquals(errorCaught, true);
+        assertTrue(errorCaught);
+        errorCaught = false;
+        try {
+            tokenizer.tokenize("<html><% ${ } %>");
+        } catch (RuntimeException e) {
+            errorCaught = true;
+        }
+        assertTrue(errorCaught);
+        errorCaught = false;
+        try {
+            tokenizer.tokenize("<html><% NotClosingStatementCausesError ><html>");
+        } catch (RuntimeException e) {
+            errorCaught = true;
+        }
+        assertTrue(errorCaught);
+        errorCaught = false;
+        try {
+            tokenizer.tokenize("<html>${ same with not closing this\"}\" properly <html> ");
+        } catch (RuntimeException e) {
+            errorCaught = true;
+        }
+        assertTrue(errorCaught);
     }
 
     @Test
@@ -90,7 +112,7 @@ abstract public class TokenizerTestBase {
         ITokenizer tokenizer = createTokenizer();
         List<Token> doubleQuotedExpression = tokenizer.tokenize("<html>${\"}\"}</html>");
         List<Token> singleQuotedExpression = tokenizer.tokenize("<html>${\'}\'}</html>");
-        asssertTokenTypesAre(doubleQuotedExpression, TokenType.STRING_CONTENT, TokenType.EXPRESSION, TokenType.STRING_CONTENT);
+        asssertTokenTypesAre(doubleQuotedExpression, STRING_CONTENT, TokenType.EXPRESSION, STRING_CONTENT);
         assertEquals("\"}\"", doubleQuotedExpression.get(1).getContent());
         assertEquals("\'}\'", singleQuotedExpression.get(1).getContent());
 
@@ -104,6 +126,51 @@ abstract public class TokenizerTestBase {
         assertEquals("\"'hello }'\"", nestedSingleExpression.get(1).getContent());
         assertEquals("'\"hello }\"'", nestedDoubleExpression.get(1).getContent());
 
+    }
+
+    @Test
+    public void testQuotedStatement() {
+        ITokenizer tokenizer = createTokenizer();
+        List<Token> doubleQuotedStatement = tokenizer.tokenize("<% \"%>\" %>");
+        List<Token> singleQuotedStatement = tokenizer.tokenize("<% '%>' %>");
+        assertEquals("\"%>\"", doubleQuotedStatement.get(0).getContent());
+        assertEquals("'%>'", singleQuotedStatement.get(0).getContent());
+
+    }
+
+    @Test
+    public void testNestedQuotedStatement() {
+        ITokenizer tokenizer = createTokenizer();
+        List<Token> nestedSingleStatement = tokenizer.tokenize("<%\"'hello }'\"%>");
+        List<Token> nestedDoubleStatement = tokenizer.tokenize("<%'\"hello }\"'%>");
+        assertEquals("\"'hello }'\"", nestedSingleStatement.get(0).getContent());
+        assertEquals("'\"hello }\"'", nestedDoubleStatement.get(0).getContent());
+
+    }
+
+    /** Tests that ending files with various types of tokens doesn't create errors*/
+    @Test
+    public void endFileTest() {
+        ITokenizer tokenizer = createTokenizer();
+        tokenizer.tokenize("HELLO");
+        tokenizer.tokenize("${ else }");
+        tokenizer.tokenize("<% foo bar %>");
+    }
+
+    @Test
+    public void longerTest() {
+        ITokenizer tokenizer = createTokenizer();
+        List<Token> tokens = tokenizer.tokenize("<html>\n" +
+                "   <head><title>Hello World</title></head>\n" +
+                "   \n" +
+                "   <body>\n" +
+                "      Hello World!<br/>\n" +
+                "      <%\n" +
+                "         out.println(\"Your IP address is \" + request.getRemoteAddr());\n" +
+                "      %>\n" +
+                "   </body>\n" +
+                "</html>");
+        asssertTokenTypesAre(tokens, STRING_CONTENT, STATEMENT, STRING_CONTENT);
     }
 
 
