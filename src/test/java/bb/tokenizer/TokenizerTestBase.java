@@ -75,6 +75,7 @@ abstract public class TokenizerTestBase {
         }
     }
 
+    @Test
     public void testStatementError() {
         ITokenizer tokenizer = createTokenizer();
         boolean errorCaught = false;
@@ -173,6 +174,49 @@ abstract public class TokenizerTestBase {
         asssertTokenTypesAre(tokens, STRING_CONTENT, STATEMENT, STRING_CONTENT);
     }
 
+    @Test
+    public void testDirectiveBasic() {
+        ITokenizer tokenizer = createTokenizer();
+        asssertTokenTypesAre(tokenizer.tokenize("<html><%@ directives, yo%></html>"),
+                STRING_CONTENT, DIRECTIVE, STRING_CONTENT);
+    }
+
+    @Test
+    public void testDirectiveErrors() {
+        ITokenizer tokenizer = createTokenizer();
+        boolean caught = false;
+        try {
+            tokenizer.tokenize("<%@ foo");
+            System.out.println("Failed to throw exception when not closing directive");
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+        assertTrue(caught);
+        caught = false;
+        try {
+            tokenizer.tokenize("<%@ abc <% abc %> %>");
+            System.out.println("Failed to throw exception when opening statement within directive.");
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+        assertTrue(caught);
+        caught = false;
+        try {
+            tokenizer.tokenize("<%@ ${ } %>");
+            System.out.println("Failed to throw exception when opening expression within directive.");
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+        assertTrue(caught);
+        caught = false;
+        try {
+            tokenizer.tokenize("<%@ Abc <%@ abc %> %>");
+            System.out.println("Failed to throw exception when opening directive within directive");
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+        assertTrue(caught);
+    }
 
     private void asssertTokenTypesAre(List<Token> tokenize, TokenType... stringContent) {
         assertEquals(tokenize.size(), stringContent.length);
