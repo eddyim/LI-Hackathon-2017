@@ -88,6 +88,7 @@ public class HTokenizer implements ITokenizer {
                     curr.col = 0;
                 }
                 this.advance();
+                adjustLoc();
             }
         }
         Location copyCurrLoc() {
@@ -164,18 +165,20 @@ public class HTokenizer implements ITokenizer {
         state.advance();
         state.advance();
 
-        //TODO: catch the error
-        while (true) {
-            state.adjustLoc();
-            if (state.getPrev() == '%' && state.getCurr() == '>') {
-                end = state.getPos();
-                break;
+        try {
+            while (true) {
+                state.adjustLoc();
+                if (state.getPrev() == '%' && state.getCurr() == '>') {
+                    end = state.getPos();
+                    break;
+                } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                    state.passQuotes();
+                } else {
+                    state.advance();
+                }
             }
-            else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
-                state.passQuotes();
-            } else {
-                state.advance();
-            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new RuntimeException("File ended before closing Directive");
         }
         state.endOfLastSEorD = state.copyCurrLoc();
         state.advance();
@@ -189,18 +192,20 @@ public class HTokenizer implements ITokenizer {
         state.advance();
         state.advance();
 
-        //TODO: catch the error
-        while (true) {
-            state.adjustLoc();
-            if (state.getPrev() == '%' && state.getCurr() == '>') {
-                end = state.getPos();
-                break;
+        try {
+            while (true) {
+                state.adjustLoc();
+                if (state.getPrev() == '%' && state.getCurr() == '>') {
+                    end = state.getPos();
+                    break;
+                } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                    state.passQuotes();
+                } else {
+                    state.advance();
+                }
             }
-            else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
-                state.passQuotes();
-            } else {
-                state.advance();
-            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new RuntimeException("File ended before closing Statement");
         }
         state.endOfLastSEorD = state.copyCurrLoc();
         state.advance();
@@ -214,17 +219,20 @@ public class HTokenizer implements ITokenizer {
         state.advance();
         state.advance();
 
-        //TODO: catch the error
-        while (true) {
-            state.adjustLoc();
-            if (state.getCurr() == '}') {
-                end = state.getPos();
-                break;
-            }else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
-                state.passQuotes();
-            } else {
-                state.advance();
+        try {
+            while (true) {
+                state.adjustLoc();
+                if (state.getCurr() == '}') {
+                    end = state.getPos();
+                    break;
+                } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                    state.passQuotes();
+                } else {
+                    state.advance();
+                }
             }
+        } catch (IndexOutOfBoundsException e) {
+            throw new RuntimeException("File ended before closing Expression");
         }
         state.endOfLastSEorD = state.copyCurrLoc();
         state.advance();
