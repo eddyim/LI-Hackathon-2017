@@ -44,20 +44,22 @@ public class ETokenizer implements ITokenizer {
 
     /** Returns the correct token type to be parsed. */
     private TokenType getNextTokenType(String str) {
-        if (str.length() >= 2) {
-            if (str.charAt(0) == '<' && str.charAt(1) == '%') {
-                return STATEMENT;
-            }
-            if (str.charAt(0) == '$' && str.charAt(1) == '{') {
-                return EXPRESSION;
-            }
+        if (str.indexOf("<%@") == 0) {
+            return DIRECTIVE;
+        } else if (str.indexOf("<%") == 0) {
+            return STATEMENT;
+        } else if (str.indexOf("${") == 0) {
+            return EXPRESSION;
+        } else {
+            return STRING_CONTENT;
         }
-        return STRING_CONTENT;
     }
 
     /** Helper method: Given that the next token to add is a STRING_CONTENT,
      *  correctly processes the token, adds it to tokens, and returns a string
-     *  with the token removed. */
+     *  with the token removed.
+     *  TODO: Support escape characters
+     *  */
     private String addStringContent(String str, ArrayList<Token> tokens) {
         int index = 0;
         int tokenStartCol = column;
