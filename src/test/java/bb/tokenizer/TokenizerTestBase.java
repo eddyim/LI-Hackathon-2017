@@ -42,6 +42,7 @@ abstract public class TokenizerTestBase {
     }
 
     @Test
+
     public void lineColPosTest() {
         ITokenizer  tokenizer = createTokenizer();
         assertEquals(Collections.emptyList(), tokenizer.tokenize(""));
@@ -79,7 +80,6 @@ abstract public class TokenizerTestBase {
         try {
             tokenizer.tokenize("<html><% if(true) { %> foo <% else {  bar <% } %></html>");
         } catch (RuntimeException e) {
-            System.out.println(e);
             errorCaught = true;
         }
         assertEquals(errorCaught, true);
@@ -105,13 +105,13 @@ abstract public class TokenizerTestBase {
         assertEquals("'\"hello }\"'", nestedDoubleExpression.get(1).getContent());
 
     }
-    public void asssertTokenTypesAre(List<Token> tokenize, TokenType... stringContent) {
+
+
+    private void asssertTokenTypesAre(List<Token> tokenize, TokenType... stringContent) {
         assertEquals(tokenize.size(), stringContent.length);
         for (int i = 0; i < tokenize.size(); i++) {
             Token token = tokenize.get(i);
-            assertEquals(stringContent[i], token.getType());
+            assertEquals(token.getType(), stringContent[i]);
         }
     }
-
-
 }
