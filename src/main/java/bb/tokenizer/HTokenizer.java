@@ -4,154 +4,168 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HTokenizer implements ITokenizer {
-    private class location {
-        int line = 1;
-        int col = 1;
-        int pos = 0;
-        int lastLineLen;
-        int endOfLastSEorD = 0;
-        char[] chars;
+    private class Location {
+        int line;
+        int col;
+        int pos;
 
-        location(char[] chars) {
-            this.chars = chars;
+        Location() {
+            line = 1;
+            col = 1;
+            pos = 0;
         }
 
-        char getCurr() {
-            return chars[pos];
-        }
-
-        char getNext() {
-            return chars[pos + 1];
-        }
-
-        char getPrev() {
-            return chars[pos - 1];
-        }
-
-        void advance() {
-            pos++;
-            col++;
-        }
-
-        void retreat() {
-            pos--;
-            col--;
-            if (col == 0) {
-                col = lastLineLen;
-                line--;
-            }
+        Location(int line, int col, int pos) {
+            this.line = line;
+            this.col = col;
+            this.pos = pos;
         }
     }
 
+    private class State {
+        char[] chars;
+        Location curr = new Location();
+        Location endOfLastSEorD = new Location(1, 0, -1);
+        int lastLineLen;
+
+        State(char[] chars) {
+            this.chars = chars;
+        }
+
+        int getPos() {
+            return curr.pos;
+        }
+
+        char getCurr() {
+            return chars[curr.pos];
+        }
+        char getNext() {
+            return chars[curr.pos + 1];
+        }
+        char getPrev() {
+            return chars[curr.pos - 1];
+        }
+
+        int getPosLastSEorD() {
+            return endOfLastSEorD.pos;
+        }
+        int getColLastSEorD() {
+            return endOfLastSEorD.col;
+        }
+        int getLineLastSEorD() {
+            return endOfLastSEorD.line;
+        }
+
+        void advance() {
+            curr.pos++;
+            curr.col++;
+        }
+        void retreat() {
+            curr.pos--;
+            curr.col--;
+            if (curr.col == 0) {
+                curr.col = lastLineLen;
+                curr.line--;
+            }
+        }
+
+        void adjustLoc() {
+            if (Character.isWhitespace(this.getCurr())) {
+                if (this.getCurr() == '\n') {
+                    lastLineLen = curr.col + 1;
+                    curr.line++;
+                    curr.col = 0;
+                }
+                this.advance();
+            }
+        }
+        Location copyCurrLoc() {
+            return new Location(curr.line, curr.col, curr.pos);
+        }
+
+    }
+
+
     public List<Token> tokenize(String str) {
         ArrayList<Token> result = new ArrayList<Token>();
-        location loc = new location(str.toCharArray());
+        State state = new State(str.toCharArray());
 
-        while (loc.pos < str.length()) {
-            if (loc.getCurr() == '<') {
-                loc.advance();
-                if (loc.getCurr() == '%') { //is a statement
-                    loc.advance();
-                    result.add(getStatementToken(str, loc));
+        while (state.getPos() < str.length()) {
+            state.adjustLoc();
+            if (state.getCurr() == '<') {
+                //@TODO: if there is no next you need to make it a string content token
+                if (state.getNext() == '%') { //is a statement
+                    result.add(getStatementToken(str, state));
                 } else {
-                    loc.retreat();
-                    result.add(getStringContentToken(str, loc));
+                    result.add(getStringContentToken(str, state));
                 }
-            }
-
-            else if (loc.getCurr() == '$') {
-                loc.advance();
-                if (loc.getCurr() == '{') {  //is an expression
-                    loc.advance();
-                    result.add(getExprToken(str, loc));
+            } else if (state.getCurr() == '$') {
+                //@TODO: if there is no next you need to make it a string content token
+                if (state.getNext() == '{') {  //is an expression
+                    result.add(getExprToken(str, state));
                 } else {
-                    loc.retreat();
-                    result.add(getStringContentToken(str, loc));
+                    result.add(getStringContentToken(str, state));
                 }
+            } else {  //is a string statement
+                result.add(getStringContentToken(str, state));
             }
-
-            else if (!adjustLoc(loc)) {  //is a string statement
-                result.add(getStringContentToken(str, loc));
-            }
-            loc.advance();
         }
         return result;
     }
 
-    private boolean adjustLoc(location loc) {
-        if (loc.getCurr() == '\n') {
-            loc.line++;
-            loc.col = 1;
-            return true;
-        } if (loc.getCurr() == '\t') {
-            loc.col++;
-            return true;
-        } if (loc.getCurr() == ' ') {
-            return true;
-        }
-        return false;
-    }
+
 
     //start with the pos after the <%, end with it at the > in the %>
-    private Token getStatementToken(String str, location loc) {
-        int startCol = loc.col;
-        int startLine = loc.line;
-        int start = loc.pos;
+    private Token getStatementToken(String str, State state) {
+        Location start = state.copyCurrLoc();
         int end;
 
         //TODO: catch the error
         while (true) {
-            if (loc.getPrev() == '%' && loc.getCurr() == '>') {
-                end = loc.pos;
+            state.adjustLoc();
+            if (state.getPrev() == '%' && state.getCurr() == '>') {
+                end = state.getPos();
                 break;
             }
-            adjustLoc(loc);
-            loc.advance();
+            state.advance();
         }
-        loc.endOfLastSEorD = end + 1;
-        //@TODO: nums
-        return new Token(Token.TokenType.STATEMENT, str.substring(start, end - 1).trim(), startLine, startCol, start);
+        state.endOfLastSEorD = state.copyCurrLoc();
+        state.advance();
+        return new Token(Token.TokenType.STATEMENT, str.substring(start.pos + 2, end - 1).trim(), start.line, start.col, start.pos);
     }
 
-    //@TODO: is repetitive, consolidate
-    //start with the pos after the ${, end with it at the }
-    private Token getExprToken(String str, location loc) {
-        int startCol = loc.col;
-        int startLine = loc.line;
-        int start = loc.pos;
+    //start with the pos at $ from the ${, end with it at the }
+    private Token getExprToken(String str, State state) {
+        Location start = state.copyCurrLoc();
         int end;
+
         //TODO: catch the error
         while (true) {
-            if (loc.getCurr() == '}') {
-                end = loc.pos;
+            state.adjustLoc();
+            if (state.getCurr() == '}') {
+                end = state.getPos();
                 break;
             }
-            adjustLoc(loc);
-            loc.advance();
+            state.advance();
         }
-        loc.endOfLastSEorD = end + 1;
-        //@TODO: nums
-        return new Token(Token.TokenType.EXPRESSION, str.substring(start, end).trim(), startLine, startCol, start);
+        state.endOfLastSEorD = state.copyCurrLoc();
+        state.advance();
+        return new Token(Token.TokenType.EXPRESSION, str.substring(start.pos + 2, end).trim(), start.line, start.col, start.pos);
     }
 
-    private Token getStringContentToken(String str, location loc) {
-        //TODO: catch the error
-        int startCol = loc.col;
-        int startLine = loc.line;
+    private Token getStringContentToken(String str, State state) {
         int end;
-        while (loc.pos < loc.chars.length) {
-            if ((loc.getCurr() == '<' && loc.getNext() == '%') ||
-                    (loc.getCurr() == '$' && loc.getNext() == '{')) {
+        while (state.getPos() < state.chars.length) {
+            state.adjustLoc();
+            if ((state.getCurr() == '<' && state.getNext() == '%') ||
+                    (state.getCurr() == '$' && state.getNext() == '{')) {
                 break;
-            } else {
-                adjustLoc(loc);
-                loc.advance();
             }
+            state.advance();
         }
-        end = loc.pos - 1;
-        loc.retreat();
-        //TODO: nums
-        return new Token(Token.TokenType.STRING_CONTENT, str.substring(loc.endOfLastSEorD, end + 1), startLine, startCol, loc.endOfLastSEorD);
+        end = state.getPos() - 1;
+        return new Token(Token.TokenType.STRING_CONTENT, str.substring(state.getPosLastSEorD() + 1, end + 1),
+                state.getLineLastSEorD(), state.getColLastSEorD() + 1, state.getPosLastSEorD() + 1);
     }
 
 }
