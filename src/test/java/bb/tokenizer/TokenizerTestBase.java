@@ -59,9 +59,9 @@ abstract public class TokenizerTestBase {
         assertEquals(tokenize.size() * 3, vals.length);
         for (int i = 0; i < tokenize.size(); i++) {
             Token token = tokenize.get(i);
-            assertEquals(token.getLine(), vals[i * 3]);
-            assertEquals(token.getOffset(), vals[i * 3 + 1]);
-            assertEquals(token.getPosition(), vals[i * 3 + 2]);
+            assertEquals(vals[i * 3], token.getLine());
+            assertEquals(vals[i * 3 + 1], token.getOffset());
+            assertEquals(vals[i * 3 + 2], token.getPosition());
         }
     }
 
@@ -69,7 +69,7 @@ abstract public class TokenizerTestBase {
         assertEquals(tokenize.size(), content.length);
         for (int i = 0; i < tokenize.size(); i++) {
             Token token = tokenize.get(i);
-            assertEquals(token.getContent(), content[i]);
+            assertEquals(content[i], token.getContent());
         }
     }
 
@@ -109,7 +109,7 @@ abstract public class TokenizerTestBase {
         assertEquals(tokenize.size(), stringContent.length);
         for (int i = 0; i < tokenize.size(); i++) {
             Token token = tokenize.get(i);
-            assertEquals(token.getType(), stringContent[i]);
+            assertEquals(stringContent[i], token.getType());
         }
     }
 
