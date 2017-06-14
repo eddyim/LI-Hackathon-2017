@@ -8,6 +8,8 @@ public class HTokenizer implements ITokenizer {
         int line = 1;
         int col = 1;
         int pos = 0;
+        int lastLineLen;
+        int endOfLastSEorD = 0;
         char[] chars;
 
         location(char[] chars) {
@@ -28,10 +30,16 @@ public class HTokenizer implements ITokenizer {
 
         void advance() {
             pos++;
+            col++;
         }
 
         void retreat() {
             pos--;
+            col--;
+            if (col == 0) {
+                col = lastLineLen;
+                line--;
+            }
         }
     }
 
@@ -41,23 +49,23 @@ public class HTokenizer implements ITokenizer {
 
         while (loc.pos < str.length()) {
             if (loc.getCurr() == '<') {
-                loc.pos++;
+                loc.advance();
                 if (loc.getCurr() == '%') { //is a statement
-                    loc.pos++;
+                    loc.advance();
                     result.add(getStatementToken(str, loc));
                 } else {
-                    loc.pos--;
+                    loc.retreat();
                     result.add(getStringContentToken(str, loc));
                 }
             }
 
             else if (loc.getCurr() == '$') {
-                loc.pos++;
+                loc.advance();
                 if (loc.getCurr() == '{') {  //is an expression
-                    loc.pos++;
+                    loc.advance();
                     result.add(getExprToken(str, loc));
                 } else {
-                    loc.pos--;
+                    loc.retreat();
                     result.add(getStringContentToken(str, loc));
                 }
             }
@@ -65,7 +73,7 @@ public class HTokenizer implements ITokenizer {
             else if (!adjustLoc(loc)) {  //is a string statement
                 result.add(getStringContentToken(str, loc));
             }
-            loc.pos++;
+            loc.advance();
         }
         return result;
     }
@@ -74,15 +82,6 @@ public class HTokenizer implements ITokenizer {
         if (loc.getCurr() == '\n') {
             loc.line++;
             loc.col = 1;
-            int spaces = 0;
-            while (loc.getNext() == ' ') {
-                loc.pos++;
-                spaces++;
-                if (spaces == 4) {
-                    spaces = 0;
-                    loc.col++;
-                }
-            }
             return true;
         } if (loc.getCurr() == '\t') {
             loc.col++;
@@ -95,24 +94,30 @@ public class HTokenizer implements ITokenizer {
 
     //start with the pos after the <%, end with it at the > in the %>
     private Token getStatementToken(String str, location loc) {
+        int startCol = loc.col;
+        int startLine = loc.line;
         int start = loc.pos;
         int end;
+
         //TODO: catch the error
         while (true) {
             if (loc.getPrev() == '%' && loc.getCurr() == '>') {
-                end = loc.pos - 1;
+                end = loc.pos;
                 break;
             }
             adjustLoc(loc);
-            loc.pos++;
+            loc.advance();
         }
+        loc.endOfLastSEorD = end + 1;
         //@TODO: nums
-        return new Token(Token.TokenType.STATEMENT, str.substring(start, end), loc.line, loc.col, start);
+        return new Token(Token.TokenType.STATEMENT, str.substring(start, end - 1).trim(), startLine, startCol, start);
     }
 
     //@TODO: is repetitive, consolidate
     //start with the pos after the ${, end with it at the }
     private Token getExprToken(String str, location loc) {
+        int startCol = loc.col;
+        int startLine = loc.line;
         int start = loc.pos;
         int end;
         //TODO: catch the error
@@ -122,29 +127,31 @@ public class HTokenizer implements ITokenizer {
                 break;
             }
             adjustLoc(loc);
-            loc.pos++;
+            loc.advance();
         }
+        loc.endOfLastSEorD = end + 1;
         //@TODO: nums
-        return new Token(Token.TokenType.EXPRESSION, str.substring(start, end), loc.line, loc.col, start);
+        return new Token(Token.TokenType.EXPRESSION, str.substring(start, end).trim(), startLine, startCol, start);
     }
 
     private Token getStringContentToken(String str, location loc) {
         //TODO: catch the error
-        int start = loc.pos;
-        int end = 0;
+        int startCol = loc.col;
+        int startLine = loc.line;
+        int end;
         while (loc.pos < loc.chars.length) {
             if ((loc.getCurr() == '<' && loc.getNext() == '%') ||
                     (loc.getCurr() == '$' && loc.getNext() == '{')) {
                 break;
             } else {
                 adjustLoc(loc);
-                loc.pos++;
+                loc.advance();
             }
         }
-        end = loc.pos;
-        loc.pos--;
+        end = loc.pos - 1;
+        loc.retreat();
         //TODO: nums
-        return new Token(Token.TokenType.STRING_CONTENT ,str.substring(start, end), loc.line, loc.col, start);
+        return new Token(Token.TokenType.STRING_CONTENT, str.substring(loc.endOfLastSEorD, end + 1), startLine, startCol, loc.endOfLastSEorD);
     }
 
 }
