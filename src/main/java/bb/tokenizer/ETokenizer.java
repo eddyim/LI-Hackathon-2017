@@ -18,6 +18,9 @@ public class ETokenizer implements ITokenizer {
 
     public List<Token> tokenize(String str) {
         ArrayList<Token> tokens = new ArrayList<Token>();
+        if (str == null) {
+            return tokens;
+        }
         while(str.length() > 0) {
             str = addNextToken(str, tokens);
         }
@@ -69,7 +72,7 @@ public class ETokenizer implements ITokenizer {
         while (index < str.length()) {
             previous = current;
             current = str.charAt(index);
-            if ((current == '%' && previous == '<') || (current == '{' && previous == '$')) {
+            if (previous != null && ((current == '%' && previous == '<') || (current == '{' && previous == '$'))) {
                 Token currentToken = new Token(STRING_CONTENT, str.substring(0, index - 1), tokenStartLine, tokenStartCol, tokenStartPos);
                 tokens.add(currentToken);
                 return str.substring(index - 1);
@@ -113,8 +116,8 @@ public class ETokenizer implements ITokenizer {
                 } else if (quoteState == 0) {
                     quoteState = 2;
                 }
-            } else if (quoteState == 0) {
-                if (current == '>' && previous == '%') {
+            } else if (quoteState == 0 && previous != null) {
+                if (current == '>' && '%' == previous ) {
                     Token currentToken = new Token(STATEMENT, str.substring(0, index - 1).trim(), tokenStartLine, tokenStartCol, tokenStartPos);
                     tokens.add(currentToken);
                     return str.substring(index + 1);
@@ -164,10 +167,12 @@ public class ETokenizer implements ITokenizer {
                     Token currentToken = new Token(EXPRESSION, str.substring(0, index).trim(), tokenStartLine, tokenStartCol, tokenStartPos);
                     tokens.add(currentToken);
                     return str.substring(index + 1);
-                } else if (current == '{' && previous == '$') {
-                    throw new RuntimeException("Error: Attempted to open new expression within expression");
-                } else if (current == '%' && previous == '<') {
-                    throw new RuntimeException("Attempted to open new statement within statement");
+                } else if (previous != null) {
+                    if (current == '{' && previous == '$') {
+                        throw new RuntimeException("Error: Attempted to open new expression within expression");
+                    } else if (current == '%' && previous == '<') {
+                        throw new RuntimeException("Attempted to open new statement within statement");
+                    }
                 }
             }
             advancePosition(current);
@@ -198,7 +203,7 @@ public class ETokenizer implements ITokenizer {
                 } else if (quoteState == 0) {
                     quoteState = 2;
                 }
-            } else if (quoteState == 0) {
+            } else if (quoteState == 0 && previous != null) {
                 if (current == '>' && previous == '%') {
                     Token currentToken = new Token(DIRECTIVE, str.substring(0, index - 1).trim(), tokenStartLine, tokenStartCol, tokenStartPos);
                     tokens.add(currentToken);
