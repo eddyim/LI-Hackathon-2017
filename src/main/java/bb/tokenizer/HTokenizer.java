@@ -84,14 +84,13 @@ public class HTokenizer implements ITokenizer {
         }
 
         void adjustLoc() {
-            if (Character.isWhitespace(this.getCurr())) {
+            if (this.hasCurr() && Character.isWhitespace(this.getCurr())) {
                 if (this.getCurr() == '\n') {
                     lastLineLen = curr.col + 1;
                     curr.line++;
                     curr.col = 0;
                 }
                 this.advance();
-                adjustLoc();
             }
         }
         Location copyCurrLoc() {
@@ -137,6 +136,9 @@ public class HTokenizer implements ITokenizer {
 
     public List<Token> tokenize(String str) {
         ArrayList<Token> result = new ArrayList<Token>();
+        if (str == null) {
+            return result;
+        }
         State state = new State(str);
 
         while (state.hasCurr()) {
