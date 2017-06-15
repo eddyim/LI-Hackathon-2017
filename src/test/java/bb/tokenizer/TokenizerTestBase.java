@@ -75,37 +75,79 @@ abstract public class TokenizerTestBase {
         }
     }
 
+
     @Test
-    public void testStatementError() {
+    public void statementErrorTest() {
         ITokenizer tokenizer = createTokenizer();
-        boolean errorCaught = false;
+        boolean caught = false;
         try {
-            tokenizer.tokenize("<html><% if(true) { %> foo <% else {  bar <% } %></html>");
+            tokenizer.tokenize("<% foo");
+            System.out.println("Failed to throw exception when not closing statement");
         } catch (RuntimeException e) {
-            errorCaught = true;
+            caught = true;
         }
-        assertTrue(errorCaught);
-        errorCaught = false;
+        assertTrue(caught);
+        caught = false;
         try {
-            tokenizer.tokenize("<html><% ${ } %>");
+            tokenizer.tokenize("<% abc <% abc %> %>");
+            System.out.println("Failed to throw exception when opening statement within statement.");
         } catch (RuntimeException e) {
-            errorCaught = true;
+            caught = true;
         }
-        assertTrue(errorCaught);
-        errorCaught = false;
+        assertTrue(caught);
+        caught = false;
         try {
-            tokenizer.tokenize("<html><% NotClosingStatementCausesError ><html>");
+            tokenizer.tokenize("<% ${ } %>");
+            System.out.println("Failed to throw exception when opening expression within statement.");
         } catch (RuntimeException e) {
-            errorCaught = true;
+            caught = true;
         }
-        assertTrue(errorCaught);
-        errorCaught = false;
+        assertTrue(caught);
+        caught = false;
         try {
-            tokenizer.tokenize("<html>${ same with not closing this\"}\" properly <html> ");
+            tokenizer.tokenize("<% Abc <%@ abc %> %>");
+            System.out.println("Failed to throw exception when opening directive within statement");
         } catch (RuntimeException e) {
-            errorCaught = true;
+            caught = true;
         }
-        assertTrue(errorCaught);
+        assertTrue(caught);
+    }
+
+    @Test
+    public void expressionErrorTest() {
+        ITokenizer tokenizer = createTokenizer();
+        boolean caught = false;
+        try {
+            tokenizer.tokenize("${ foo");
+            System.out.println("Failed to throw exception when not closing expression");
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+        assertTrue(caught);
+        caught = false;
+        try {
+            tokenizer.tokenize("${ abc <% abc %> }");
+            System.out.println("Failed to throw exception when opening statement within expression.");
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+        assertTrue(caught);
+        caught = false;
+        try {
+            tokenizer.tokenize("${ ${ } }");
+            System.out.println("Failed to throw exception when opening expression within expression.");
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+        assertTrue(caught);
+        caught = false;
+        try {
+            tokenizer.tokenize("${ Abc <%@ abc %> }");
+            System.out.println("Failed to throw exception when opening directive within expression");
+        } catch (RuntimeException e) {
+            caught = true;
+        }
+        assertTrue(caught);
     }
 
     @Test
@@ -149,6 +191,14 @@ abstract public class TokenizerTestBase {
 
     }
 
+    @Test
+    public void testEscape() {
+        ITokenizer tokenizer = createTokenizer();
+        tokenizer.tokenize("<%\"\\\"%>\"%>");
+        tokenizer.tokenize("${\"\\\"}\"}");
+        tokenizer.tokenize("<%@\"\\\"%>\"%>");
+    }
+
     /** Tests that ending files with various types of tokens doesn't create errors*/
     @Test
     public void endFileTest() {
@@ -182,7 +232,7 @@ abstract public class TokenizerTestBase {
     }
 
     @Test
-    public void testDirectiveErrors() {
+    public void directiveErrorTest() {
         ITokenizer tokenizer = createTokenizer();
         boolean caught = false;
         try {
@@ -217,6 +267,35 @@ abstract public class TokenizerTestBase {
         }
         assertTrue(caught);
     }
+
+    @Test
+    public void emptyTest() {
+        ITokenizer tokenizer = createTokenizer();
+        List<Token> tokens = tokenizer.tokenize("${}<%%><%@%>");
+        List<Token> tokensWhiteSpace = tokenizer.tokenize("${  }<%  %><%@    %>");
+
+        asssertTokenTypesAre(tokens, EXPRESSION, STATEMENT, DIRECTIVE);
+        for (int i = 0; i < tokens.size(); i += 1) {
+            assertEquals(tokens.get(i).getContent(), tokensWhiteSpace.get(i).getContent());
+            assertEquals(tokens.get(i).getType(), tokens.get(i).getType());
+        }
+    }
+
+    @Test
+    public void nullTest() {
+        ITokenizer tokenizer = createTokenizer();
+        List<Token> tokens = tokenizer.tokenize(null);
+        assertEquals(0, tokens.size());
+    }
+
+    @Test
+    public void blankStringTest() {
+        ITokenizer tokenizer = createTokenizer();
+        List<Token> tokens = tokenizer.tokenize("       ");
+        assertEquals("       ", tokens.get(0).getContent());
+        assertEquals(STRING_CONTENT, tokens.get(0).getType());
+    }
+
 
     private void asssertTokenTypesAre(List<Token> tokenize, TokenType... stringContent) {
         assertEquals(tokenize.size(), stringContent.length);
