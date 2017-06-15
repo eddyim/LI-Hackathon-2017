@@ -133,8 +133,8 @@ public class ETokenizer implements ITokenizer {
             throw new RuntimeException("Error: " + type + " beginning at col " + col + " and line " + line + "is not closed");
         }
 
-        private boolean checkIfTerminates(String[] terminateCondition) {
-            for (String cond: terminateCondition) {
+        private boolean checkIfTerminates(String[] terminateConditions) {
+            for (String cond: terminateConditions) {
                 boolean terminates = true;
                 for (int i = 0; i < cond.length(); i += 1) {
                     Character c = peekForward(i);
