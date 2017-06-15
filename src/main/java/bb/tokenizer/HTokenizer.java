@@ -224,58 +224,60 @@ public class HTokenizer implements ITokenizer {
     }
 
     private void advanceDirective(State state) {
-        try {
-            while (true) {
-                state.adjustLoc();
-                if (state.getPrev() == '%' && state.getCurr() == '>') {
-                    break;
-                } else if (state.tokenOpenerPresent()) {
-                    throw new RuntimeException("Cannot start a new token inside a Directive");
-                } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
-                    state.passQuotes();
-                } else {
-                    state.advance();
-                }
+        boolean finished = false;
+        while (state.hasCurr()) {
+            state.adjustLoc();
+            if (state.getPrev() == '%' && state.getCurr() == '>') {
+                finished = true;
+                break;
+            } else if (state.tokenOpenerPresent()) {
+                throw new RuntimeException("Cannot start a new token inside a Directive");
+            } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                state.passQuotes();
+            } else {
+                state.advance();
             }
-        } catch (IndexOutOfBoundsException e) {
+        } if (!finished) {
             throw new RuntimeException("File ended before closing Directive");
         }
     }
 
     private void advanceStatement(State state) {
-        try {
-            while (true) {
-                state.adjustLoc();
-                if (state.getPrev() == '%' && state.getCurr() == '>') {
-                    break;
-                } else if (state.tokenOpenerPresent()) {
-                    throw new RuntimeException("Cannot start a new token inside a Statement");
-                } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
-                    state.passQuotes();
-                } else {
-                    state.advance();
-                }
+        boolean finished = false;
+        while (state.hasCurr()) {
+            state.adjustLoc();
+            if (state.getPrev() == '%' && state.getCurr() == '>') {
+                finished = true;
+                break;
+            } else if (state.tokenOpenerPresent()) {
+                throw new RuntimeException("Cannot start a new token inside a Statement");
+            } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                state.passQuotes();
+            } else {
+                state.advance();
             }
-        } catch (IndexOutOfBoundsException e) {
+        }
+        if (!finished) {
             throw new RuntimeException("File ended before closing Statement");
         }
     }
 
     private void advanceExpression(State state) {
-        try {
-            while (true) {
-                state.adjustLoc();
-                if (state.getCurr() == '}') {
-                    break;
-                } else if (state.tokenOpenerPresent()) {
-                    throw new RuntimeException("Cannot start a new token inside an Expression");
-                } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
-                    state.passQuotes();
-                } else {
-                    state.advance();
-                }
+        boolean finished = false;
+        while (state.hasCurr()) {
+            state.adjustLoc();
+            if (state.getCurr() == '}') {
+                finished = true;
+                break;
+            } else if (state.tokenOpenerPresent()) {
+                throw new RuntimeException("Cannot start a new token inside an Expression");
+            } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                state.passQuotes();
+            } else {
+                state.advance();
             }
-        } catch (IndexOutOfBoundsException e) {
+        }
+        if (!finished) {
             throw new RuntimeException("File ended before closing Expression");
         }
     }
