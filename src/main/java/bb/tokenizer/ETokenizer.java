@@ -94,12 +94,13 @@ public class ETokenizer implements ITokenizer {
 
         private Token next(TokenType type, boolean quoteSensitive, int line, int col, int pos, String... terminateConditions) {
             int contentStartPos = index;
+            int length = tokenString.length();
             List<Character> termStart = new ArrayList<Character>();
             for (String s: terminateConditions) {
                 termStart.add(s.charAt(0));
             }
             int quoteState = 0;
-            while (index < tokenString.length()) {
+            while (index < length) {
                 char current = tokenString.charAt(index);
                 if (current == '"' && quoteSensitive) {
                     if (quoteState == 1 && peekBehind() != '\\') {
@@ -149,6 +150,7 @@ public class ETokenizer implements ITokenizer {
             return false;
         }
 
+
         private void checkIllegalOpenings() {
             if (tokenString.charAt(index) == '<' && peekForward() == '%') {
                 throw new RuntimeException("Attempted to open new statement within statement");
@@ -160,12 +162,13 @@ public class ETokenizer implements ITokenizer {
 
         /** Returns the correct token type to be parsed. */
         private TokenType getNextTokenType() {
-            String str = tokenString.substring(index);
-            if (str.indexOf("<%@") == 0) {
-                return DIRECTIVE;
-            } else if (str.indexOf("<%") == 0) {
+            Character next = peekForward();
+            if (tokenString.charAt(index) == '<' && next == '%') {
+                if (peekForward(2) != null && peekForward(2) == '@') {
+                    return DIRECTIVE;
+                }
                 return STATEMENT;
-            } else if (str.indexOf("${") == 0) {
+            } else if (tokenString.charAt(index) == '$' && next == '{') {
                 return EXPRESSION;
             } else {
                 return STRING_CONTENT;
@@ -231,7 +234,7 @@ public class ETokenizer implements ITokenizer {
         throw new RuntimeException("Error at line " + line + "and column " + column);
     }
 
-    /** Returns the correct token type to be parsed. */
+    /** Returns the correct token type to be parsed.
     private TokenType getNextTokenType(String str) {
         if (str.indexOf("<%@") == 0) {
             return DIRECTIVE;
