@@ -162,12 +162,127 @@ public class HTokenizer implements ITokenizer {
         return result;
     }
 
+    
+    private Token getStringContentToken(String str, State state) {
+        while (state.getPos() < state.chars.length) {
+            state.adjustLoc();
+            if (state.tokenOpenerPresent()) {
+                break;
+            }
+            state.advance();
+        }
+        return new Token(Token.TokenType.STRING_CONTENT, str.substring(state.getPosLastSEorD() + 1, state.getPos()),
+                state.getLineLastSEorD(), state.getColLastSEorD() + 1, state.getPosLastSEorD() + 1);
+    }
+
     //start with the pos st the < in <%@, end with it at the > in the %>
     private Token getDirectiveToken(String str, State state) {
         final int FRONT_LEN = 3;
         final int END_LEN = 2;
+        return makeToken(Token.TokenType.DIRECTIVE, FRONT_LEN, END_LEN, str, state);
+    }
+    //start with the pos st the < in <%, end with it at the > in the %>
+    private Token getStatementToken(String str, State state) {
+        final int FRONT_LEN = 2;
+        final int END_LEN = 2;
+        return makeToken(Token.TokenType.STATEMENT, FRONT_LEN, END_LEN, str, state);
+    }
+    //start with the pos at $ from the ${, end with it at the }
+    private Token getExprToken(String str, State state) {
+        final int FRONT_LEN = 2;
+        final int END_LEN = 1;
+        return makeToken(Token.TokenType.EXPRESSION, FRONT_LEN, END_LEN, str, state);
+    }
+
+
+    private Token makeToken(Token.TokenType type, int startLen, int endLen, String str, State state) {
         Location start = state.copyCurrLoc();
-        int end;
+        for (int i = 0; i < startLen; i++) {
+            state.advance();
+        }
+
+        switch (type) {
+            case DIRECTIVE:
+                advanceDirective(state);
+                break;
+            case STATEMENT:
+                advanceStatement(state);
+                break;
+            case EXPRESSION:
+                advanceExpression(state);
+                break;
+        }
+
+        state.endOfLastSEorD = state.copyCurrLoc();
+        state.advance();
+        return new Token(type, str.substring(start.pos + startLen, state.getPos() - endLen).trim(), start.line, start.col, start.pos);
+    }
+
+    private void advanceDirective(State state) {
+        try {
+            while (true) {
+                state.adjustLoc();
+                if (state.getPrev() == '%' && state.getCurr() == '>') {
+                    break;
+                } else if (state.tokenOpenerPresent()) {
+                    throw new RuntimeException("Cannot start a new token inside a Directive");
+                } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                    state.passQuotes();
+                } else {
+                    state.advance();
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new RuntimeException("File ended before closing Directive");
+        }
+    }
+
+    private void advanceStatement(State state) {
+        try {
+            while (true) {
+                state.adjustLoc();
+                if (state.getPrev() == '%' && state.getCurr() == '>') {
+                    break;
+                } else if (state.tokenOpenerPresent()) {
+                    throw new RuntimeException("Cannot start a new token inside a Statement");
+                } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                    state.passQuotes();
+                } else {
+                    state.advance();
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new RuntimeException("File ended before closing Statement");
+        }
+    }
+
+    private void advanceExpression(State state) {
+        try {
+            while (true) {
+                state.adjustLoc();
+                if (state.getCurr() == '}') {
+                    break;
+                } else if (state.tokenOpenerPresent()) {
+                    throw new RuntimeException("Cannot start a new token inside an Expression");
+                } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
+                    state.passQuotes();
+                } else {
+                    state.advance();
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new RuntimeException("File ended before closing Expression");
+        }
+    }
+
+
+
+/*
+        //start with the pos st the < in <%@, end with it at the > in the %>
+    private Token getDirectiveToken(String str, State state) {
+        final int FRONT_LEN = 3;
+        final int END_LEN = 2;
+        Location start = state.copyCurrLoc();
         for (int i = 0; i < FRONT_LEN; i++) {
             state.advance();
         }
@@ -176,7 +291,6 @@ public class HTokenizer implements ITokenizer {
             while (true) {
                 state.adjustLoc();
                 if (state.getPrev() == '%' && state.getCurr() == '>') {
-                    end = state.getPos();
                     break;
                 } else if (state.tokenOpenerPresent()) {
                     throw new RuntimeException("Cannot start a new token inside a Directive");
@@ -191,7 +305,7 @@ public class HTokenizer implements ITokenizer {
         }
         state.endOfLastSEorD = state.copyCurrLoc();
         state.advance();
-        return new Token(Token.TokenType.DIRECTIVE, str.substring(start.pos + FRONT_LEN, end - END_LEN + 1).trim(), start.line, start.col, start.pos);
+        return new Token(Token.TokenType.DIRECTIVE, str.substring(start.pos + FRONT_LEN, state.getPos() - END_LEN).trim(), start.line, start.col, start.pos);
     }
 
     //start with the pos st the < in <%, end with it at the > in the %>
@@ -199,7 +313,6 @@ public class HTokenizer implements ITokenizer {
         final int FRONT_LEN = 2;
         final int END_LEN = 2;
         Location start = state.copyCurrLoc();
-        int end;
         for (int i = 0; i < FRONT_LEN; i++) {
             state.advance();
         }
@@ -208,7 +321,6 @@ public class HTokenizer implements ITokenizer {
             while (true) {
                 state.adjustLoc();
                 if (state.getPrev() == '%' && state.getCurr() == '>') {
-                    end = state.getPos();
                     break;
                 } else if (state.tokenOpenerPresent()) {
                     throw new RuntimeException("Cannot start a new token inside a Statement");
@@ -223,7 +335,7 @@ public class HTokenizer implements ITokenizer {
         }
         state.endOfLastSEorD = state.copyCurrLoc();
         state.advance();
-        return new Token(Token.TokenType.STATEMENT, str.substring(start.pos + FRONT_LEN, end - END_LEN + 1).trim(), start.line, start.col, start.pos);
+        return new Token(Token.TokenType.STATEMENT, str.substring(start.pos + FRONT_LEN, state.getPos() - END_LEN).trim(), start.line, start.col, start.pos);
     }
 
     //start with the pos at $ from the ${, end with it at the }
@@ -231,7 +343,6 @@ public class HTokenizer implements ITokenizer {
         final int FRONT_LEN = 2;
         final int END_LEN = 1;
         Location start = state.copyCurrLoc();
-        int end;
         for (int i = 0; i < FRONT_LEN; i++) {
             state.advance();
         }
@@ -240,7 +351,6 @@ public class HTokenizer implements ITokenizer {
             while (true) {
                 state.adjustLoc();
                 if (state.getCurr() == '}') {
-                    end = state.getPos();
                     break;
                 } else if (state.tokenOpenerPresent()) {
                     throw new RuntimeException("Cannot start a new token inside an Expression");
@@ -255,21 +365,9 @@ public class HTokenizer implements ITokenizer {
         }
         state.endOfLastSEorD = state.copyCurrLoc();
         state.advance();
-        return new Token(Token.TokenType.EXPRESSION, str.substring(start.pos + FRONT_LEN, end - END_LEN + 1).trim(), start.line, start.col, start.pos);
+        return new Token(Token.TokenType.EXPRESSION, str.substring(start.pos + FRONT_LEN, state.getPos() - END_LEN).trim(), start.line, start.col, start.pos);
     }
 
-    private Token getStringContentToken(String str, State state) {
-        int end;
-        while (state.getPos() < state.chars.length) {
-            state.adjustLoc();
-            if (state.tokenOpenerPresent()) {
-                break;
-            }
-            state.advance();
-        }
-        end = state.getPos() - 1;
-        return new Token(Token.TokenType.STRING_CONTENT, str.substring(state.getPosLastSEorD() + 1, end + 1),
-                state.getLineLastSEorD(), state.getColLastSEorD() + 1, state.getPosLastSEorD() + 1);
-    }
+    */
 
 }
