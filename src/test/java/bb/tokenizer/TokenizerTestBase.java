@@ -191,6 +191,9 @@ abstract public class TokenizerTestBase {
 
     }
 
+    /** Tests that within string literals in statements, expressions
+     * and directives, \" is recognized as an escape character.
+     */
     @Test
     public void testEscape() {
         ITokenizer tokenizer = createTokenizer();
@@ -199,13 +202,14 @@ abstract public class TokenizerTestBase {
         tokenizer.tokenize("<%@\"\\\"%>\"%>");
     }
 
-    /** Tests that ending files with various types of tokens doesn't create errors*/
+    /** Tests that ending files with various types of tokens doesn't create errors */
     @Test
     public void endFileTest() {
         ITokenizer tokenizer = createTokenizer();
         tokenizer.tokenize("HELLO");
         tokenizer.tokenize("${ else }");
         tokenizer.tokenize("<% foo bar %>");
+        tokenizer.tokenize("<%@ foo bar %>");
     }
 
     @Test
