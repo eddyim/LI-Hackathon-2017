@@ -24,13 +24,13 @@ public class HTokenizer implements ITokenizer {
     }
 
     private class State {
-        char[] chars;
+        String str;
         Location curr = new Location();
         Location endOfLastSEorD = new Location(1, 0, -1);
         int lastLineLen;
 
-        State(char[] chars) {
-            this.chars = chars;
+        State(String str) {
+            this.str = str;
         }
 
         int getPos() {
@@ -38,16 +38,16 @@ public class HTokenizer implements ITokenizer {
         }
 
         char getCurr() {
-            return chars[curr.pos];
+            return str.charAt(curr.pos);
         }
         char getNext() {
-            return chars[curr.pos + 1];
+            return str.charAt(curr.pos + 1);
         }
         char getNextNext() {
-            return chars[curr.pos + 2];
+            return str.charAt(curr.pos + 2);
         }
         char getPrev() {
-            return chars[curr.pos - 1];
+            return str.charAt(curr.pos - 1);
         }
 
         int getPosLastSEorD() {
@@ -60,11 +60,14 @@ public class HTokenizer implements ITokenizer {
             return endOfLastSEorD.line;
         }
 
+        boolean hasCurr() {
+            return (curr.pos < str.length());
+        }
         boolean hasNext() {
-            return (curr.pos + 1 < chars.length);
+            return (curr.pos + 1 < str.length());
         }
         boolean hasNextNext() {
-            return (curr.pos + 2 < chars.length);
+            return (curr.pos + 2 < str.length());
         }
 
         void advance() {
@@ -81,14 +84,13 @@ public class HTokenizer implements ITokenizer {
         }
 
         void adjustLoc() {
-            if (Character.isWhitespace(this.getCurr())) {
+            if (this.hasCurr() && Character.isWhitespace(this.getCurr())) {
                 if (this.getCurr() == '\n') {
                     lastLineLen = curr.col + 1;
                     curr.line++;
                     curr.col = 0;
                 }
                 this.advance();
-                adjustLoc();
             }
         }
         Location copyCurrLoc() {
@@ -134,68 +136,71 @@ public class HTokenizer implements ITokenizer {
 
     public List<Token> tokenize(String str) {
         ArrayList<Token> result = new ArrayList<Token>();
-        State state = new State(str.toCharArray());
+        if (str == null) {
+            return result;
+        }
+        State state = new State(str);
 
-        while (state.getPos() < state.chars.length) {
+        while (state.hasCurr()) {
             state.adjustLoc();
             if (state.getCurr() == '<') {
                 if (state.hasNext() && state.getNext() == '%') { //is a statement or directive
                     //@TODO: if there is no nextnext it is a(n incomplete) statement
                     if (state.hasNextNext() && state.getNextNext() == '@') {
-                        result.add(getDirectiveToken(str, state));
+                        result.add(getDirectiveToken(state));
                     } else {
-                        result.add(getStatementToken(str, state));
+                        result.add(getStatementToken(state));
                     }
                 } else {
-                    result.add(getStringContentToken(str, state));
+                    result.add(getStringContentToken(state));
                 }
             } else if (state.getCurr() == '$') {
                 if (state.hasNext() && state.getNext() == '{') {  //is an expression
-                    result.add(getExprToken(str, state));
+                    result.add(getExprToken(state));
                 } else {
-                    result.add(getStringContentToken(str, state));
+                    result.add(getStringContentToken(state));
                 }
             } else {  //is a string statement
-                result.add(getStringContentToken(str, state));
+                result.add(getStringContentToken(state));
             }
         }
         return result;
     }
 
-    
-    private Token getStringContentToken(String str, State state) {
-        while (state.getPos() < state.chars.length) {
+
+    private Token getStringContentToken(State state) {
+        while (state.hasCurr()) {
             state.adjustLoc();
             if (state.tokenOpenerPresent()) {
                 break;
             }
             state.advance();
         }
-        return new Token(Token.TokenType.STRING_CONTENT, str.substring(state.getPosLastSEorD() + 1, state.getPos()),
+        return new Token(Token.TokenType.STRING_CONTENT, state.str.substring(state.getPosLastSEorD() + 1, state.getPos()),
                 state.getLineLastSEorD(), state.getColLastSEorD() + 1, state.getPosLastSEorD() + 1);
     }
 
     //start with the pos st the < in <%@, end with it at the > in the %>
-    private Token getDirectiveToken(String str, State state) {
+    private Token getDirectiveToken(State state) {
         final int FRONT_LEN = 3;
         final int END_LEN = 2;
-        return makeToken(Token.TokenType.DIRECTIVE, FRONT_LEN, END_LEN, str, state);
+        return makeToken(Token.TokenType.DIRECTIVE, FRONT_LEN, END_LEN, state);
     }
     //start with the pos st the < in <%, end with it at the > in the %>
-    private Token getStatementToken(String str, State state) {
+    private Token getStatementToken(State state) {
         final int FRONT_LEN = 2;
         final int END_LEN = 2;
-        return makeToken(Token.TokenType.STATEMENT, FRONT_LEN, END_LEN, str, state);
+        return makeToken(Token.TokenType.STATEMENT, FRONT_LEN, END_LEN, state);
     }
     //start with the pos at $ from the ${, end with it at the }
-    private Token getExprToken(String str, State state) {
+    private Token getExprToken(State state) {
         final int FRONT_LEN = 2;
         final int END_LEN = 1;
-        return makeToken(Token.TokenType.EXPRESSION, FRONT_LEN, END_LEN, str, state);
+        return makeToken(Token.TokenType.EXPRESSION, FRONT_LEN, END_LEN, state);
     }
 
 
-    private Token makeToken(Token.TokenType type, int startLen, int endLen, String str, State state) {
+    private Token makeToken(Token.TokenType type, int startLen, int endLen, State state) {
         Location start = state.copyCurrLoc();
         for (int i = 0; i < startLen; i++) {
             state.advance();
@@ -215,7 +220,7 @@ public class HTokenizer implements ITokenizer {
 
         state.endOfLastSEorD = state.copyCurrLoc();
         state.advance();
-        return new Token(type, str.substring(start.pos + startLen, state.getPos() - endLen).trim(), start.line, start.col, start.pos);
+        return new Token(type, state.str.substring(start.pos + startLen, state.getPos() - endLen).trim(), start.line, start.col, start.pos);
     }
 
     private void advanceDirective(State state) {
