@@ -82,7 +82,7 @@ public class ETokenizer implements ITokenizer {
                 advancePosition();
                 advancePosition();
             } else {
-                throw new RuntimeException("Error at line " + line + "and column " + column);
+                throw new RuntimeException("Error at line " + line + "and column " + col);
             }
             return toReturn;
         }
@@ -183,13 +183,14 @@ public class ETokenizer implements ITokenizer {
         }
 
     }
-    private int line, column, position;
+
+    /*private int line, column, position;
 
     ETokenizer() {
         line = 1;
         column = 1;
         position = 0;
-    }
+    }*/
 
 
     public List<Token> tokenize(String str) {
@@ -214,9 +215,8 @@ public class ETokenizer implements ITokenizer {
         position = 0;
         return tokens;
     }
-*/
 
-    /** Creates the next token from the given String, and adds it to tokens. */
+    /** Creates the next token from the given String, and adds it to tokens.
     private String addNextToken(String str, ArrayList<Token> tokens) {
         TokenType nextToken = getNextTokenType(str);
         if (nextToken == STRING_CONTENT) {
@@ -247,7 +247,7 @@ public class ETokenizer implements ITokenizer {
     /** Helper method: Given that the next token to add is a STRING_CONTENT,
      *  correctly processes the token, adds it to tokens, and returns a string
      *  with the token removed.
-     *  */
+     *
     private String addStringContent(String str, ArrayList<Token> tokens) {
         int index = 0;
         int tokenStartCol = column;
@@ -278,7 +278,7 @@ public class ETokenizer implements ITokenizer {
 
     /** Helper method: Given that the next token to add is a STATEMENT,
      *  correctly processes the token, adds it to tokens, and returns a string
-     *  with the token removed.*/
+     *  with the token removed.
     private String addStatement(String str, ArrayList<Token> tokens) {
         int index = 0;
         int tokenStartCol = column;
@@ -323,7 +323,7 @@ public class ETokenizer implements ITokenizer {
     /** Helper method: Given that the next token to add is an EXPRESSION,
      *  correctly processes the token, adds it to tokens, and returns a string
      *  with the token removed.
-     *  */
+     *
     private String addExpression(String str, ArrayList<Token> tokens) {
         int index = 0;
         int tokenStartCol = column;
@@ -415,5 +415,5 @@ public class ETokenizer implements ITokenizer {
         }
         position += 1;
         column += 1;
-    }
+    }*/
 }
