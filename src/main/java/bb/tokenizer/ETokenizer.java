@@ -10,7 +10,7 @@ import bb.tokenizer.Token.TokenType;
 import static bb.tokenizer.Token.TokenType.*;
 
 public class ETokenizer implements ITokenizer {
-    class TokenBuilder implements Iterator<Token> {
+    static class TokenBuilder implements Iterator<Token> {
         String tokenString;
         int line, col;
         int index;

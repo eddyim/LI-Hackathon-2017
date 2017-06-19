@@ -308,4 +308,12 @@ abstract public class TokenizerTestBase {
             assertEquals(stringContent[i], token.getType());
         }
     }
+
+    private void assertTokenContentsAre(List<Token> tokenize, String... stringContent) {
+        assertEquals(tokenize.size(), stringContent.length);
+        for (int i = 0; i < tokenize.size(); i++) {
+            Token token = tokenize.get(i);
+            assertEquals(stringContent[i], token.getContent());
+        }
+    }
 }
