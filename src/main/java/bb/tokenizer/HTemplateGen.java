@@ -1,13 +1,21 @@
 package bb.tokenizer;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiPredicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static bb.tokenizer.Token.TokenType.DIRECTIVE;
+import static bb.tokenizer.Token.TokenType.EXPRESSION;
+import static bb.tokenizer.Token.TokenType.STATEMENT;
 
 
 public class HTemplateGen {
@@ -16,6 +24,100 @@ public class HTemplateGen {
             String regexStr = ".*\\.bb\\..*";
             return path.toString().matches(regexStr);
         }
+    }
+
+    private static class Name {
+        String inputDir;
+        String outputDir;
+        String fileName;
+        String relativePath;
+        String javaWholePath;
+
+
+        Name(String inputDir, String outputDir, Path bbFile) {
+
+            this.inputDir = inputDir;
+            this.outputDir = outputDir;
+
+            fileName = bbFile.toFile().getName().split("\\.bb\\.")[0];
+//            String regexString = ".*" + fileName;
+//            Pattern pat = Pattern.compile(regexString);
+//            Matcher mat = pat.matcher(bbFile.toString());
+//            mat.find();
+//            String withoutFileType = mat.group(0);
+            String withoutFileType = bbFile.toString().split(fileName + "\\.bb\\.")[0];
+            //@TODO: \bb\hgen is temporary
+            relativePath = "bb\\hgen" + withoutFileType.substring(inputDir.length(), withoutFileType.length() - 1);
+            javaWholePath = outputDir  + "\\" + relativePath + "\\" + fileName + ".java";
+
+        }
+
+    }
+
+//    //@TODO: \bb\hgen is temporary
+//    private static String getNewFileName(String inputDir, String outputDir, String bbFileLoc) {
+//        String regexString = "(.*\\.bb\\.)";
+//        Pattern pat = Pattern.compile(regexString);
+//        Matcher mat = pat.matcher(bbFileLoc);
+//        mat.find();
+//        String withoutFileType = mat.group(0);
+//        String extra = withoutFileType.substring(inputDir.length(), withoutFileType.length() - 4);
+//        return outputDir + "\\bb\\hgen" + extra + ".java";
+//    }
+
+    private static String makeJavaContent(Name name, String bbContent) {
+        StringBuilder jf = new StringBuilder();
+
+        //@TODO: can tokenize be static??
+        HTokenizer tokenizer = new HTokenizer();
+        List<Token> tokens = tokenizer.tokenize(bbContent);
+        jf.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
+        jf.append("import java.io.IOException;\n\n");
+        jf.append("public class " + name.fileName + " {\n");
+        jf.append("\n" +
+                "    public static String render() {\n" +
+                "        StringBuilder sb = new StringBuilder();\n" +
+                "        renderInto(sb);\n" +
+                "        return sb.toString();\n" +
+                "    }\n\n");
+
+
+
+        jf.append("    public static void renderInto(Appendable buffer) {\n" +
+                "        try {\n");
+
+        for (Token token : tokens) {
+            switch (token.getType()) {
+                case STRING_CONTENT:
+                    String then = token.getContent();
+                    String next = "            buffer.append(\"" + then.replaceAll("\r\n", "\\\\n") + "\");\n";
+                    jf.append(next);
+                    break;
+                case DIRECTIVE:
+                    jf.append("            buffer.append(toS(" + token.getContent() + "));\n");
+                    break;
+                case STATEMENT:
+                    jf.append("            buffer.append(toS(" + token.getContent() + "));\n");
+                    break;
+                case EXPRESSION:
+                    jf.append("            buffer.append(toS(" + token.getContent() + "));\n");
+                    break;
+            }
+        }
+
+        jf.append("        } catch (IOException e) {\n" +
+                "            throw new RuntimeException(e);\n" +
+                "        }\n" +
+                "    }\n");
+
+
+
+        jf.append("\n" +
+                "    private static String toS(Object o) {\n" +
+                "        return o == null ? \"\" : o.toString();\n" +
+                "    }\n" +
+                "}");
+        return jf.toString();
     }
 
 
@@ -28,11 +130,9 @@ public class HTemplateGen {
         try {//@TODO: there is a max depth, which is problematic, actual sol can't be hacky like this...
             Object[] filesToConvert = Files.find(root, 100,  new fileTypeChecker()).toArray();
              for (Object p : filesToConvert){
-                 System.out.println(p.toString());
+                 Name name = new Name(inputDir, outputDir, (Path) p);
 
-                 String extra = p.toString().substring(inputDir.length());
-                 File writeTo = new File(outputDir + "\\bb\\hgen" + extra + ".java");
-                 System.out.println(outputDir + "\\bb\\hgen" + extra + ".java");
+                 File writeTo = new File(name.javaWholePath);
                  if (!writeTo.getParentFile().exists()) {
                      writeTo.getParentFile().mkdirs();
                  }
@@ -42,31 +142,29 @@ public class HTemplateGen {
                      System.out.println("File already exists.");
                  }
 
+                 //String content = new String(Files.readAllBytes(Paths.get(p.toString())));
+                 String content = makeJavaContent(name, new String(Files.readAllBytes(Paths.get(p.toString()))));
                  FileWriter fw = null;
                  BufferedWriter bw = null;
 
                  try {
-                     String content = "This is the content to write into file\n";
-
                      fw = new FileWriter(writeTo);
                      bw = new BufferedWriter(fw);
                      bw.write(content);
-
                  } catch (IOException e) {
                      e.printStackTrace();
+                 } finally {
+                     try {
+                         if (bw != null) {
+                             bw.close();
+                         }
+                         if (fw != null) {
+                             fw.close();
+                         }
+                     } catch (IOException e) {
+                         e.printStackTrace();
+                     }
                  }
-//               finally {
-//                     try {
-//                         if (fw != null) {
-//                             fw.close();
-//                         }
-//                         if (bw != null) {
-//                             bw.close();
-//                         }
-//                     } catch (IOException e) {
-//                         e.printStackTrace();
-//                     }
-//                 }
 
 //                 if (!writeTo.getParentFile().exists()) {
 //                    writeTo.getParentFile().mkdirs();
