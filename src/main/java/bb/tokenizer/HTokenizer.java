@@ -148,6 +148,8 @@ public class HTokenizer implements ITokenizer {
                     //@TODO: if there is no nextnext it is a(n incomplete) statement
                     if (state.hasNextNext() && state.getNextNext() == '@') {
                         result.add(getDirectiveToken(state));
+                    } else if (state.hasNextNext() && state.getNextNext() == '=') {
+                        result.add(getExprToken(state, 1));
                     } else {
                         result.add(getStatementToken(state));
                     }
@@ -156,7 +158,7 @@ public class HTokenizer implements ITokenizer {
                 }
             } else if (state.getCurr() == '$') {
                 if (state.hasNext() && state.getNext() == '{') {  //is an expression
-                    result.add(getExprToken(state));
+                    result.add(getExprToken(state, 0));
                 } else {
                     result.add(getStringContentToken(state));
                 }
@@ -193,8 +195,8 @@ public class HTokenizer implements ITokenizer {
         return makeToken(Token.TokenType.STATEMENT, FRONT_LEN, END_LEN, state);
     }
     //start with the pos at $ from the ${, end with it at the }
-    private Token getExprToken(State state) {
-        final int FRONT_LEN = 2;
+    private Token getExprToken(State state, int additionalFrontLen) {
+        final int FRONT_LEN = 2 + additionalFrontLen;
         final int END_LEN = 1;
         return makeToken(Token.TokenType.EXPRESSION, FRONT_LEN, END_LEN, state);
     }
@@ -214,7 +216,7 @@ public class HTokenizer implements ITokenizer {
                 advanceStatement(state);
                 break;
             case EXPRESSION:
-                advanceExpression(state);
+                advanceExpression(state, startLen);
                 break;
         }
 
@@ -262,11 +264,12 @@ public class HTokenizer implements ITokenizer {
         }
     }
 
-    private void advanceExpression(State state) {
+    private void advanceExpression(State state, int startLen) {
         boolean finished = false;
         while (state.hasCurr()) {
             state.adjustLoc();
-            if (state.getCurr() == '}') {
+            if ((startLen == 2 && state.getCurr() == '}')
+                    || (startLen == 3 && state.getPrev() == '%' && state.getCurr() == '>')) {
                 finished = true;
                 break;
             } else if (state.tokenOpenerPresent()) {
