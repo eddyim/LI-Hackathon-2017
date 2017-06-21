@@ -108,7 +108,7 @@ public class ETokenizer implements ITokenizer {
                     } else if (quoteState == 0) {
                         quoteState = 1;
                     }
-                } else if (current == '\'') {
+                } else if (current == '\'' && quoteSensitive) {
                     if (quoteState == 2 && peekBehind() != '\\') {
                         quoteState = 0;
                     } else if (quoteState == 0) {
