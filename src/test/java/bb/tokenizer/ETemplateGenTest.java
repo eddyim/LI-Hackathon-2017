@@ -21,7 +21,7 @@ public class ETemplateGenTest {
     @Test
     public void testStatementStrings() {
         ITokenizer tokenizer = new ETokenizer();
-        Token myToken = tokenizer.tokenize("<% \"%>\n\" %>").get(0);
+        Token myToken = tokenizer.tokenize("<% String hello = \"hello carson\" %>").get(0);
         String test1 = ETemplateGen.getNextToken(myToken);
         System.out.println(test1);
     }
