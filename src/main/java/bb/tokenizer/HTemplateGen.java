@@ -90,14 +90,14 @@ public class HTemplateGen {
             switch (token.getType()) {
                 case STRING_CONTENT:
                     String then = token.getContent();
-                    String next = "            buffer.append(\"" + then.replaceAll("\r\n", "\\\\n") + "\");\n";
+                    String next = "            buffer.append(\"" + then.replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n";
                     jf.append(next);
                     break;
                 case DIRECTIVE:
                     jf.append("            buffer.append(toS(" + token.getContent() + "));\n");
                     break;
                 case STATEMENT:
-                    jf.append("            buffer.append(toS(" + token.getContent() + "));\n");
+                    jf.append("            " + token.getContent() + "\n");
                     break;
                 case EXPRESSION:
                     jf.append("            buffer.append(toS(" + token.getContent() + "));\n");
@@ -128,7 +128,7 @@ public class HTemplateGen {
         Path root = Paths.get(inputDir);
 
         try {//@TODO: there is a max depth, which is problematic, actual sol can't be hacky like this...
-            Object[] filesToConvert = Files.find(root, 100,  new fileTypeChecker()).toArray();
+            Object[] filesToConvert = Files.find(root, 1000,  new fileTypeChecker()).toArray();
              for (Object p : filesToConvert){
                  Name name = new Name(inputDir, outputDir, (Path) p);
 
