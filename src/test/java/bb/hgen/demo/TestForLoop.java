@@ -1,8 +1,7 @@
 package bb.hgen.demo;
 
-import org.junit.Test;
-
 import java.io.IOException;
+
 
 public class TestForLoop {
 
@@ -31,10 +30,4 @@ public class TestForLoop {
     private static String toS(Object o) {
         return o == null ? "" : o.toString();
     }
-
-    @Test
-    public void tester() {
-        System.out.print(render());
-    }
-
 }

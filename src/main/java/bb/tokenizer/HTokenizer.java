@@ -135,7 +135,7 @@ public class HTokenizer implements ITokenizer {
 
 
     public List<Token> tokenize(String str) {
-        ArrayList<Token> result = new ArrayList<Token>();
+        List<Token> result = new ArrayList<Token>();
         if (str == null) {
             return result;
         }

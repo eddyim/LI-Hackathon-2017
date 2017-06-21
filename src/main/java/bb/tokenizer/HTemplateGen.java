@@ -1,7 +1,7 @@
 package bb.tokenizer;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,10 +12,6 @@ import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import static bb.tokenizer.Token.TokenType.DIRECTIVE;
-import static bb.tokenizer.Token.TokenType.EXPRESSION;
-import static bb.tokenizer.Token.TokenType.STATEMENT;
 
 
 public class HTemplateGen {
@@ -66,15 +62,17 @@ public class HTemplateGen {
 //    }
 
     private static String makeJavaContent(Name name, String bbContent) {
-        StringBuilder jf = new StringBuilder();
+        StringBuilder header = new StringBuilder();
+        StringBuilder rest = new StringBuilder();
+        String superClass = null;
 
         //@TODO: can tokenize be static??
         HTokenizer tokenizer = new HTokenizer();
         List<Token> tokens = tokenizer.tokenize(bbContent);
-        jf.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
-        jf.append("import java.io.IOException;\n\n");
-        jf.append("public class " + name.fileName + " {\n");
-        jf.append("\n" +
+        header.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
+        header.append("import java.io.IOException;\n\n");
+
+        rest.append("\n" +
                 "    public static String render() {\n" +
                 "        StringBuilder sb = new StringBuilder();\n" +
                 "        renderInto(sb);\n" +
@@ -82,42 +80,54 @@ public class HTemplateGen {
                 "    }\n\n");
 
 
-
-        jf.append("    public static void renderInto(Appendable buffer) {\n" +
+        rest.append("    public static void renderInto(Appendable buffer) {\n" +
                 "        try {\n");
 
         for (Token token : tokens) {
             switch (token.getType()) {
                 case STRING_CONTENT:
-                    String then = token.getContent();
-                    String next = "            buffer.append(\"" + then.replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n";
-                    jf.append(next);
-                    break;
-                case DIRECTIVE:
-                    jf.append("            buffer.append(toS(" + token.getContent() + "));\n");
+                    rest.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n");
                     break;
                 case STATEMENT:
-                    jf.append("            " + token.getContent() + "\n");
+                    rest.append("            " + token.getContent() + "\n");
                     break;
                 case EXPRESSION:
-                    jf.append("            buffer.append(toS(" + token.getContent() + "));\n");
+                    rest.append("            buffer.append(toS(" + token.getContent() + "));\n");
+                    break;
+                case DIRECTIVE:
+                    if (token.getContent().matches("import .*")) {
+                        header.append(token.getContent() + ";\n");
+                    } else if (token.getContent().matches("extends .*")) {
+                        if (superClass == null) {
+                            superClass = token.getContent();
+                        } else {
+                            throw new RuntimeException("Cannot extend 2 classes:" + superClass + " and " + token.getContent());
+                        }
+                    } else {
+                        throw new RuntimeException("Unsupported Directive on line" + token.getLine() + ":" + token.getContent());
+                    }
                     break;
             }
         }
 
-        jf.append("        } catch (IOException e) {\n" +
+        rest.append("        } catch (IOException e) {\n" +
                 "            throw new RuntimeException(e);\n" +
                 "        }\n" +
                 "    }\n");
 
+        if (superClass == null) {
+            header.append("\npublic class " + name.fileName + " {\n");
+        } else {
+            header.append("\npublic class " + name.fileName + " " + superClass + " {\n");
+        }
 
-
-        jf.append("\n" +
+        rest.append("\n" +
                 "    private static String toS(Object o) {\n" +
                 "        return o == null ? \"\" : o.toString();\n" +
                 "    }\n" +
                 "}");
-        return jf.toString();
+
+        return header.append(rest).toString();
     }
 
 
@@ -128,7 +138,7 @@ public class HTemplateGen {
         Path root = Paths.get(inputDir);
 
         try {//@TODO: there is a max depth, which is problematic, actual sol can't be hacky like this...
-            Object[] filesToConvert = Files.find(root, 1000,  new fileTypeChecker()).toArray();
+            Object[] filesToConvert = Files.find(root, Integer.MAX_VALUE,  new fileTypeChecker()).toArray();
              for (Object p : filesToConvert){
                  Name name = new Name(inputDir, outputDir, (Path) p);
 

@@ -2,8 +2,9 @@ package bb.hgen.demo;
 
 import java.io.IOException;
 
+import java.util.*;
 
-public class Bootstrap {
+public class DirectivesTest extends Object {
 
     public static String render() {
         StringBuilder sb = new StringBuilder();
@@ -13,9 +14,13 @@ public class Bootstrap {
 
     public static void renderInto(Appendable buffer) {
         try {
-            buffer.append("<html>\n<body>\n<h1>This is a demo template</h1>\n<p>1 + 1 = ");
-            buffer.append(toS(1 + 1));
-            buffer.append("</p>\n</body>\n</html>");
+            buffer.append("\n<HTML>\n<BODY>\n");
+            System.out.println( "Evaluating date now" );
+Date date = new Date();
+            buffer.append("\nHello!  The time is now ");
+            buffer.append(toS(date));
+            buffer.append("\n");
+            buffer.append("\n</BODY>\n</HTML>");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
