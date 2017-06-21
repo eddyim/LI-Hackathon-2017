@@ -1,7 +1,5 @@
 package bb.tokenizer;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class ETemplateGen {
@@ -11,10 +9,6 @@ public class ETemplateGen {
     public static void main(String[] args) {
         String inputDir = args[0];
         String outputDir = args[1] + additionalDirectory; //TODO: REMOVE THIS AFTER DONE, THIS IS TO ENSURE TESTING WORKS
-        //TODO: scan input dir for all files with .bb.* ending and generate
-        // a corresponding java file to the given output dir, preserving the package
-        // relative to the input dir root, with a .render() static function that
-        // renders the template
         ITokenizer tokenizer = new ETokenizer();
         Map<File, String> files = new HashMap<File, String>();
         File startDirectory = new File(inputDir);
@@ -30,15 +24,26 @@ public class ETemplateGen {
                 s.append(getToSMethod());
                 s.append(getRenderIntoMethod(tokens));
                 s.append("}");
-                System.out.println(s.toString());
-            } catch (FileNotFoundException e) {
+                File toWrite = new File(parseOutputFile(f, outputDir, relPath));
+                File directory = new File(outputDir + relPath);
+                if (!directory.exists()) {
+                    directory.mkdirs();
+                }
+                BufferedWriter bw = new BufferedWriter(new FileWriter(toWrite.getAbsoluteFile()));
+                bw.write(s.toString());
+                bw.close();
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
     static String parseOutputFile(File f, String outputDir, String relativePath) {
-        return outputDir + relativePath + "/" + getFileName(f);
+        String path = outputDir + relativePath + "/" + getFileName(f);
+        while (path.charAt(0) == '.' || path.charAt(0) == '/') {
+            path = path.substring(1);
+        }
+        return path;
     }
 
     static String getFileName(File f) {
@@ -73,15 +78,20 @@ public class ETemplateGen {
         return bufferCallBeginning + "\"" + content + "\");\n";
     }
 
-    static String getOthers(Token t) {
-        return bufferCallBeginning + "toS(" + t.getContent() + "));\n";
+    static String getOtherTokens(Token t) {
+        String content = t.getContent();
+        content = content.replaceAll("\r", "");
+        content = content.replaceAll("\n", "\\\\n");
+        return bufferCallBeginning + "toS(" + content + "));\n";
     }
 
     static String getIntro(String fileName, String filePath) {
         String s = "";
         s = s + getPackageStatement(filePath) + "\n";
-        String classStatement = "public class " + fileName.replace(".java", "") + " {";
+        s = s + "import java.io.IOException;\n";
+        String classStatement = "public class " + fileName.replace(".java", "") + " {\n";
         s = s + classStatement;
+
         return s;
     }
 
@@ -98,15 +108,15 @@ public class ETemplateGen {
         return "package " + fullPath + ";";
     }
 
-    static String getRenderMethod() {
-        return "public static String render() {\n" +
+    private static String getRenderMethod() {
+        return "    public static String render() {\n" +
                 "        StringBuilder sb = new StringBuilder();\n" +
                 "        renderInto(sb);\n" +
                 "        return sb.toString();\n" +
                 "    }\n\n";
     }
 
-    static String getToSMethod() {
+    private static String getToSMethod() {
         return "    private static String toS(Object o) {\n" +
                 "        return o == null ? \"\" : o.toString();\n" +
                 "    }\n\n";
@@ -117,11 +127,11 @@ public class ETemplateGen {
             return getString(t);
         }
         else {
-            return getOthers(t);
+            return getOtherTokens(t);
         }
     }
-    static String getRenderIntoMethod(List<Token> tokens) {
-        String toReturn = "public static void renderInto(Appendable buffer) {\n" +
+    private static String getRenderIntoMethod(List<Token> tokens) {
+        String toReturn = "    public static void renderInto(Appendable buffer) {\n" +
                 "        try {\n";
         for (Token t: tokens) {
             toReturn = toReturn + getNextToken(t);
