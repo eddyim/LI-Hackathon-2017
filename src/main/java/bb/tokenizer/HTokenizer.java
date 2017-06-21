@@ -195,9 +195,9 @@ public class HTokenizer implements ITokenizer {
         return makeToken(Token.TokenType.STATEMENT, FRONT_LEN, END_LEN, state);
     }
     //start with the pos at $ from the ${, end with it at the }
-    private Token getExprToken(State state, int additionalFrontLen) {
-        final int FRONT_LEN = 2 + additionalFrontLen;
-        final int END_LEN = 1;
+    private Token getExprToken(State state, int additionalLen) {
+        final int FRONT_LEN = 2 + additionalLen;
+        final int END_LEN = 1 + additionalLen;
         return makeToken(Token.TokenType.EXPRESSION, FRONT_LEN, END_LEN, state);
     }
 
