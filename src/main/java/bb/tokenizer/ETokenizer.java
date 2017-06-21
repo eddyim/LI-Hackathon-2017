@@ -63,24 +63,24 @@ public class ETokenizer implements ITokenizer {
             if (nextType == STRING_CONTENT) {
                 toReturn = next(nextType, false, line, col, pos,"<%", "${");
             } else if (nextType == STATEMENT) {
-                advancePosition();
-                advancePosition();
+                advancePosition(2);
                 toReturn = next(nextType, true, line, col, pos,"%>");
-                advancePosition();
-                advancePosition();
+                advancePosition(2);
             } else if (nextType == EXPRESSION) {
-                advancePosition();
-                advancePosition();
-                toReturn = next(nextType, true, line, col, pos,"}");
-                advancePosition();
+                if (isModernExpressionSyntax()) {
+                    advancePosition(2);
+                    toReturn = next(nextType, true, line, col, pos, "}");
+                    advancePosition();
+                } else {
+                    advancePosition(3);
+                    toReturn = next(nextType, true, line, col, pos, "%>");
+                    advancePosition(2);
+                }
 
             } else if (nextType == DIRECTIVE) {
-                advancePosition();
-                advancePosition();
-                advancePosition();
+                advancePosition(3);
                 toReturn = next(nextType, true, line, col, pos,"%>");
-                advancePosition();
-                advancePosition();
+                advancePosition(2);
             } else {
                 throw new RuntimeException("Error at line " + line + "and column " + col);
             }
@@ -134,6 +134,13 @@ public class ETokenizer implements ITokenizer {
             throw new RuntimeException("Error: " + type + " beginning at col " + col + " and line " + line + "is not closed");
         }
 
+        private boolean isModernExpressionSyntax() {
+            if (tokenString.charAt(index) == '$') {
+                return true;
+            }
+            return false;
+        }
+
         private boolean checkIfTerminates(String[] terminateConditions) {
             for (String cond: terminateConditions) {
                 boolean terminates = true;
@@ -166,6 +173,9 @@ public class ETokenizer implements ITokenizer {
                 if (peekForward(2) != null && peekForward(2) == '@') {
                     return DIRECTIVE;
                 }
+                if (peekForward(2) != null && peekForward(2) == '=') {
+                    return EXPRESSION;
+                }
                 return STATEMENT;
             } else if (tokenString.charAt(index) == '$' && next == '{') {
                 return EXPRESSION;
@@ -182,6 +192,12 @@ public class ETokenizer implements ITokenizer {
             }
             this.col += 1;
             index += 1;
+        }
+
+        private void advancePosition(int i) {
+            for (int x = 0; x < i; x += 1) {
+                advancePosition();
+            }
         }
 
     }
