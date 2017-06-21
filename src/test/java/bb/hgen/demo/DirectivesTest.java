@@ -16,7 +16,8 @@ public class DirectivesTest extends Object {
         try {
             buffer.append("\n<HTML>\n<BODY>\n");
             System.out.println( "Evaluating date now" );
-Date date = new Date();
+            buffer.append("\n");
+            Date date = new Date();
             buffer.append("\nHello!  The time is now ");
             buffer.append(toS(date));
             buffer.append("\n");
