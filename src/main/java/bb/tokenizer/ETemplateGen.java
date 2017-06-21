@@ -75,6 +75,7 @@ public class ETemplateGen {
         String content = t.getContent();
         content = content.replaceAll("\r", "");
         content = content.replaceAll("\n", "\\\\n");
+        content = content.replaceAll("\\\"", "\\\\\"");
         return bufferCallBeginning + "\"" + content + "\");\n";
     }
 
@@ -83,6 +84,13 @@ public class ETemplateGen {
         content = content.replaceAll("\r", "");
         content = content.replaceAll("\n", "\\\\n");
         return bufferCallBeginning + "toS(" + content + "));\n";
+    }
+
+    static String evalStatement(Token t) {
+        String content = t.getContent();
+        content = content.replaceAll("\r", "");
+        content = content.replaceAll("\n", "\\\\n");
+        return content + "\n";
     }
 
     static String getIntro(String fileName, String filePath) {
@@ -126,7 +134,9 @@ public class ETemplateGen {
         if (t.getType() == Token.TokenType.STRING_CONTENT) {
             return getString(t);
         }
-        else {
+        else if (t.getType() == Token.TokenType.STATEMENT) {
+            return evalStatement(t);
+        } else {
             return getOtherTokens(t);
         }
     }
