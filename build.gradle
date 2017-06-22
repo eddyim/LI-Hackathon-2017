@@ -1,0 +1,93 @@
+plugins {
+  id 'java'
+  id 'idea'
+}
+
+wrapper {
+  gradleVersion '3.5'
+}
+
+group = 'bb'
+version = '0.1-SNAPSHOT'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+}
+
+dependencies {
+  testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+['edward', 'harika'].each { intern ->
+  sourceSets {
+    "${intern}Main" {
+      java {
+        compileClasspath += main.output
+        runtimeClasspath += main.output
+      }
+    }
+    "${intern}Test" {
+      java {
+        compileClasspath += files(main.output, test.output, sourceSets."${intern}Main".output)
+        runtimeClasspath += files(main.output, test.output, sourceSets."${intern}Main".output)
+      }
+    }
+    "${intern}Generated" {
+      java {}
+    }
+  }
+  
+  configurations {
+    configurations.getByName("${intern}MainCompile").extendsFrom compile
+    configurations.getByName("${intern}MainRuntime").extendsFrom runtime
+    configurations.getByName("${intern}TestCompile").extendsFrom testCompile
+    configurations.getByName("${intern}TestRuntime").extendsFrom testRuntime
+  }
+  
+  task ("${intern}Test", type: Test) {
+    description = "Run ${intern}'s integration tests."
+    group = JavaBasePlugin.VERIFICATION_GROUP
+    testClassesDir = project.sourceSets."${intern}Test".output.classesDir
+    classpath = project.sourceSets."${intern}Test".runtimeClasspath
+    testLogging.showStandardStreams = true
+  }
+  
+  idea.module {
+    testSourceDirs += file("src/${intern}Test/java")
+    downloadJavadoc = true
+    downloadSources = true
+  }
+}
+
+//task eCompile(type: JavaCompile) {
+//  group = 'Intern Special Tasks'
+//  description = 'Compile Edward\'s source'
+//  includes = ['bb/tokenizer/ITokenizer', 'bb/tokenizer/Token']
+//}
+//
+//classes.dependsOn eCompile
+
+//task eTestCompile(type: JavaCompile, dependsOn: eCompile) {
+//  group = 'Intern Special Tasks'
+//  description = 'Compile Edward\'s source and tests'
+//  includes = ['bb/egen/**', 'bb/tokenizer/TokenizerTestBase', 'bb./tokenizer/E*']
+//}
+
+//testClasses.dependsOn eTestCompile
+
+//task eCodegen(type: JavaExec, dependsOn: eTestCompile) {
+//  mainClassName '??'
+//}
+
+//classes {
+//  dependsOn eCompile
+//}
+
+//test {
+//  dependsOn eTestCompile //, hTestCompile
+//}
