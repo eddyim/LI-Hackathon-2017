@@ -43,7 +43,7 @@ public class ETemplateGen {
         private String getRenderIntoMethod() {
             String toReturn = "    public static void renderInto(Appendable buffer";
             if (content.get("additionalParameters").length() > 0) {
-                toReturn = toReturn + "'" + content.get("additionalParameters");
+                toReturn = toReturn + "," + content.get("additionalParameters");
             }
             toReturn = toReturn + ") {\n" +
                     "        try {\n";
@@ -56,16 +56,26 @@ public class ETemplateGen {
         }
 
         private  String getRenderMethod() {
-            String toReturn =  "    public static String render() {\n" +
+            String toReturn =  "    public static String render(" + content.get("additionalParameters")+ ") {\n" +
                     "        StringBuilder sb = new StringBuilder();\n" +
                     "        renderInto(sb";
             if (content.get("additionalParameters").length() > 0) {
-                toReturn = toReturn + "'" + content.get("additionalParameters");
+                toReturn = toReturn + "," + turnIntoArguments(content.get("additionalParameters").toString());
             }
             toReturn = toReturn + ");\n" +
                     "        return sb.toString();\n" +
                     "    }\n\n";
             return toReturn;
+        }
+
+        private String turnIntoArguments(String parameters) {
+            String arguments = "";
+            String[] params = parameters.split(",");
+            for(String parameter: params) {
+                arguments = arguments + parameter.trim().split(" ")[1];
+                arguments = arguments + ",";
+            }
+            return arguments.substring(0, arguments.length() - 1);
         }
 
         private String getToSMethod() {
@@ -140,15 +150,23 @@ public class ETemplateGen {
                 }
                 this.content.get("additionalParameters").append(parameterContent);
             } else if (type == DirectiveType.INCLUDE) {
-                String[] includeContent = t.getContent().split("\\(");
-                String templateName = includeContent[0].substring(8);
-                handleExpression(new Token(EXPRESSION, templateName + ".renderInto(buffer, " + includeContent[1],
-                        0, 0, 0));
+                handleInclude(t);
             } else {
                 throw new RuntimeException("Directive Type " + type + " is not valid");
             }
         }
 
+        private void handleInclude(Token t) {
+            if (t.getContent().contains("(")) {
+                String[] includeContent = t.getContent().split("\\(");
+                String templateName = includeContent[0].substring(8);
+                handleStatement(new Token(EXPRESSION, templateName + ".renderInto(buffer, " + includeContent[1] + ";",
+                        0, 0, 0));
+            } else {
+                String templateName = t.getContent().substring(8);
+                handleStatement(new Token(EXPRESSION, templateName + ".renderInto(buffer);", 0,0,0));
+            }
+        }
         private String cleanParameterContent(String s) {
             return s.substring(7, s.length() - 1);
         }
