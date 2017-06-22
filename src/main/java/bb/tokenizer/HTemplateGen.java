@@ -112,8 +112,12 @@ public class HTemplateGen {
                     } else if (token.getContent().matches("include.*")) {
                         String content = token.getContent().substring(8);
                         String[] parts = content.split("\\(", 2);
-                        rest.append("            " + parts[0] + ".renderInto(buffer, ");
-                        rest.append(parts[1] + ";\n");
+                        if (parts.length == 1 || (parts.length == 2 && parts[1].equals("\\)"))) {
+                            rest.append("            " + parts[0] + ".renderInto(buffer);\n");
+                        } else {
+                            rest.append("            " + parts[0] + ".renderInto(buffer, ");
+                            rest.append(parts[1] + ";\n");
+                        }
                     } else {
                         throw new RuntimeException("Unsupported Directive on line" + token.getLine() + ":" + token.getContent());
                     }
@@ -141,7 +145,7 @@ public class HTemplateGen {
                     "        StringBuilder sb = new StringBuilder();\n" +
                     "        renderInto(sb");
             for (String[] p : paramsList) {
-                header.append(", " + paramsList[1]);
+                header.append(", " + p[1]);
             }
             header.append(");\n" +
                     "        return sb.toString();\n" +
