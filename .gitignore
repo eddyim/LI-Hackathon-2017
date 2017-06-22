@@ -1,4 +1,7 @@
 .idea
-barbarossa-templates.iml
-templates.iml
+*.iml
+*.ipr
+*.iws
 target/
+build/
+.gradle/
