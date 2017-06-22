@@ -160,8 +160,13 @@ public class ETemplateGen {
             if (t.getContent().contains("(")) {
                 String[] includeContent = t.getContent().split("\\(");
                 String templateName = includeContent[0].substring(8);
-                handleStatement(new Token(EXPRESSION, templateName + ".renderInto(buffer, " + includeContent[1] + ";",
-                        0, 0, 0));
+                if(includeContent[1].trim().equals(")")) {
+                    handleStatement(new Token(EXPRESSION, templateName + ".renderInto(buffer" + includeContent[1] + ";",
+                            0, 0, 0));
+                } else {
+                    handleStatement(new Token(EXPRESSION, templateName + ".renderInto(buffer, " + includeContent[1] + ";",
+                            0, 0, 0));
+                }
             } else {
                 String templateName = t.getContent().substring(8);
                 handleStatement(new Token(EXPRESSION, templateName + ".renderInto(buffer);", 0,0,0));
