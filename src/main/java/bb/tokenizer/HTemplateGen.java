@@ -65,6 +65,8 @@ public class HTemplateGen {
         StringBuilder header = new StringBuilder();
         StringBuilder rest = new StringBuilder();
         String superClass = null;
+        String params = null;
+        String[][] paramsList  = null;
 
         //@TODO: can tokenize be static??
         HTokenizer tokenizer = new HTokenizer();
@@ -72,16 +74,7 @@ public class HTemplateGen {
         header.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
         header.append("import java.io.IOException;\n\n");
 
-        rest.append("\n" +
-                "    public static String render() {\n" +
-                "        StringBuilder sb = new StringBuilder();\n" +
-                "        renderInto(sb);\n" +
-                "        return sb.toString();\n" +
-                "    }\n\n");
 
-
-        rest.append("    public static void renderInto(Appendable buffer) {\n" +
-                "        try {\n");
 
         for (Token token : tokens) {
             switch (token.getType()) {
@@ -95,31 +88,74 @@ public class HTemplateGen {
                     rest.append("            buffer.append(toS(" + token.getContent() + "));\n");
                     break;
                 case DIRECTIVE:
-                    if (token.getContent().matches("import .*")) {
+                    if (token.getContent().matches("import.*")) {
                         header.append(token.getContent() + ";\n");
-                    } else if (token.getContent().matches("extends .*")) {
+                    } else if (token.getContent().matches("extends.*")) {
                         if (superClass == null) {
                             superClass = token.getContent();
                         } else {
                             throw new RuntimeException("Cannot extend 2 classes:" + superClass + " and " + token.getContent());
                         }
+                    } else if (token.getContent().matches("params.*")) {
+                        if (params == null) {
+                            String content = token.getContent();
+                            params = content = content.substring(7, content.length() - 1);
+                            content = content.replaceAll(" ,", ",").replace(", ", ",");
+                            String[] parameters = content.split(",");
+                            paramsList = new String[parameters.length][2];
+                            for (int i = 0; i < parameters.length; i++) {
+                                paramsList[i] = parameters[i].split(" ");
+                            }
+                        } else {
+                            throw new RuntimeException("Cannot have 2 params directives:" + params + " and " + token.getContent());
+                        }
+                    } else if (token.getContent().matches("include.*")) {
+                        String content = token.getContent().substring(8);
+                        String[] parts = content.split("\\(", 2);
+                        rest.append("            " + parts[0] + ".renderInto(buffer, ");
+                        rest.append(parts[1] + ";\n");
                     } else {
                         throw new RuntimeException("Unsupported Directive on line" + token.getLine() + ":" + token.getContent());
                     }
                     break;
             }
         }
-
-        rest.append("        } catch (IOException e) {\n" +
-                "            throw new RuntimeException(e);\n" +
-                "        }\n" +
-                "    }\n");
-
         if (superClass == null) {
             header.append("\npublic class " + name.fileName + " {\n");
         } else {
             header.append("\npublic class " + name.fileName + " " + superClass + " {\n");
         }
+
+        if (paramsList == null) {
+            header.append("\n" +
+                    "    public static String render() {\n" +
+                    "        StringBuilder sb = new StringBuilder();\n" +
+                    "        renderInto(sb);\n" +
+                    "        return sb.toString();\n" +
+                    "    }\n\n");
+            header.append("    public static void renderInto(Appendable buffer) {\n" +
+                    "        try {\n");
+        } else {
+            header.append("\n" +
+                    "    public static String render(" + params + ") {\n" +
+                    "        StringBuilder sb = new StringBuilder();\n" +
+                    "        renderInto(sb");
+            for (String[] p : paramsList) {
+                header.append(", " + paramsList[1]);
+            }
+            header.append(");\n" +
+                    "        return sb.toString();\n" +
+                    "    }\n\n");
+
+            header.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
+                    "        try {\n");
+        }
+
+
+        rest.append("        } catch (IOException e) {\n" +
+                "            throw new RuntimeException(e);\n" +
+                "        }\n" +
+                "    }\n");
 
         rest.append("\n" +
                 "    private static String toS(Object o) {\n" +
