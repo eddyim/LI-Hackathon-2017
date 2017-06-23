@@ -16,9 +16,13 @@ public class ETemplateGen {
         private List<Token> tokens;
         private Map<String, StringBuilder> content;
         String relativePath;
+        boolean isSection;
+        String name;
 
         FileGenerator(File f, String relativePath) {
             templateFile = f;
+            this.name = templateFile.getName();
+            isSection = false;
             this.relativePath = relativePath;
             parseFile();
             this.content = new HashMap<>();
@@ -26,6 +30,38 @@ public class ETemplateGen {
             content.put("importStatement", new StringBuilder("import java.io.IOException;\n"));
             content.put("extendsKeyword", new StringBuilder());
             content.put("additionalParameters", new StringBuilder());
+            content.put("additionalClasses", new StringBuilder());
+        }
+
+        FileGenerator(List<Token> tokens, String name, String params) {
+            this.tokens = tokens;
+            isSection = true;
+            this.content = new HashMap<>();
+            this.name = name;
+            content.put("renderIntoMethod", new StringBuilder());
+            content.put("importStatement", new StringBuilder(""));
+            content.put("extendsKeyword", new StringBuilder());
+            content.put("additionalParameters", new StringBuilder(params));
+            content.put("additionalClasses", new StringBuilder());
+        }
+
+        public Map<String, String> buildSection() {
+            if (!isSection) {
+                throw new RuntimeException("Cannot build section");
+            }
+            Map<String, String> toReturn = new HashMap<>();
+            StringBuilder fileContents = new StringBuilder();
+            handleTokens();
+            fileContents.append(getIntro(this.name, "",
+                    "", content.get("extendsKeyword").toString()));
+            fileContents.append(getRenderMethod());
+            fileContents.append(getToSMethod());
+            fileContents.append(getRenderIntoMethod());
+            fileContents.append(content.get("additionalClasses"));
+            fileContents.append("}\n");
+            toReturn.put("sectionContent", fileContents.toString());
+            toReturn.put("importStatement", content.get("importStatement").toString());
+            return toReturn;
         }
 
         public String buildFile() {
@@ -36,8 +72,49 @@ public class ETemplateGen {
             fileContents.append(getRenderMethod());
             fileContents.append(getToSMethod());
             fileContents.append(getRenderIntoMethod());
+            fileContents.append(content.get("additionalClasses"));
             fileContents.append("}");
             return fileContents.toString();
+        }
+
+        private Map<String, String> parseSectionDeclaration(String section) {
+            Map<String, String> returnValues = new HashMap<>();
+            if(section.contains("(")) {
+                returnValues.put("params", section.substring(section.indexOf('(') + 1, section.indexOf(')')));
+                returnValues.put("name", section.substring(0, section.indexOf('(')).replaceAll("\\{", ""));
+            } else {
+                returnValues.put("name", section.replaceAll("\\{", ""));
+            }
+            return returnValues;
+        }
+
+        private void handleSection(Token t) {
+            Token currentToken = this.tokens.remove(0);
+            Map<String, String> parsedDeclaration = parseSectionDeclaration(t.getContent().substring(8));
+            List<Token> sectionTokens = new ArrayList<>();
+            int endSectionCount = 1;
+            while(endSectionCount > 0) {
+                if(currentToken.getType() == DIRECTIVE && getDirectiveType(currentToken) == DirectiveType.SECTION) {
+                    endSectionCount += 1;
+                } else if(currentToken.getType() == DIRECTIVE && getDirectiveType(currentToken) == DirectiveType.END_SECTION) {
+                    endSectionCount -= 1;
+                }
+                if (endSectionCount > 0) {
+                    sectionTokens.add(currentToken);
+                    currentToken = this.tokens.remove(0);
+                }
+            }
+            if (parsedDeclaration.containsKey("params")) {
+                FileGenerator currentSection = new FileGenerator(sectionTokens, parsedDeclaration.get("name"), parsedDeclaration.get("params"));
+                Map<String, String> section = currentSection.buildSection();
+                content.get("additionalClasses").append(section.get("sectionContent"));
+                content.get("importStatement").append(section.get("importStatement"));
+            } else {
+                FileGenerator currentSection = new FileGenerator(sectionTokens, parsedDeclaration.get("name"), "");
+                Map<String, String> section = currentSection.buildSection();
+                content.get("additionalClasses").append(section.get("sectionContent"));
+                content.get("importStatement").append(section.get("importStatement"));
+            }
         }
 
         private String getRenderIntoMethod() {
@@ -86,9 +163,16 @@ public class ETemplateGen {
 
         private String getIntro(String fileName, String filePath, String importStatement, String extendsKeyword) {
             String s = "";
-            s = s + getPackageStatement(filePath) + "\n";
+            if(!isSection) {
+                s = s + getPackageStatement(filePath) + "\n";
+            }
             s = s + importStatement;
-            String classStatement = "public class " + fileName.replace(".java", "") + " " + extendsKeyword + " {\n";
+            String classStatement = "class "+ fileName.replace(".java", "") + " " + extendsKeyword + " {\n";
+            if (!isSection) {
+                classStatement = "public " + classStatement;
+            } else {
+                classStatement = "static " + classStatement;
+            }
             s = s + classStatement;
 
             return s;
@@ -118,9 +202,8 @@ public class ETemplateGen {
         }
 
         void handleTokens() {
-            for (Token t: this.tokens) {
-                handleNextToken(t);
-            }
+            while(!this.tokens.isEmpty())
+                handleNextToken(this.tokens.remove(0));
         }
 
         private void handleNextToken(Token t) {
@@ -151,7 +234,10 @@ public class ETemplateGen {
                 this.content.get("additionalParameters").append(parameterContent);
             } else if (type == DirectiveType.INCLUDE) {
                 handleInclude(t);
-            } else {
+            } else if (type == DirectiveType.SECTION) {
+                handleSection(t);
+            }
+            else {
                 throw new RuntimeException("Directive Type " + type + " is not valid");
             }
         }
@@ -190,9 +276,13 @@ public class ETemplateGen {
                 return DirectiveType.PARAM;
             } else if (token.getContent().contains("include")) {
                 return DirectiveType.INCLUDE;
+            } else if (token.getContent().contains("end section")) {
+                return DirectiveType.END_SECTION;
+            } else if (token.getContent().contains("section")) {
+                return DirectiveType.SECTION;
             } else {
-                throw new RuntimeException("Invalid Directive");
-            }
+                    throw new RuntimeException("Invalid Directive");
+                }
         }
 
         private void handleStringContent(Token t) {
@@ -258,7 +348,9 @@ public class ETemplateGen {
         IMPORT_STATEMENT,
         EXTENDS,
         PARAM,
-        INCLUDE
+        INCLUDE,
+        SECTION,
+        END_SECTION
     }
 
     public static void main(String[] args) {
