@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
@@ -61,43 +62,68 @@ public class HTemplateGen {
 //        return outputDir + "\\bb\\hgen" + extra + ".java";
 //    }
 
-    private static String makeJavaContent(Name name, String bbContent) {
-        StringBuilder header = new StringBuilder();
-        StringBuilder rest = new StringBuilder();
+
+    private static String getJavaContent(Name name, String bbContent) {
+        StringBuilder importHeader = new StringBuilder();
+        HTokenizer tokenizer = new HTokenizer();
+        List<Token> tokens = tokenizer.tokenize(bbContent);
+        importHeader.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
+        importHeader.append("import java.io.IOException;\n\n");
+
+        Iterator<Token> tokenIterator = tokens.iterator();
+
+
+        StringBuilder classContent = makeClassContent(name.fileName, importHeader, tokenIterator);
+
+
+        return importHeader.append(classContent).toString();
+    }
+
+    private static StringBuilder makeClassContent(String name, StringBuilder importHeader, Iterator<Token> tokenIterator) {
+        return makeClassContent(name, importHeader, tokenIterator, true);
+    }
+
+        private static StringBuilder makeClassContent(String name, StringBuilder importHeader, Iterator<Token> tokenIterator, boolean outermost) {
+        StringBuilder classHeader = new StringBuilder();
+        StringBuilder innerClass = new StringBuilder();
+        StringBuilder jspContent = new StringBuilder();
         String superClass = null;
         String params = null;
         String[][] paramsList  = null;
 
-        //@TODO: can tokenize be static??
-        HTokenizer tokenizer = new HTokenizer();
-        List<Token> tokens = tokenizer.tokenize(bbContent);
-        header.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
-        header.append("import java.io.IOException;\n\n");
 
-
-
-        for (Token token : tokens) {
+        while (tokenIterator.hasNext()) {
+            Token token = tokenIterator.next();
             switch (token.getType()) {
                 case STRING_CONTENT:
-                    rest.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n");
+                    jspContent.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n");
                     break;
                 case STATEMENT:
-                    rest.append("            " + token.getContent() + "\n");
+                    jspContent.append("            " + token.getContent() + "\n");
                     break;
                 case EXPRESSION:
-                    rest.append("            buffer.append(toS(" + token.getContent() + "));\n");
+                    jspContent.append("            buffer.append(toS(" + token.getContent() + "));\n");
                     break;
                 case COMMENT:
                     break;
                 case DIRECTIVE:
                     if (token.getContent().matches("import.*")) {
-                        header.append(token.getContent() + ";\n");
+                        importHeader.append(token.getContent() + ";\n");
                     } else if (token.getContent().matches("extends.*")) {
                         if (superClass == null) {
                             superClass = token.getContent();
                         } else {
                             throw new RuntimeException("Cannot extend 2 classes:" + superClass + " and " + token.getContent());
                         }
+                    } else if (token.getContent().matches("section.*")) {
+                        String[] content = token.getContent().substring(8).split("\\(", 2);
+                        String innerName = content[0];
+                        String innerVars = content[1];
+                        innerVars = innerVars.substring(0, innerVars.length() - 1);
+                        innerClass.append(makeClassContent(innerName, importHeader, tokenIterator, false));
+                        innerClass.append("\n\n");
+                    } else if (token.getContent().equals("end section")) {
+                        break;
                     } else if (token.getContent().matches("params.*")) {
                         if (params == null) {
                             String content = token.getContent();
@@ -116,10 +142,10 @@ public class HTemplateGen {
                         String[] parts = content.split("\\(", 2);
 
                         if (parts.length == 1 || (parts.length == 2 && parts[1].trim().equals(")"))) {
-                            rest.append("            " + parts[0] + ".renderInto(buffer);\n");
+                            jspContent.append("            " + parts[0] + ".renderInto(buffer);\n");
                         } else {
-                            rest.append("            " + parts[0] + ".renderInto(buffer, ");
-                            rest.append(parts[1] + ";\n");
+                            jspContent.append("            " + parts[0] + ".renderInto(buffer, ");
+                            jspContent.append(parts[1] + ";\n");
                         }
                     } else {
                         throw new RuntimeException("Unsupported Directive on line" + token.getLine() + ":" + token.getContent());
@@ -127,115 +153,241 @@ public class HTemplateGen {
                     break;
             }
         }
-        if (superClass == null) {
-            header.append("\npublic class " + name.fileName + " {\n");
+        if (outermost) {
+            if (superClass == null) {
+                classHeader.append("\npublic class " + name + " {\n");
+            } else {
+                classHeader.append("\npublic class " + name + " " + superClass + " {\n");
+            }
         } else {
-            header.append("\npublic class " + name.fileName + " " + superClass + " {\n");
+            if (superClass == null) {
+                classHeader.append("\npublic static class " + name + " {\n");
+            } else {
+                classHeader.append("\npublic static class " + name + " " + superClass + " {\n");
+            }
         }
 
+
+        classHeader.append(innerClass);
+
         if (paramsList == null) {
-            header.append("\n" +
+            classHeader.append("\n" +
                     "    public static String render() {\n" +
                     "        StringBuilder sb = new StringBuilder();\n" +
                     "        renderInto(sb);\n" +
                     "        return sb.toString();\n" +
                     "    }\n\n");
-            header.append("    public static void renderInto(Appendable buffer) {\n" +
+            classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
                     "        try {\n");
         } else {
-            header.append("\n" +
+            classHeader.append("\n" +
                     "    public static String render(" + params + ") {\n" +
                     "        StringBuilder sb = new StringBuilder();\n" +
                     "        renderInto(sb");
             for (String[] p : paramsList) {
-                header.append(", " + p[1]);
+                classHeader.append(", " + p[1]);
             }
-            header.append(");\n" +
+            classHeader.append(");\n" +
                     "        return sb.toString();\n" +
                     "    }\n\n");
 
-            header.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
+            classHeader.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
                     "        try {\n");
         }
 
 
-        rest.append("        } catch (IOException e) {\n" +
+        jspContent.append("        } catch (IOException e) {\n" +
                 "            throw new RuntimeException(e);\n" +
                 "        }\n" +
                 "    }\n");
 
-        rest.append("\n" +
+        jspContent.append("\n" +
                 "    private static String toS(Object o) {\n" +
                 "        return o == null ? \"\" : o.toString();\n" +
                 "    }\n" +
                 "}");
 
-        return header.append(rest).toString();
+        return classHeader.append(jspContent);
     }
 
 
-    public static void main(String[] args) {
-        String inputDir = args[0];
-        String outputDir = args[1];
-
-        Path root = Paths.get(inputDir);
-
-        try {//@TODO: there is a max depth, which is problematic, actual sol can't be hacky like this...
-            Object[] filesToConvert = Files.find(root, Integer.MAX_VALUE,  new fileTypeChecker()).toArray();
-             for (Object p : filesToConvert){
-                 Name name = new Name(inputDir, outputDir, (Path) p);
-
-                 File writeTo = new File(name.javaWholePath);
-                 if (!writeTo.getParentFile().exists()) {
-                     writeTo.getParentFile().mkdirs();
-                 }
-                 if (writeTo.createNewFile()){
-                     System.out.println("File is created!");
-                 }else{
-                     System.out.println("File already exists.");
-                 }
-
-                 //String content = new String(Files.readAllBytes(Paths.get(p.toString())));
-                 String content = makeJavaContent(name, new String(Files.readAllBytes(Paths.get(p.toString()))));
-                 FileWriter fw = null;
-                 BufferedWriter bw = null;
-
-                 try {
-                     fw = new FileWriter(writeTo);
-                     bw = new BufferedWriter(fw);
-                     bw.write(content);
-                 } catch (IOException e) {
-                     e.printStackTrace();
-                 } finally {
-                     try {
-                         if (bw != null) {
-                             bw.close();
-                         }
-                         if (fw != null) {
-                             fw.close();
-                         }
-                     } catch (IOException e) {
-                         e.printStackTrace();
-                     }
-                 }
-
+//    private static String makeJavaContent(Name name, String bbContent) {
+//        StringBuilder header = new StringBuilder();
+//        StringBuilder rest = new StringBuilder();
+//        String superClass = null;
+//        String params = null;
+//        String[][] paramsList  = null;
+//
+//        //@TODO: can tokenize be static??
+//        HTokenizer tokenizer = new HTokenizer();
+//        List<Token> tokens = tokenizer.tokenize(bbContent);
+//        header.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
+//        header.append("import java.io.IOException;\n\n");
+//
+//
+//        Iterator<Token> tokenIterator = tokens.iterator();
+//
+//        while (tokenIterator.hasNext()) {
+//            Token token = tokenIterator.next();
+//            switch (token.getType()) {
+//                case STRING_CONTENT:
+//                    rest.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n");
+//                    break;
+//                case STATEMENT:
+//                    rest.append("            " + token.getContent() + "\n");
+//                    break;
+//                case EXPRESSION:
+//                    rest.append("            buffer.append(toS(" + token.getContent() + "));\n");
+//                    break;
+//                case COMMENT:
+//                    break;
+//                case DIRECTIVE:
+//                    if (token.getContent().matches("import.*")) {
+//                        header.append(token.getContent() + ";\n");
+//                    } else if (token.getContent().matches("extends.*")) {
+//                        if (superClass == null) {
+//                            superClass = token.getContent();
+//                        } else {
+//                            throw new RuntimeException("Cannot extend 2 classes:" + superClass + " and " + token.getContent());
+//                        }
+//                    } else if (token.getContent().matches("params.*")) {
+//                        if (params == null) {
+//                            String content = token.getContent();
+//                            params = content = content.substring(7, content.length() - 1);
+//                            content = content.replaceAll(" ,", ",").replace(", ", ",");
+//                            String[] parameters = content.split(",");
+//                            paramsList = new String[parameters.length][2];
+//                            for (int i = 0; i < parameters.length; i++) {
+//                                paramsList[i] = parameters[i].split(" ");
+//                            }
+//                        } else {
+//                            throw new RuntimeException("Cannot have 2 params directives:" + params + " and " + token.getContent());
+//                        }
+//                    } else if (token.getContent().matches("include.*")) {
+//                        String content = token.getContent().substring(8);
+//                        String[] parts = content.split("\\(", 2);
+//
+//                        if (parts.length == 1 || (parts.length == 2 && parts[1].trim().equals(")"))) {
+//                            rest.append("            " + parts[0] + ".renderInto(buffer);\n");
+//                        } else {
+//                            rest.append("            " + parts[0] + ".renderInto(buffer, ");
+//                            rest.append(parts[1] + ";\n");
+//                        }
+//                    } else {
+//                        throw new RuntimeException("Unsupported Directive on line" + token.getLine() + ":" + token.getContent());
+//                    }
+//                    break;
+//            }
+//        }
+//        if (superClass == null) {
+//            header.append("\npublic class " + name.fileName + " {\n");
+//        } else {
+//            header.append("\npublic class " + name.fileName + " " + superClass + " {\n");
+//        }
+//
+//        if (paramsList == null) {
+//            header.append("\n" +
+//                    "    public static String render() {\n" +
+//                    "        StringBuilder sb = new StringBuilder();\n" +
+//                    "        renderInto(sb);\n" +
+//                    "        return sb.toString();\n" +
+//                    "    }\n\n");
+//            header.append("    public static void renderInto(Appendable buffer) {\n" +
+//                    "        try {\n");
+//        } else {
+//            header.append("\n" +
+//                    "    public static String render(" + params + ") {\n" +
+//                    "        StringBuilder sb = new StringBuilder();\n" +
+//                    "        renderInto(sb");
+//            for (String[] p : paramsList) {
+//                header.append(", " + p[1]);
+//            }
+//            header.append(");\n" +
+//                    "        return sb.toString();\n" +
+//                    "    }\n\n");
+//
+//            header.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
+//                    "        try {\n");
+//        }
+//
+//
+//        rest.append("        } catch (IOException e) {\n" +
+//                "            throw new RuntimeException(e);\n" +
+//                "        }\n" +
+//                "    }\n");
+//
+//        rest.append("\n" +
+//                "    private static String toS(Object o) {\n" +
+//                "        return o == null ? \"\" : o.toString();\n" +
+//                "    }\n" +
+//                "}");
+//
+//        return header.append(rest).toString();
+//    }
+//
+//
+//    public static void main(String[] args) {
+//        String inputDir = args[0];
+//        String outputDir = args[1];
+//
+//        Path root = Paths.get(inputDir);
+//
+//        try {//@TODO: there is a max depth, which is problematic, actual sol can't be hacky like this...
+//            Object[] filesToConvert = Files.find(root, Integer.MAX_VALUE,  new fileTypeChecker()).toArray();
+//             for (Object p : filesToConvert){
+//                 Name name = new Name(inputDir, outputDir, (Path) p);
+//
+//                 File writeTo = new File(name.javaWholePath);
 //                 if (!writeTo.getParentFile().exists()) {
-//                    writeTo.getParentFile().mkdirs();
-//                }
+//                     writeTo.getParentFile().mkdirs();
+//                 }
+//                 if (writeTo.createNewFile()){
+//                     System.out.println("File is created!");
+//                 }else{
+//                     System.out.println("File already exists.");
+//                 }
 //
-//                try {
-//                    PrintWriter writer = new PrintWriter(writeTo);
-//                    writer.print("writing anything...");
-//                    writer.close();
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
+//                 //String content = new String(Files.readAllBytes(Paths.get(p.toString())));
+//                 String content = getJavaContent(name, new String(Files.readAllBytes(Paths.get(p.toString()))));
+//                 FileWriter fw = null;
+//                 BufferedWriter bw = null;
 //
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("The given parameter is not a valid directory.");
-        }
+//                 try {
+//                     fw = new FileWriter(writeTo);
+//                     bw = new BufferedWriter(fw);
+//                     bw.write(content);
+//                 } catch (IOException e) {
+//                     e.printStackTrace();
+//                 } finally {
+//                     try {
+//                         if (bw != null) {
+//                             bw.close();
+//                         }
+//                         if (fw != null) {
+//                             fw.close();
+//                         }
+//                     } catch (IOException e) {
+//                         e.printStackTrace();
+//                     }
+//                 }
+//
+////                 if (!writeTo.getParentFile().exists()) {
+////                    writeTo.getParentFile().mkdirs();
+////                }
+////
+////                try {
+////                    PrintWriter writer = new PrintWriter(writeTo);
+////                    writer.print("writing anything...");
+////                    writer.close();
+////                } catch (FileNotFoundException e) {
+////                    e.printStackTrace();
+////                }
+////
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            throw new RuntimeException("The given parameter is not a valid directory.");
+//        }
 
 
 

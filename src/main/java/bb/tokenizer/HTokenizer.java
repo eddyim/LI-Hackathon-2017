@@ -24,6 +24,7 @@ public class HTokenizer implements ITokenizer {
     }
 
     private class State {
+
         String str;
         Location curr = new Location();
         Location endOfLastSEorD = new Location(1, 0, -1);
