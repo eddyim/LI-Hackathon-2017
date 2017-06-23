@@ -7,7 +7,8 @@ public class Token {
         STRING_CONTENT,
         EXPRESSION,
         STATEMENT,
-        DIRECTIVE
+        DIRECTIVE,
+        COMMENT
     }
 
     private TokenType _type;

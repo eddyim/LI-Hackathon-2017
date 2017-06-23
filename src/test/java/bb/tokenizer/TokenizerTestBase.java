@@ -300,6 +300,14 @@ abstract public class TokenizerTestBase {
         assertEquals(STRING_CONTENT, tokens.get(0).getType());
     }
 
+    @Test
+    public void commentTest() {
+        ITokenizer tokenizer = createTokenizer();
+        List<Token> tokens = tokenizer.tokenize("<%-- This is a comment test. --%>");
+        assertEquals("This is a comment test.", tokens.get(0).getContent());
+        assertEquals(COMMENT, tokens.get(0).getType());
+    }
+
 
     private void asssertTokenTypesAre(List<Token> tokenize, TokenType... stringContent) {
         assertEquals(tokenize.size(), stringContent.length);

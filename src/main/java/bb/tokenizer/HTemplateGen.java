@@ -87,6 +87,8 @@ public class HTemplateGen {
                 case EXPRESSION:
                     rest.append("            buffer.append(toS(" + token.getContent() + "));\n");
                     break;
+                case COMMENT:
+                    break;
                 case DIRECTIVE:
                     if (token.getContent().matches("import.*")) {
                         header.append(token.getContent() + ";\n");
@@ -112,7 +114,8 @@ public class HTemplateGen {
                     } else if (token.getContent().matches("include.*")) {
                         String content = token.getContent().substring(8);
                         String[] parts = content.split("\\(", 2);
-                        if (parts.length == 1 || (parts.length == 2 && parts[1].equals("\\)"))) {
+
+                        if (parts.length == 1 || (parts.length == 2 && parts[1].trim().equals(")"))) {
                             rest.append("            " + parts[0] + ".renderInto(buffer);\n");
                         } else {
                             rest.append("            " + parts[0] + ".renderInto(buffer, ");

@@ -46,6 +46,9 @@ public class HTokenizer implements ITokenizer {
         char getNextNext() {
             return str.charAt(curr.pos + 2);
         }
+        char getNextNextNext() {
+            return str.charAt(curr.pos + 3);
+        }
         char getPrev() {
             return str.charAt(curr.pos - 1);
         }
@@ -68,6 +71,9 @@ public class HTokenizer implements ITokenizer {
         }
         boolean hasNextNext() {
             return (curr.pos + 2 < str.length());
+        }
+        boolean hasNextNextNext() {
+            return (curr.pos + 3 < str.length());
         }
 
         void advance() {
@@ -150,6 +156,8 @@ public class HTokenizer implements ITokenizer {
                         result.add(getDirectiveToken(state));
                     } else if (state.hasNextNext() && state.getNextNext() == '=') {
                         result.add(getExprToken(state, 1));
+                    } else if (state.hasNextNext() && state.getNextNext() == '-' && state.hasNextNextNext() && state.getNextNextNext() == '-') {
+                        result.add(getCommentToken(state));
                     } else {
                         result.add(getStatementToken(state));
                     }
@@ -201,6 +209,13 @@ public class HTokenizer implements ITokenizer {
         return makeToken(Token.TokenType.EXPRESSION, FRONT_LEN, END_LEN, state);
     }
 
+    //start with the pos st the < in <%--, end with it at the > in the --%>
+    private Token getCommentToken(State state) {
+        final int FRONT_LEN = 4;
+        final int END_LEN = 4;
+        return makeToken(Token.TokenType.COMMENT, FRONT_LEN, END_LEN, state);
+    }
+
 
     private Token makeToken(Token.TokenType type, int startLen, int endLen, State state) {
         Location start = state.copyCurrLoc();
@@ -217,6 +232,9 @@ public class HTokenizer implements ITokenizer {
                 break;
             case EXPRESSION:
                 advanceExpression(state, startLen);
+                break;
+            case COMMENT:
+                advanceComment(state);
                 break;
         }
 
@@ -282,6 +300,24 @@ public class HTokenizer implements ITokenizer {
         }
         if (!finished) {
             throw new RuntimeException("File ended before closing Expression");
+        }
+    }
+
+    private void advanceComment(State state) {
+        boolean finished = false;
+        while (state.hasCurr()) {
+            state.adjustLoc();
+            if (state.getCurr() == '-' && state.hasNextNextNext() && state.getNext() == '-' && state.getNextNext() == '%'  && state.getNextNextNext() == '>') {
+                state.advance();
+                state.advance();
+                state.advance();
+                finished = true;
+                break;
+            } else {
+                state.advance();
+            }
+        } if (!finished) {
+            throw new RuntimeException("File ended before closing Comment");
         }
     }
 
