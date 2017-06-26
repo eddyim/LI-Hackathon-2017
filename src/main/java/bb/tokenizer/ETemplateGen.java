@@ -1,6 +1,8 @@
 package bb.tokenizer;
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static bb.tokenizer.Token.TokenType.*;
 
@@ -14,6 +16,7 @@ public class ETemplateGen {
     class FileGenerator {
         File templateFile;
         private List<Token> tokens;
+        private List<String> pastStatements;
         private Map<String, StringBuilder> content;
         String relativePath;
         boolean isSection;
@@ -21,6 +24,7 @@ public class ETemplateGen {
 
         FileGenerator(File f, String relativePath) {
             templateFile = f;
+            pastStatements = new ArrayList<>();
             this.name = templateFile.getName();
             isSection = false;
             this.relativePath = relativePath;
@@ -33,8 +37,9 @@ public class ETemplateGen {
             content.put("additionalClasses", new StringBuilder());
         }
 
-        FileGenerator(List<Token> tokens, String name, String params) {
+        FileGenerator(List<Token> tokens, List<String> pastStatements, String name, String params) {
             this.tokens = tokens;
+            this.pastStatements = pastStatements;
             isSection = true;
             this.content = new HashMap<>();
             this.name = name;
@@ -80,12 +85,46 @@ public class ETemplateGen {
         private Map<String, String> parseSectionDeclaration(String section) {
             Map<String, String> returnValues = new HashMap<>();
             if(section.contains("(")) {
-                returnValues.put("params", section.substring(section.indexOf('(') + 1, section.indexOf(')')));
+                returnValues.put("params", inferArgumentTypes(section.substring(section.indexOf('(') + 1, section.indexOf(')'))));
                 returnValues.put("name", section.substring(0, section.indexOf('(')).replaceAll("\\{", ""));
             } else {
                 returnValues.put("name", section.replaceAll("\\{", ""));
             }
             return returnValues;
+        }
+
+        private String inferArgumentTypes(String arguments) {
+            String[] individualArguments = arguments.split(",");
+            StringBuilder completedString = new StringBuilder();
+            for (String a: individualArguments) {
+                if (a.trim().contains(" ")) {
+                    completedString.append(a.trim());
+                } else {
+                    completedString.append(inferSingleArgumentType(a));
+                }
+            }
+            return completedString.toString();
+        }
+
+        private String inferSingleArgumentType(String arg) {
+            String pattern = "([a-zA-Z_$][a-zA-Z_$0-9]* " +
+                    arg + ")|(\"[a-zA-Z_$][a-zA-Z_$0-9]* " +
+                    arg + "\")|('[a-zA-Z_$][a-zA-Z_$0-9]* " +
+                    arg + "')";
+            Pattern argumentRegex = Pattern.compile(pattern);
+            for(int i = pastStatements.size() - 1; i >= 0; i -= 1) {
+                Matcher argumentMatcher = argumentRegex.matcher(pastStatements.get(i));
+                String toReturn = null;
+                while(argumentMatcher.find()) {
+                    if(argumentMatcher.group(1) != null) {
+                        toReturn = argumentMatcher.group(1);
+                    }
+                }
+                if (toReturn != null) {
+                    return toReturn;
+                }
+            }
+            throw new RuntimeException("Type for argument can not be inferred: " + arg);
         }
 
         private void handleSection(Token t) {
@@ -99,21 +138,24 @@ public class ETemplateGen {
                 } else if(currentToken.getType() == DIRECTIVE && getDirectiveType(currentToken) == DirectiveType.END_SECTION) {
                     endSectionCount -= 1;
                 }
-                if (endSectionCount > 0) {
-                    sectionTokens.add(currentToken);
-                    currentToken = this.tokens.remove(0);
-                }
+                sectionTokens.add(currentToken);
+                currentToken = this.tokens.remove(0);
             }
+            sectionTokens.remove(sectionTokens.size()-1);
             if (parsedDeclaration.containsKey("params")) {
-                FileGenerator currentSection = new FileGenerator(sectionTokens, parsedDeclaration.get("name"), parsedDeclaration.get("params"));
+                FileGenerator currentSection = new FileGenerator(sectionTokens, this.pastStatements, parsedDeclaration.get("name"), parsedDeclaration.get("params"));
                 Map<String, String> section = currentSection.buildSection();
                 content.get("additionalClasses").append(section.get("sectionContent"));
                 content.get("importStatement").append(section.get("importStatement"));
+                handleDirective(new Token(DIRECTIVE, "include " + parsedDeclaration.get("name") + "("
+                        + turnIntoArguments(parsedDeclaration.get("params")) + ")",0,0,0));
+
             } else {
-                FileGenerator currentSection = new FileGenerator(sectionTokens, parsedDeclaration.get("name"), "");
+                FileGenerator currentSection = new FileGenerator(sectionTokens, this.pastStatements, parsedDeclaration.get("name"), "");
                 Map<String, String> section = currentSection.buildSection();
                 content.get("additionalClasses").append(section.get("sectionContent"));
                 content.get("importStatement").append(section.get("importStatement"));
+                handleDirective(new Token(DIRECTIVE, "include " + parsedDeclaration.get("name") ,0,0,0));
             }
         }
 
@@ -266,6 +308,7 @@ public class ETemplateGen {
          * Given a token that is a directive, returns the correct type of directive that the token represents
          * @param token a token to parse
          * @return the DirectiveType of the particular directive
+         * TODO: Change method so that it uses regex and matches more specifically
          */
         private DirectiveType getDirectiveType(Token token) {
             if (token.getContent().contains("import")) {
@@ -302,6 +345,7 @@ public class ETemplateGen {
             StringBuilder renderInto = this.content.get("renderIntoMethod");
             content = content.replaceAll("\r", "");
             renderInto.append(content);
+            pastStatements.add(content);
             renderInto.append("\n");
         }
 
