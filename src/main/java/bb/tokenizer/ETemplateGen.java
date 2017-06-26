@@ -98,7 +98,8 @@ public class ETemplateGen {
             StringBuilder completedString = new StringBuilder();
             for (String a: individualArguments) {
                 if (a.trim().contains(" ")) {
-                    completedString.append(a.trim());
+                    completedString.append(a.trim()); //TODO: Check the argument name to make sure it actually exists - this may not be necessary
+                                                      //because it will error at runtime
                 } else {
                     completedString.append(inferSingleArgumentType(a));
                 }
@@ -107,10 +108,10 @@ public class ETemplateGen {
         }
 
         private String inferSingleArgumentType(String arg) {
-            String pattern = "([a-zA-Z_$][a-zA-Z_$0-9]* " +
-                    arg + ")|(\"[a-zA-Z_$][a-zA-Z_$0-9]* " +
-                    arg + "\")|('[a-zA-Z_$][a-zA-Z_$0-9]* " +
-                    arg + "')";
+            String pattern = "([a-zA-Z_$][a-zA-Z_$0-9]* " + //First Group: Matches Type arg format
+                    arg + ")|(\".*[a-zA-Z_$][a-zA-Z_$0-9]* " + //Second & Third Group: Deals with matching within strings
+                    arg + ".*\")|('.*[a-zA-Z_$][a-zA-Z_$0-9]* " +
+                    arg + ".*')";
             Pattern argumentRegex = Pattern.compile(pattern);
             for(int i = pastStatements.size() - 1; i >= 0; i -= 1) {
                 Matcher argumentMatcher = argumentRegex.matcher(pastStatements.get(i));
