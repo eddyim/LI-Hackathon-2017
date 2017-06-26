@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+    <% boolean blah = false; %>
+    <% if(blah) {
+        int str = 0;
+    } else {
+        String str = "int str"; %>
+        <%@ section mySection(str) %>
+            <h1> urmom</h1>
+        <%@ end section %>
+    <% } %>
+    <%@ section shouldBeABoolean(blah) %>
+    <h1>${blah}</h1>
+    <%@ end section %>
+</html>
