@@ -79,18 +79,39 @@ public class HTemplateGen {
         return importHeader.append(classContent).toString();
     }
 
-    private static StringBuilder makeClassContent(String name, StringBuilder importHeader, Iterator<Token> tokenIterator) {
-        return makeClassContent(name, importHeader, tokenIterator, true);
+    //given a trimmed string of variables,
+    // returns a list with a string list per variable with the type and variable name (when both are given)
+    // or just the name if both aren't given
+    private static String[][] splitParamsList(String params) {
+        params = params.replaceAll(" ,", ",").replace(", ", ",");
+        String[] parameters = params.split(",");
+        String[][] paramsList = new String[parameters.length][2];
+        for (int i = 0; i < parameters.length; i++) {
+            paramsList[i] = parameters[i].split(" ", 2);
+        }
+        return paramsList;
     }
 
-        private static StringBuilder makeClassContent(String name, StringBuilder importHeader, Iterator<Token> tokenIterator, boolean outermost) {
+    //given a list of 2 element String lists (0th elem is type and 1st elem is value), returns the string form
+    //ex. [[String, str],[int,5]] returns "String str, int 5"
+    private static String makeParamsString(String[][] paramsList) {
+        String params = "" + paramsList[0][0] + " " + paramsList[0][1];
+        for (int i = 1; i < paramsList.length; i++) {
+            params += ", " + paramsList[i][0] + " " + paramsList[i][1];
+        }
+        return params;
+    }
+
+    private static StringBuilder makeClassContent(String name, StringBuilder importHeader, Iterator<Token> tokenIterator) {
+        return makeClassContent(name, importHeader, tokenIterator, true, null);
+    }
+
+    private static StringBuilder makeClassContent(String name, StringBuilder importHeader, Iterator<Token> tokenIterator, boolean outermost, String [][] paramsList) {
         StringBuilder classHeader = new StringBuilder();
         StringBuilder innerClass = new StringBuilder();
         StringBuilder jspContent = new StringBuilder();
         String superClass = null;
         String params = null;
-        String[][] paramsList  = null;
-
 
         while (tokenIterator.hasNext()) {
             Token token = tokenIterator.next();
@@ -108,34 +129,37 @@ public class HTemplateGen {
                     break;
                 case DIRECTIVE:
                     if (token.getContent().matches("import.*")) {
+                        //@TODO: deal with import not having a space after it
                         importHeader.append(token.getContent() + ";\n");
                     } else if (token.getContent().matches("extends.*")) {
+                        //@TODO: deal with extends not having a space after it
                         if (superClass == null) {
                             superClass = token.getContent();
                         } else {
                             throw new RuntimeException("Cannot extend 2 classes:" + superClass + " and " + token.getContent());
                         }
                     } else if (token.getContent().matches("section.*")) {
-                        String[] content = token.getContent().substring(8).split("\\(", 2);
+                        String[] content = token.getContent().substring(7).trim().split("\\(", 2);
                         String innerName = content[0];
-                        String innerVars = content[1];
+                        String innerVars = content[1].replace(" {", "{").substring(0, content[1].length() - 2);
                         innerVars = innerVars.substring(0, innerVars.length() - 1);
-                        innerClass.append(makeClassContent(innerName, importHeader, tokenIterator, false));
-                        innerClass.append("\n\n");
+                        String[][] innerVarsList = splitParamsList(innerVars);
+                        //@TODO: use the params list
+                        innerClass.append(makeClassContent(innerName, importHeader, tokenIterator, false, innerVarsList));
+                        jspContent.append("\n" + innerName + "." + "renderInto(buffer");
+                        for (int i = 0; i <innerVarsList.length; i++) {
+                            jspContent.append(", " + innerVarsList[i][1]);
+                        }
+                        jspContent.append(");\n");
                     } else if (token.getContent().equals("end section")) {
                         break;
                     } else if (token.getContent().matches("params.*")) {
-                        if (params == null) {
+                        if (paramsList == null) {
                             String content = token.getContent();
-                            params = content = content.substring(7, content.length() - 1);
-                            content = content.replaceAll(" ,", ",").replace(", ", ",");
-                            String[] parameters = content.split(",");
-                            paramsList = new String[parameters.length][2];
-                            for (int i = 0; i < parameters.length; i++) {
-                                paramsList[i] = parameters[i].split(" ");
-                            }
+                            params = content.substring(7, content.length() - 1).trim();
+                            paramsList = splitParamsList(params);
                         } else {
-                            throw new RuntimeException("Cannot have 2 params directives:" + params + " and " + token.getContent());
+                            throw new RuntimeException("Cannot have 2 params directives: on line" + token.getLine());
                         }
                     } else if (token.getContent().matches("include.*")) {
                         String content = token.getContent().substring(8);
@@ -180,6 +204,10 @@ public class HTemplateGen {
             classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
                     "        try {\n");
         } else {
+            //@TODO: findParamTypes(paramsList);
+            if (params == null) {
+                params = makeParamsString(paramsList);
+            }
             classHeader.append("\n" +
                     "    public static String render(" + params + ") {\n" +
                     "        StringBuilder sb = new StringBuilder();\n" +
@@ -210,221 +238,55 @@ public class HTemplateGen {
         return classHeader.append(jspContent);
     }
 
+    public static void main(String[] args) {
+        String inputDir = args[0];
+        String outputDir = args[1];
 
-//    private static String makeJavaContent(Name name, String bbContent) {
-//        StringBuilder header = new StringBuilder();
-//        StringBuilder rest = new StringBuilder();
-//        String superClass = null;
-//        String params = null;
-//        String[][] paramsList  = null;
-//
-//        //@TODO: can tokenize be static??
-//        HTokenizer tokenizer = new HTokenizer();
-//        List<Token> tokens = tokenizer.tokenize(bbContent);
-//        header.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
-//        header.append("import java.io.IOException;\n\n");
-//
-//
-//        Iterator<Token> tokenIterator = tokens.iterator();
-//
-//        while (tokenIterator.hasNext()) {
-//            Token token = tokenIterator.next();
-//            switch (token.getType()) {
-//                case STRING_CONTENT:
-//                    rest.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n");
-//                    break;
-//                case STATEMENT:
-//                    rest.append("            " + token.getContent() + "\n");
-//                    break;
-//                case EXPRESSION:
-//                    rest.append("            buffer.append(toS(" + token.getContent() + "));\n");
-//                    break;
-//                case COMMENT:
-//                    break;
-//                case DIRECTIVE:
-//                    if (token.getContent().matches("import.*")) {
-//                        header.append(token.getContent() + ";\n");
-//                    } else if (token.getContent().matches("extends.*")) {
-//                        if (superClass == null) {
-//                            superClass = token.getContent();
-//                        } else {
-//                            throw new RuntimeException("Cannot extend 2 classes:" + superClass + " and " + token.getContent());
-//                        }
-//                    } else if (token.getContent().matches("params.*")) {
-//                        if (params == null) {
-//                            String content = token.getContent();
-//                            params = content = content.substring(7, content.length() - 1);
-//                            content = content.replaceAll(" ,", ",").replace(", ", ",");
-//                            String[] parameters = content.split(",");
-//                            paramsList = new String[parameters.length][2];
-//                            for (int i = 0; i < parameters.length; i++) {
-//                                paramsList[i] = parameters[i].split(" ");
-//                            }
-//                        } else {
-//                            throw new RuntimeException("Cannot have 2 params directives:" + params + " and " + token.getContent());
-//                        }
-//                    } else if (token.getContent().matches("include.*")) {
-//                        String content = token.getContent().substring(8);
-//                        String[] parts = content.split("\\(", 2);
-//
-//                        if (parts.length == 1 || (parts.length == 2 && parts[1].trim().equals(")"))) {
-//                            rest.append("            " + parts[0] + ".renderInto(buffer);\n");
-//                        } else {
-//                            rest.append("            " + parts[0] + ".renderInto(buffer, ");
-//                            rest.append(parts[1] + ";\n");
-//                        }
-//                    } else {
-//                        throw new RuntimeException("Unsupported Directive on line" + token.getLine() + ":" + token.getContent());
-//                    }
-//                    break;
-//            }
-//        }
-//        if (superClass == null) {
-//            header.append("\npublic class " + name.fileName + " {\n");
-//        } else {
-//            header.append("\npublic class " + name.fileName + " " + superClass + " {\n");
-//        }
-//
-//        if (paramsList == null) {
-//            header.append("\n" +
-//                    "    public static String render() {\n" +
-//                    "        StringBuilder sb = new StringBuilder();\n" +
-//                    "        renderInto(sb);\n" +
-//                    "        return sb.toString();\n" +
-//                    "    }\n\n");
-//            header.append("    public static void renderInto(Appendable buffer) {\n" +
-//                    "        try {\n");
-//        } else {
-//            header.append("\n" +
-//                    "    public static String render(" + params + ") {\n" +
-//                    "        StringBuilder sb = new StringBuilder();\n" +
-//                    "        renderInto(sb");
-//            for (String[] p : paramsList) {
-//                header.append(", " + p[1]);
-//            }
-//            header.append(");\n" +
-//                    "        return sb.toString();\n" +
-//                    "    }\n\n");
-//
-//            header.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
-//                    "        try {\n");
-//        }
-//
-//
-//        rest.append("        } catch (IOException e) {\n" +
-//                "            throw new RuntimeException(e);\n" +
-//                "        }\n" +
-//                "    }\n");
-//
-//        rest.append("\n" +
-//                "    private static String toS(Object o) {\n" +
-//                "        return o == null ? \"\" : o.toString();\n" +
-//                "    }\n" +
-//                "}");
-//
-//        return header.append(rest).toString();
-//    }
-//
-//
-//    public static void main(String[] args) {
-//        String inputDir = args[0];
-//        String outputDir = args[1];
-//
-//        Path root = Paths.get(inputDir);
-//
-//        try {//@TODO: there is a max depth, which is problematic, actual sol can't be hacky like this...
-//            Object[] filesToConvert = Files.find(root, Integer.MAX_VALUE,  new fileTypeChecker()).toArray();
-//             for (Object p : filesToConvert){
-//                 Name name = new Name(inputDir, outputDir, (Path) p);
-//
-//                 File writeTo = new File(name.javaWholePath);
-//                 if (!writeTo.getParentFile().exists()) {
-//                     writeTo.getParentFile().mkdirs();
-//                 }
-//                 if (writeTo.createNewFile()){
-//                     System.out.println("File is created!");
-//                 }else{
-//                     System.out.println("File already exists.");
-//                 }
-//
-//                 //String content = new String(Files.readAllBytes(Paths.get(p.toString())));
-//                 String content = getJavaContent(name, new String(Files.readAllBytes(Paths.get(p.toString()))));
-//                 FileWriter fw = null;
-//                 BufferedWriter bw = null;
-//
-//                 try {
-//                     fw = new FileWriter(writeTo);
-//                     bw = new BufferedWriter(fw);
-//                     bw.write(content);
-//                 } catch (IOException e) {
-//                     e.printStackTrace();
-//                 } finally {
-//                     try {
-//                         if (bw != null) {
-//                             bw.close();
-//                         }
-//                         if (fw != null) {
-//                             fw.close();
-//                         }
-//                     } catch (IOException e) {
-//                         e.printStackTrace();
-//                     }
-//                 }
-//
-////                 if (!writeTo.getParentFile().exists()) {
-////                    writeTo.getParentFile().mkdirs();
-////                }
-////
-////                try {
-////                    PrintWriter writer = new PrintWriter(writeTo);
-////                    writer.print("writing anything...");
-////                    writer.close();
-////                } catch (FileNotFoundException e) {
-////                    e.printStackTrace();
-////                }
-////
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            throw new RuntimeException("The given parameter is not a valid directory.");
-//        }
+        Path root = Paths.get(inputDir);
 
+        try {//@TODO: there is a max depth, which is problematic, actual sol can't be hacky like this...
+            Object[] filesToConvert = Files.find(root, Integer.MAX_VALUE,  new fileTypeChecker()).toArray();
+            for (Object p : filesToConvert){
+                Name name = new Name(inputDir, outputDir, (Path) p);
 
+                File writeTo = new File(name.javaWholePath);
+                if (!writeTo.getParentFile().exists()) {
+                    writeTo.getParentFile().mkdirs();
+                }
+                if (writeTo.createNewFile()){
+                    System.out.println("File is created!");
+                }else{
+                    System.out.println("File already exists.");
+                }
 
+                //String content = new String(Files.readAllBytes(Paths.get(p.toString())));
+                String content = getJavaContent(name, new String(Files.readAllBytes(Paths.get(p.toString()))));
+                FileWriter fw = null;
+                BufferedWriter bw = null;
 
-
-//        File root = new File(inputDir);
-//
-//        File[] filesToConvert = root.listFiles();
-//        System.out.println(inputDir);
-//
-//        for (File f : filesToConvert) {
-//            if (f.isDirectory()) {
-//                HTemplateGen.main(new String[]{f.toString(), outputDir, Integer.toString(inputDir.length())});
-//            } else if (f.toString().matches(".*\\.bb\\..*")) {
-//                //@TODO: get rid of the .bb.* ending
-//                String extra;
-//                if (args.length == 3) {
-//                    extra = f.toString().substring(Integer.parseInt(args[2]));
-//                } else {
-//                    extra = f.toString().substring(inputDir.length());
-//                }
-//                File writeTo = new File(outputDir + "/bb/hgen" + extra + ".java");
-//                if (!writeTo.getParentFile().exists()) {
-//                    writeTo.getParentFile().mkdirs();
-//                }
-//                try {
-//                    PrintWriter writer = new PrintWriter(writeTo);
-//                    writer.print("writing anything...");
-//                    writer.close();
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-//                System.out.println(f.toString());
-//
-//            }
-//        }
-
+                try {
+                    fw = new FileWriter(writeTo);
+                    bw = new BufferedWriter(fw);
+                    bw.write(content);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (bw != null) {
+                            bw.close();
+                        }
+                        if (fw != null) {
+                            fw.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("The given parameter is not a valid directory.");
+        }
 
 
 
