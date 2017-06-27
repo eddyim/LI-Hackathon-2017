@@ -50,7 +50,7 @@ public class ETemplateGen {
             content.put("additionalClasses", new StringBuilder());
         }
 
-        public Map<String, String> buildSection() {
+        Map<String, String> buildSection() {
             if (!isSection) {
                 throw new RuntimeException("Cannot build section");
             }
@@ -69,7 +69,7 @@ public class ETemplateGen {
             return toReturn;
         }
 
-        public String buildFile() {
+        String buildFile() {
             StringBuilder fileContents = new StringBuilder();
             handleTokens();
             fileContents.append(getIntro(getFileName(templateFile), outputPath + relativePath,
@@ -403,38 +403,9 @@ public class ETemplateGen {
         String outputDir = args[1] + additionalDirectory;
         ETemplateGen generator = new ETemplateGen(inputDir, outputDir);
         generator.generateFiles();
-        /*ITokenizer tokenizer = new ETokenizer();
-        Map<File, String> files = new HashMap<File, String>();
-        File startDirectory = new File(inputDir);
-        scanDirectory(startDirectory, "", files);
-        for (File f: files.keySet()) {
-            try {
-                String content = new Scanner(f).useDelimiter("\\Z").next();
-                List<Token> tokens = tokenizer.tokenize(content);
-                String relPath = files.get(f);
-                StringBuilder fileContents = new StringBuilder();
-                Map<String, StringBuilder> tokenContents = handleTokens(tokens);
-                fileContents.append(getIntro(getFileName(f), outputDir + relPath,
-                        tokenContents.get("importStatement").toString(), tokenContents.get("extendsKeyword").toString()));
-                fileContents.append(getRenderMethod());
-                fileContents.append(getToSMethod());
-                fileContents.append(tokenContents.get("renderIntoMethod"));
-                fileContents.append("}");
-                File toWrite = new File(parseOutputFile(f, outputDir, relPath));
-                File directory = new File(outputDir + relPath);
-                if (!directory.exists()) {
-                    directory.mkdirs();
-                }
-                BufferedWriter bw = new BufferedWriter(new FileWriter(toWrite.getAbsoluteFile()));
-                bw.write(fileContents.toString());
-                bw.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }*/
     }
 
-    static String parseOutputFile(File f, String outputDir, String relativePath) {
+    private static String parseOutputFile(File f, String outputDir, String relativePath) {
         String path = outputDir + relativePath + "/" + getFileName(f);
         while (path.charAt(0) == '.' || path.charAt(0) == '/') {
             path = path.substring(1);
@@ -442,56 +413,8 @@ public class ETemplateGen {
         return path;
     }
 
-    /**
-     * Takes in a list of tokens, and processes them.
-     * @param tokens - a tokenized file
-     * @return importStatement - the proper import statements required
-     *         extendsKeyword - the proper superclass to extend, if any
-     *         renderIntoMethod - the proper renderInto method given the tokens
-     */
-    static Map<String, StringBuilder> handleTokens(List<Token> tokens) {
-        StringBuilder importStatement = new StringBuilder("import java.io.IOException;\n");
-        StringBuilder extendsKeyword = new StringBuilder();
-        StringBuilder renderIntoMethod = new StringBuilder("    public static void renderInto(Appendable buffer) {\n" +
-                "        try {\n");
-        for (Token t: tokens) {
-            if (t.getType() == Token.TokenType.DIRECTIVE) {
-                if (getDirectiveType(t) == DirectiveType.IMPORT_STATEMENT) {
-                    importStatement.append(t.getContent() + ";\n");
-                } else {
-                    extendsKeyword.append(t.getContent());
-                }
-            } else {
-                renderIntoMethod.append(getNextToken(t));
-            }
-        }
-        renderIntoMethod.append("} catch (IOException e) {\n" +
-                "            throw new RuntimeException(e);\n" +
-                "        }\n" +
-                "    }\n");
-        Map<String, StringBuilder> toReturn = new HashMap<String, StringBuilder>();
-        toReturn.put("importStatement", importStatement);
-        toReturn.put("extendsKeyword", extendsKeyword);
-        toReturn.put("renderIntoMethod", renderIntoMethod);
-        return toReturn;
-    }
 
-    /**
-     * Given a token that is a directive, returns the correct type of directive that the token represents
-     * @param token a token to parse
-     * @return the DirectiveType of the particular directive
-     */
-    static DirectiveType getDirectiveType(Token token) {
-        if (token.getContent().contains("import")) {
-            return DirectiveType.IMPORT_STATEMENT;
-        } else if (token.getContent().contains("extends")) {
-            return DirectiveType.EXTENDS;
-        } else {
-            throw new RuntimeException("Invalid Directive");
-        }
-    }
-
-    static String getFileName(File f) {
+    private static String getFileName(File f) {
         String fileName = f.getName();
         fileName = fileName.substring(0, fileName.indexOf("bb")) + "java";
         return fileName;
@@ -504,7 +427,7 @@ public class ETemplateGen {
      * @param relativePath in a recursive call, the file path relative to the initial directory
      * @param validFiles the set of validFiles that will be added to
      */
-    static void scanDirectory(File directory, String relativePath, Map<File, String> validFiles) {
+    private static void scanDirectory(File directory, String relativePath, Map<File, String> validFiles) {
         File[] files = directory.listFiles();
         for (File file: files) {
             if (file.isDirectory()) {
@@ -514,89 +437,5 @@ public class ETemplateGen {
                 validFiles.put(file, relativePath);
             }
         }
-    }
-
-    static String getString(Token t) {
-        String content = t.getContent();
-        content = content.replaceAll("\r", "");
-        content = content.replaceAll("\n", "\\\\n");
-        content = content.replaceAll("\\\"", "\\\\\"");
-        return bufferCallBeginning + "\"" + content + "\");\n";
-    }
-
-    static String getExpression(Token t) {
-        String content = t.getContent();
-        content = content.replaceAll("\r", "");
-        content = content.replaceAll("\n", "\\\\n");
-        return bufferCallBeginning + "toS(" + content + "));\n";
-    }
-
-    static String evalStatement(Token t) {
-        String content = t.getContent();
-        content = content.replaceAll("\r", "");
-        return content + "\n";
-    }
-
-    static String getIntro(String fileName, String filePath, String importStatement, String extendsKeyword) {
-        String s = "";
-        s = s + getPackageStatement(filePath) + "\n";
-        s = s + importStatement;
-        String classStatement = "public class " + fileName.replace(".java", "") + " " + extendsKeyword + " {\n";
-        s = s + classStatement;
-
-        return s;
-    }
-
-    static String getPackageStatement(String outputDir) {
-        String fullPath = outputDir;
-        if (fullPath.contains("java")) {
-            int javaIndex = fullPath.indexOf("java");
-            fullPath = fullPath.substring(0, javaIndex) + fullPath.substring(javaIndex + 5);
-        }
-        fullPath = fullPath.replaceAll("/", ".");
-        while(fullPath.charAt(0) == '.') {
-            fullPath = fullPath.substring(1);
-        }
-        return "package " + fullPath + ";";
-    }
-
-    private static String getRenderMethod() {
-        return "    public static String render() {\n" +
-                "        StringBuilder sb = new StringBuilder();\n" +
-                "        renderInto(sb);\n" +
-                "        return sb.toString();\n" +
-                "    }\n\n";
-    }
-
-    private static String getToSMethod() {
-        return "    private static String toS(Object o) {\n" +
-                "        return o == null ? \"\" : o.toString();\n" +
-                "    }\n\n";
-    }
-
-    static String getNextToken(Token t) {
-        if (t.getType() == STRING_CONTENT) {
-            return getString(t);
-        }
-        else if (t.getType() == Token.TokenType.STATEMENT) {
-            return evalStatement(t);
-        } else if (t.getType() == Token.TokenType.EXPRESSION){
-            return getExpression(t);
-        } else {
-            throw new RuntimeException("You fucked up");
-        }
-    }
-
-    private static String getRenderIntoMethod(List<Token> tokens) {
-        String toReturn = "    public static void renderInto(Appendable buffer) {\n" +
-                "        try {\n";
-        for (Token t: tokens) {
-            toReturn = toReturn + getNextToken(t);
-        }
-        toReturn = toReturn + "} catch (IOException e) {\n" +
-                "            throw new RuntimeException(e);\n" +
-                "        }\n" +
-                "    }\n";
-        return toReturn;
     }
 }
