@@ -81,6 +81,10 @@ public class ETokenizer implements ITokenizer {
                 advancePosition(3);
                 toReturn = next(nextType, true, line, col, pos,"%>");
                 advancePosition(2);
+            } else if (nextType == COMMENT) {
+              advancePosition(4);
+              toReturn = next(nextType, false, line, col, pos,"--%>");
+              advancePosition(4);
             } else {
                 throw new RuntimeException("Error at line " + line + "and column " + col);
             }
@@ -124,7 +128,9 @@ public class ETokenizer implements ITokenizer {
                             return new Token(type, currentTokenString, line, col, pos);
                         }
                     }
-                    checkIllegalOpenings();
+                    if (type != COMMENT) {
+                        checkIllegalOpenings();
+                    }
                 }
                 advancePosition();
             }
@@ -175,6 +181,9 @@ public class ETokenizer implements ITokenizer {
                 }
                 if (peekForward(2) != null && peekForward(2) == '=') {
                     return EXPRESSION;
+                }
+                if (peekForward(2) != null && peekForward(2) == '-' && peekForward(3) != null && peekForward(3) == '-') {
+                    return COMMENT;
                 }
                 return STATEMENT;
             } else if (tokenString.charAt(index) == '$' && next == '{') {

@@ -258,7 +258,8 @@ public class ETemplateGen {
                 handleExpression(t);
             } else if (t.getType() == DIRECTIVE) {
                 handleDirective(t);
-            } else {
+            } else if (t.getType() == COMMENT) {
+            } else{
                 throw new RuntimeException("Token Type " + t.getType() + " is not valid");
             }
         }
