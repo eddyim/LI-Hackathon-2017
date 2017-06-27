@@ -8,7 +8,7 @@ import static bb.tokenizer.Token.TokenType.*;
 
 public class ETemplateGen {
     private static final String additionalDirectory = "/bb/egen";
-    private static final String bufferCallBeginning = "buffer.append(";
+    private static final String bufferCallBeginning = "            buffer.append(";
     private String outputPath;
     private String inputPath;
 
@@ -98,8 +98,7 @@ public class ETemplateGen {
             StringBuilder completedString = new StringBuilder();
             for (String a: individualArguments) {
                 if (a.trim().contains(" ")) {
-                    completedString.append(a.trim()); //TODO: Check the argument name to make sure it actually exists - this may not be necessary
-                                                      //because it will error at runtime
+                    completedString.append(a.trim());
                 } else {
                     completedString.append(inferSingleArgumentType(a));
                 }
@@ -259,6 +258,7 @@ public class ETemplateGen {
             } else if (t.getType() == DIRECTIVE) {
                 handleDirective(t);
             } else if (t.getType() == COMMENT) {
+                // Do nothing for comments
             } else{
                 throw new RuntimeException("Token Type " + t.getType() + " is not valid");
             }
@@ -335,7 +335,7 @@ public class ETemplateGen {
             StringBuilder renderInto = this.content.get("renderIntoMethod");
             content = content.replaceAll("\r", "");
             content = content.replaceAll("\n", "\\\\n");
-            content = content.replaceAll("\\\"", "\\\\\"");
+            content = content.replaceAll("\"", "\\\\\"");
             renderInto.append(bufferCallBeginning);
             renderInto.append("\"");
             renderInto.append(content);
@@ -346,7 +346,7 @@ public class ETemplateGen {
             String content = t.getContent();
             StringBuilder renderInto = this.content.get("renderIntoMethod");
             content = content.replaceAll("\r", "");
-            renderInto.append(content);
+            renderInto.append("            " + content);
             pastStatements.add(content);
             renderInto.append("\n");
         }
