@@ -45,8 +45,23 @@ public class HTemplateGen {
             String withoutFileType = bbFile.toString().split(fileName + "\\.bb\\.")[0];
             //@TODO: \bb\hgen is temporary
             relativePath = "bb\\hgen" + withoutFileType.substring(inputDir.length(), withoutFileType.length() - 1);
-            javaWholePath = outputDir  + "\\" + relativePath + "\\" + fileName + ".java";
+            javaWholePath = outputDir + "\\" + relativePath + "\\" + fileName + ".java";
 
+        }
+
+    }
+    private static class State {
+        Name name;
+        int tokenPos = 0;
+        int classDepth = 0;
+        List<Token> tokens;
+        Iterator<Token> tokenIterator;
+        StringBuilder header = new StringBuilder();
+
+        State(Name name, List<Token> tokens) {
+            this.name = name;
+            this.tokens = tokens;
+            tokenIterator = tokens.iterator();
         }
 
     }
@@ -64,19 +79,16 @@ public class HTemplateGen {
 
 
     private static String getJavaContent(Name name, String bbContent) {
-        StringBuilder importHeader = new StringBuilder();
         HTokenizer tokenizer = new HTokenizer();
         List<Token> tokens = tokenizer.tokenize(bbContent);
-        importHeader.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
-        importHeader.append("import java.io.IOException;\n\n");
+        State state = new State(name, tokens);
+        state.header.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
+        state.header.append("import java.io.IOException;\n\n");
 
-        Iterator<Token> tokenIterator = tokens.iterator();
-
-
-        StringBuilder classContent = makeClassContent(name.fileName, importHeader, tokenIterator);
+        StringBuilder classContent = makeClassContent(state);
 
 
-        return importHeader.append(classContent).toString();
+        return state.header.append(classContent).toString();
     }
 
     //given a trimmed string of variables,
@@ -102,19 +114,35 @@ public class HTemplateGen {
         return params;
     }
 
-    private static StringBuilder makeClassContent(String name, StringBuilder importHeader, Iterator<Token> tokenIterator) {
-        return makeClassContent(name, importHeader, tokenIterator, true, null);
+    private static String findType(String name) {
+        return null;
     }
 
-    private static StringBuilder makeClassContent(String name, StringBuilder importHeader, Iterator<Token> tokenIterator, boolean outermost, String [][] paramsList) {
+
+    private static void findParamTypes(String[][] params) {
+        for (int i = 0; i < params.length; i++) {
+            if (params[i].length == 1) {
+                    String name = params[i][0];
+                    params[i] = new String[2];
+                    params[i][0] = findType(name);
+                    params[i][1] = name;
+            }
+        }
+    }
+
+    private static StringBuilder makeClassContent(State state) {
+        return makeClassContent(state, null);
+    }
+
+    private static StringBuilder makeClassContent(State state, String [][] paramsList) {
         StringBuilder classHeader = new StringBuilder();
         StringBuilder innerClass = new StringBuilder();
         StringBuilder jspContent = new StringBuilder();
         String superClass = null;
         String params = null;
 
-        while (tokenIterator.hasNext()) {
-            Token token = tokenIterator.next();
+        while (state.tokenIterator.hasNext()) {
+            Token token = state.tokenIterator.next();
             switch (token.getType()) {
                 case STRING_CONTENT:
                     jspContent.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n");
@@ -130,7 +158,7 @@ public class HTemplateGen {
                 case DIRECTIVE:
                     if (token.getContent().matches("import.*")) {
                         //@TODO: deal with import not having a space after it
-                        importHeader.append(token.getContent() + ";\n");
+                        state.header.append(token.getContent() + ";\n");
                     } else if (token.getContent().matches("extends.*")) {
                         //@TODO: deal with extends not having a space after it
                         if (superClass == null) {
@@ -145,7 +173,7 @@ public class HTemplateGen {
                         innerVars = innerVars.substring(0, innerVars.length() - 1);
                         String[][] innerVarsList = splitParamsList(innerVars);
                         //@TODO: use the params list
-                        innerClass.append(makeClassContent(innerName, importHeader, tokenIterator, false, innerVarsList));
+                        innerClass.append(makeClassContent(state, innerVarsList));
                         jspContent.append("\n" + innerName + "." + "renderInto(buffer");
                         for (int i = 0; i <innerVarsList.length; i++) {
                             jspContent.append(", " + innerVarsList[i][1]);
@@ -177,17 +205,17 @@ public class HTemplateGen {
                     break;
             }
         }
-        if (outermost) {
+        if (state.classDepth == 0) {
             if (superClass == null) {
-                classHeader.append("\npublic class " + name + " {\n");
+                classHeader.append("\npublic class " + state.name.fileName + " {\n");
             } else {
-                classHeader.append("\npublic class " + name + " " + superClass + " {\n");
+                classHeader.append("\npublic class " + state.name.fileName + " " + superClass + " {\n");
             }
         } else {
             if (superClass == null) {
-                classHeader.append("\npublic static class " + name + " {\n");
+                classHeader.append("\npublic static class " + state.name.fileName + " {\n");
             } else {
-                classHeader.append("\npublic static class " + name + " " + superClass + " {\n");
+                classHeader.append("\npublic static class " + state.name.fileName + " " + superClass + " {\n");
             }
         }
 
@@ -204,7 +232,7 @@ public class HTemplateGen {
             classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
                     "        try {\n");
         } else {
-            //@TODO: findParamTypes(paramsList);
+            findParamTypes(paramsList);
             if (params == null) {
                 params = makeParamsString(paramsList);
             }
