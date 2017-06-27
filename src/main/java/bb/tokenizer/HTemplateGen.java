@@ -114,35 +114,53 @@ public class HTemplateGen {
         return params;
     }
 
-    private static String findType(String name) {
-        return null;
+
+    //@TODO: seems resource heavy, should fix
+    private static String findType(String name, State state) {
+
+        for (int i = state.tokenPos - 1; i >= 0; i--) {
+            Token t = state.tokens.get(i);
+            if (t.getType() == Token.TokenType.STATEMENT) {
+                String[] content = t.getContent().split("\\s+");
+                for (int j = content.length - 1; j >= 0; j--) {
+                    if (content[j].matches(name + "(.*)")) {
+                        if (content[j].length() == name.length() || content[j].charAt(name.length()) == ';') {
+                            return content[j - 1];
+                        }
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("variable " + name + " not found");
     }
 
 
-    private static void findParamTypes(String[][] params) {
+    private static void findParamTypes(String[][] params, State state) {
         for (int i = 0; i < params.length; i++) {
             if (params[i].length == 1) {
                     String name = params[i][0];
                     params[i] = new String[2];
-                    params[i][0] = findType(name);
+                    params[i][0] = findType(name, state);
                     params[i][1] = name;
             }
         }
     }
 
     private static StringBuilder makeClassContent(State state) {
-        return makeClassContent(state, null);
+        return makeClassContent(state.name.fileName, state, null);
     }
 
-    private static StringBuilder makeClassContent(State state, String [][] paramsList) {
+    private static StringBuilder makeClassContent(String name, State state, String [][] paramsList) {
         StringBuilder classHeader = new StringBuilder();
         StringBuilder innerClass = new StringBuilder();
         StringBuilder jspContent = new StringBuilder();
         String superClass = null;
         String params = null;
 
+        outerloop:
         while (state.tokenIterator.hasNext()) {
             Token token = state.tokenIterator.next();
+            state.tokenPos++;
             switch (token.getType()) {
                 case STRING_CONTENT:
                     jspContent.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n");
@@ -167,20 +185,22 @@ public class HTemplateGen {
                             throw new RuntimeException("Cannot extend 2 classes:" + superClass + " and " + token.getContent());
                         }
                     } else if (token.getContent().matches("section.*")) {
+                        state.classDepth++;
                         String[] content = token.getContent().substring(7).trim().split("\\(", 2);
                         String innerName = content[0];
-                        String innerVars = content[1].replace(" {", "{").substring(0, content[1].length() - 2);
+                        String innerVars = content[1].replace(" {", "{");
                         innerVars = innerVars.substring(0, innerVars.length() - 1);
                         String[][] innerVarsList = splitParamsList(innerVars);
                         //@TODO: use the params list
-                        innerClass.append(makeClassContent(state, innerVarsList));
+                        findParamTypes(innerVarsList, state);
+                        innerClass.append(makeClassContent(innerName, state, innerVarsList));
                         jspContent.append("\n" + innerName + "." + "renderInto(buffer");
                         for (int i = 0; i <innerVarsList.length; i++) {
                             jspContent.append(", " + innerVarsList[i][1]);
                         }
                         jspContent.append(");\n");
                     } else if (token.getContent().equals("end section")) {
-                        break;
+                        break outerloop;
                     } else if (token.getContent().matches("params.*")) {
                         if (paramsList == null) {
                             String content = token.getContent();
@@ -213,12 +233,13 @@ public class HTemplateGen {
             }
         } else {
             if (superClass == null) {
-                classHeader.append("\npublic static class " + state.name.fileName + " {\n");
+                classHeader.append("\npublic static class " + name + " {\n");
             } else {
-                classHeader.append("\npublic static class " + state.name.fileName + " " + superClass + " {\n");
+                classHeader.append("\npublic static class " + name + " " + superClass + " {\n");
             }
         }
 
+        state.classDepth--;
 
         classHeader.append(innerClass);
 
@@ -232,7 +253,6 @@ public class HTemplateGen {
             classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
                     "        try {\n");
         } else {
-            findParamTypes(paramsList);
             if (params == null) {
                 params = makeParamsString(paramsList);
             }
