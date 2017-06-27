@@ -164,13 +164,16 @@ public class ETemplateGen {
             if (content.get("additionalParameters").length() > 0) {
                 toReturn = toReturn + "," + content.get("additionalParameters");
             }
-            toReturn = toReturn + ") {\n" +
-                    "        try {\n";
-            toReturn = toReturn + content.get("renderIntoMethod");
-            toReturn = toReturn + "} catch (IOException e) {\n" +
-                    "            throw new RuntimeException(e);\n" +
-                    "        }\n" +
-                    "    }\n";
+            toReturn = toReturn + ") {\n";
+            if (this.content.get("renderIntoMethod").length() > 0) {
+                toReturn = toReturn + "        try {\n";
+                toReturn = toReturn + content.get("renderIntoMethod");
+                toReturn = toReturn + "} catch (IOException e) {\n" +
+                        "            throw new RuntimeException(e);\n" +
+                        "        }\n";
+            }
+            toReturn = toReturn + "    }\n";
+
             return toReturn;
         }
 
@@ -235,7 +238,11 @@ public class ETemplateGen {
 
         private void parseFile() {
             try {
-                String content = new Scanner(templateFile).useDelimiter("\\Z").next();
+                Scanner contentScanner = new Scanner(templateFile).useDelimiter("\\Z");
+                String content = null;
+                if (contentScanner.hasNext()) {
+                    content = contentScanner.next();
+                }
                 List<Token> tokens = new ETokenizer().tokenize(content);
                 this.tokens = tokens;
             } catch (FileNotFoundException e) {
