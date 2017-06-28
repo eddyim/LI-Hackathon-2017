@@ -15,10 +15,10 @@ private static IfElseTest INSTANCE = new IfElseTest();
     }
 
     public static void renderInto(Appendable buffer) {
-  INSTANCE.renderImpl(buffer);
-}    public static void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n");
+        INSTANCE.renderImpl(buffer);
+    }
+    public static void renderImpl(Appendable buffer) {
+        try {            buffer.append("<!DOCTYPE html>\n");
             int day = 3;
             buffer.append("\n<html>\n    <head><title>IF...ELSE Example</title></head>\n\n    <body>\n        ");
             if (day == 1 | day == 7) {

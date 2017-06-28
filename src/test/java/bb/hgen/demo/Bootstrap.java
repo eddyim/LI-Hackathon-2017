@@ -15,10 +15,10 @@ private static Bootstrap INSTANCE = new Bootstrap();
     }
 
     public static void renderInto(Appendable buffer) {
-  INSTANCE.renderImpl(buffer);
-}    public static void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("<html>\n<body>\n<h1>This is a demo template</h1>\n<p>1 + 1 = ");
+        INSTANCE.renderImpl(buffer);
+    }
+    public static void renderImpl(Appendable buffer) {
+        try {            buffer.append("<html>\n<body>\n<h1>This is a demo template</h1>\n<p>1 + 1 = ");
             buffer.append(toS(1 + 1));
             buffer.append("</p>\n</body>\n</html>");
         } catch (IOException e) {

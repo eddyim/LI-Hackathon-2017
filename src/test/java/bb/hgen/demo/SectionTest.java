@@ -20,8 +20,7 @@ public static class yourSection {
     }
 
     public static void renderInto(Appendable buffer, double num) {
-        try {
-            buffer.append("\n        <body>\n        ");
+        try {            buffer.append("\n        <body>\n        ");
             int fontSize;
             buffer.append("\n        ");
             for ( fontSize = 1; fontSize <= 3; fontSize++){
@@ -46,8 +45,7 @@ public static class yourSection {
     }
 
     public static void renderInto(Appendable buffer, double num) {
-        try {
-            buffer.append("\n    ");
+        try {            buffer.append("\n    ");
             buffer.append("\n        <body>\n            <h1>This is a demo template</h1>\n            <p>1 + 1 = ");
             buffer.append(toS(1 + 1));
             buffer.append("</p>\n        </body>\n    ");
@@ -70,10 +68,10 @@ yourSection.renderInto(buffer, num);
     }
 
     public static void renderInto(Appendable buffer) {
-  INSTANCE.renderImpl(buffer);
-}    public static void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("<html>\n<head><title>First JSP</title></head>\n<body>\n");
+        INSTANCE.renderImpl(buffer);
+    }
+    public static void renderImpl(Appendable buffer) {
+        try {            buffer.append("<html>\n<head><title>First JSP</title></head>\n<body>\n");
             double num = Math.random();
 if (num > 0.95) {
             buffer.append("\n<h2>You'll have a luck day!</h2><p>( ");

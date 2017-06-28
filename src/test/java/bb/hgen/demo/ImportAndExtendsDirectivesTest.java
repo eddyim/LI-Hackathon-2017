@@ -16,10 +16,10 @@ private static ImportAndExtendsDirectivesTest INSTANCE = new ImportAndExtendsDir
     }
 
     public static void renderInto(Appendable buffer) {
-  INSTANCE.renderImpl(buffer);
-}    public static void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("\n<HTML>\n<BODY>\n");
+        INSTANCE.renderImpl(buffer);
+    }
+    public static void renderImpl(Appendable buffer) {
+        try {            buffer.append("\n<HTML>\n<BODY>\n");
             System.out.println( "Evaluating date now" );
             buffer.append("\n");
             Date date = new Date();

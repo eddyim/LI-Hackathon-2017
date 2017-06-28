@@ -17,8 +17,7 @@ public static class mySection {
     }
 
     public static void renderInto(Appendable buffer, String str) {
-        try {
-            buffer.append("\n            <h1> urmom</h1>\n        ");
+        try {            buffer.append("\n            <h1> urmom</h1>\n        ");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -37,8 +36,7 @@ public static class shouldBeABoolean {
     }
 
     public static void renderInto(Appendable buffer, boolean blah) {
-        try {
-            buffer.append("\n    <h1>");
+        try {            buffer.append("\n    <h1>");
             buffer.append(toS(blah));
             buffer.append("</h1>\n    ");
         } catch (IOException e) {
@@ -57,10 +55,10 @@ public static class shouldBeABoolean {
     }
 
     public static void renderInto(Appendable buffer) {
-  INSTANCE.renderImpl(buffer);
-}    public static void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
+        INSTANCE.renderImpl(buffer);
+    }
+    public static void renderImpl(Appendable buffer) {
+        try {            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
             boolean blah = false;
             buffer.append("\n    ");
             if(blah) {

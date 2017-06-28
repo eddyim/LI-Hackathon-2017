@@ -15,10 +15,10 @@ private static TestForLoop INSTANCE = new TestForLoop();
     }
 
     public static void renderInto(Appendable buffer) {
-  INSTANCE.renderImpl(buffer);
-}    public static void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n");
+        INSTANCE.renderImpl(buffer);
+    }
+    public static void renderImpl(Appendable buffer) {
+        try {            buffer.append("<!DOCTYPE html>\n");
             int fontSize;
             buffer.append("\n<html>\n    <head><title>FOR LOOP Example</title></head>\n    <body>\n        ");
             for ( fontSize = 1; fontSize <= 3; fontSize++){

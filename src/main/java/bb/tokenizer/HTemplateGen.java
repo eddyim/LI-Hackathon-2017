@@ -259,14 +259,12 @@ public class HTemplateGen {
                     "        return sb.toString();\n" +
                     "    }\n\n");
             if (state.classDepth > 0) {
-                classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
-                        "        try {\n");
+                classHeader.append("    public static void renderInto(Appendable buffer) {\n");
             } else {
                 classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
-                        "  INSTANCE.renderImpl(buffer);\n" +
-                        "}");
-                classHeader.append("    public static void renderImpl(Appendable buffer) {\n" +
-                        "        try {\n");
+                        "        INSTANCE.renderImpl(buffer);\n" +
+                        "    }\n");
+                classHeader.append("    public static void renderImpl(Appendable buffer) {\n");
             }
         } else {
             if (params == null) {
@@ -284,8 +282,7 @@ public class HTemplateGen {
                     "    }\n\n");
 
             if (state.classDepth > 0) {
-                classHeader.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
-                        "        try {\n");
+                classHeader.append("    public static void renderInto(Appendable buffer, " + params + ") {\n");
             } else {
                 classHeader.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
                         "        INSTANCE.renderImpl(buffer");
@@ -293,17 +290,21 @@ public class HTemplateGen {
                     classHeader.append(", " + param[1]);
                 }
                 classHeader.append(");\n" +
-                        "}\n\n");
-                classHeader.append("    public static void renderImpl(Appendable buffer, " + params + ") {\n" +
-                        "        try {\n");
+                        "    }\n\n");
+                classHeader.append("    public static void renderImpl(Appendable buffer, " + params + ") {\n");
             }
         }
 
+        if (jspContent.length() > 0) {
+            classHeader.append("        try {");
 
-        jspContent.append("        } catch (IOException e) {\n" +
-                "            throw new RuntimeException(e);\n" +
-                "        }\n" +
-                "    }\n");
+            jspContent.append("        } catch (IOException e) {\n" +
+                    "            throw new RuntimeException(e);\n" +
+                    "        }\n");
+        }
+
+        jspContent.append("    }\n");
+
 
         jspContent.append("\n" +
                 "    private static String toS(Object o) {\n" +

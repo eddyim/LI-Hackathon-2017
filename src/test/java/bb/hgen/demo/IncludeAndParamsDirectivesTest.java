@@ -16,11 +16,10 @@ private static IncludeAndParamsDirectivesTest INSTANCE = new IncludeAndParamsDir
 
     public static void renderInto(Appendable buffer, String string, String[] strings) {
         INSTANCE.renderImpl(buffer, string, strings);
-}
+    }
 
     public static void renderImpl(Appendable buffer, String string, String[] strings) {
-        try {
-            buffer.append("<!DOCTYPE html>\n<html>\n\n    <body>\n    ");
+        try {            buffer.append("<!DOCTYPE html>\n<html>\n\n    <body>\n    ");
             IncludeAndParamsDirectivesTest.renderInto(buffer, "", null);
             buffer.append("\n    ");
             buffer.append("\n    ");

@@ -16,10 +16,10 @@ private static ImportSingleTest INSTANCE = new ImportSingleTest();
     }
 
     public static void renderInto(Appendable buffer) {
-  INSTANCE.renderImpl(buffer);
-}    public static void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n");
+        INSTANCE.renderImpl(buffer);
+    }
+    public static void renderImpl(Appendable buffer) {
+        try {            buffer.append("<!DOCTYPE html>\n");
             buffer.append("\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Import Single Test</title>\n</head>\n<body>\n    <h1>I am going to import some stuff right now</h1>\n    <p>About to use the TreeMap </p>\n    ");
             TreeSet<Integer> myTreeSet = new TreeSet<>();
             buffer.append("\n    ");

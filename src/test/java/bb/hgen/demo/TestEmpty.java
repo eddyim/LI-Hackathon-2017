@@ -15,12 +15,9 @@ private static TestEmpty INSTANCE = new TestEmpty();
     }
 
     public static void renderInto(Appendable buffer) {
-  INSTANCE.renderImpl(buffer);
-}    public static void renderImpl(Appendable buffer) {
-        try {
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        INSTANCE.renderImpl(buffer);
+    }
+    public static void renderImpl(Appendable buffer) {
     }
 
     private static String toS(Object o) {
