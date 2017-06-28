@@ -62,6 +62,7 @@ public class ETemplateGen {
             fileContents.append(getRenderMethod());
             fileContents.append(getToSMethod());
             fileContents.append(getRenderIntoMethod());
+            fileContents.append(getRenderImplMethod());
             fileContents.append(content.get("additionalClasses"));
             fileContents.append("}\n");
             toReturn.put("sectionContent", fileContents.toString());
@@ -77,6 +78,7 @@ public class ETemplateGen {
             fileContents.append(getRenderMethod());
             fileContents.append(getToSMethod());
             fileContents.append(getRenderIntoMethod());
+            fileContents.append(getRenderImplMethod());
             fileContents.append(content.get("additionalClasses"));
             fileContents.append("}");
             return fileContents.toString();
@@ -160,7 +162,21 @@ public class ETemplateGen {
         }
 
         private String getRenderIntoMethod() {
-            String toReturn = "    public static void renderInto(Appendable buffer";
+            String toReturn = "     public static void renderInto(Appendable buffer";
+            if (content.get("additionalParameters").length() > 0) {
+                toReturn = toReturn + "," + content.get("additionalParameters");
+            }
+            toReturn = toReturn + ") {" +
+                    "INSTANCE.renderImpl(buffer";
+            if (content.get("additionalParameters").length() > 0) {
+                toReturn = toReturn + "," + turnIntoArguments(content.get("additionalParameters").toString());
+            }
+            toReturn = toReturn + ");}";
+            return toReturn;
+        }
+
+        private String getRenderImplMethod() {
+            String toReturn = "    public void renderImpl(Appendable buffer";
             if (content.get("additionalParameters").length() > 0) {
                 toReturn = toReturn + "," + content.get("additionalParameters");
             }
@@ -168,7 +184,7 @@ public class ETemplateGen {
             if (this.content.get("renderIntoMethod").length() > 0) {
                 toReturn = toReturn + "        try {\n";
                 toReturn = toReturn + content.get("renderIntoMethod");
-                toReturn = toReturn + "} catch (IOException e) {\n" +
+                toReturn = toReturn + "} catch (Exception e) {\n" +
                         "            throw new RuntimeException(e);\n" +
                         "        }\n";
             }
@@ -218,7 +234,8 @@ public class ETemplateGen {
             } else {
                 classStatement = "static " + classStatement;
             }
-            s = s + classStatement;
+            s = s + classStatement + "\n";
+            s = s + "private static " + fileName.replace(".java", "") + " INSTANCE = new " + fileName.replace(".java", "") + "();\n";
 
             return s;
         }
