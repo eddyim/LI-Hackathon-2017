@@ -5,6 +5,9 @@ import java.io.IOException;
 
 public class TestEmpty {
 
+private static TestEmpty INSTANCE = new TestEmpty();
+
+
     public static String render() {
         StringBuilder sb = new StringBuilder();
         renderInto(sb);
@@ -12,6 +15,8 @@ public class TestEmpty {
     }
 
     public static void renderInto(Appendable buffer) {
+  INSTANCE.renderImpl(buffer);
+}    public static void renderImpl(Appendable buffer) {
         try {
         } catch (IOException e) {
             throw new RuntimeException(e);

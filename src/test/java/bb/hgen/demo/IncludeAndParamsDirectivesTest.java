@@ -5,6 +5,9 @@ import java.io.IOException;
 
 public class IncludeAndParamsDirectivesTest {
 
+private static IncludeAndParamsDirectivesTest INSTANCE = new IncludeAndParamsDirectivesTest();
+
+
     public static String render(String string, String[] strings) {
         StringBuilder sb = new StringBuilder();
         renderInto(sb, string, strings);
@@ -12,6 +15,10 @@ public class IncludeAndParamsDirectivesTest {
     }
 
     public static void renderInto(Appendable buffer, String string, String[] strings) {
+        INSTANCE.renderImpl(buffer, string, strings);
+}
+
+    public static void renderImpl(Appendable buffer, String string, String[] strings) {
         try {
             buffer.append("<!DOCTYPE html>\n<html>\n\n    <body>\n    ");
             IncludeAndParamsDirectivesTest.renderInto(buffer, "", null);

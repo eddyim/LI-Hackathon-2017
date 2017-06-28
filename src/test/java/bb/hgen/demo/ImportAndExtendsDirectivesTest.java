@@ -6,6 +6,9 @@ import java.util.*;
 
 public class ImportAndExtendsDirectivesTest extends Object {
 
+private static ImportAndExtendsDirectivesTest INSTANCE = new ImportAndExtendsDirectivesTest();
+
+
     public static String render() {
         StringBuilder sb = new StringBuilder();
         renderInto(sb);
@@ -13,6 +16,8 @@ public class ImportAndExtendsDirectivesTest extends Object {
     }
 
     public static void renderInto(Appendable buffer) {
+  INSTANCE.renderImpl(buffer);
+}    public static void renderImpl(Appendable buffer) {
         try {
             buffer.append("\n<HTML>\n<BODY>\n");
             System.out.println( "Evaluating date now" );

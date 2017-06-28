@@ -5,6 +5,9 @@ import java.io.IOException;
 
 public class IncludeNestedSectionTest {
 
+private static IncludeNestedSectionTest INSTANCE = new IncludeNestedSectionTest();
+
+
     public static String render() {
         StringBuilder sb = new StringBuilder();
         renderInto(sb);
@@ -12,6 +15,8 @@ public class IncludeNestedSectionTest {
     }
 
     public static void renderInto(Appendable buffer) {
+  INSTANCE.renderImpl(buffer);
+}    public static void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Including Nested Sections Test</title>\n</head>\n<body>\n    ");
             NestedImportTest.mySection.renderInto(buffer);

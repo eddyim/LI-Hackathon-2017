@@ -239,6 +239,7 @@ public class HTemplateGen {
             } else {
                 classHeader.append("\npublic class " + state.name.fileName + " " + superClass + " {\n");
             }
+            classHeader.append("\nprivate static " + state.name.fileName + " INSTANCE = new " + state.name.fileName + "();\n\n");
         } else {
             if (superClass == null) {
                 classHeader.append("\npublic static class " + name + " {\n");
@@ -247,7 +248,6 @@ public class HTemplateGen {
             }
         }
 
-        state.classDepth--;
 
         classHeader.append(innerClass);
 
@@ -258,8 +258,16 @@ public class HTemplateGen {
                     "        renderInto(sb);\n" +
                     "        return sb.toString();\n" +
                     "    }\n\n");
-            classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
-                    "        try {\n");
+            if (state.classDepth > 0) {
+                classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
+                        "        try {\n");
+            } else {
+                classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
+                        "  INSTANCE.renderImpl(buffer);\n" +
+                        "}");
+                classHeader.append("    public static void renderImpl(Appendable buffer) {\n" +
+                        "        try {\n");
+            }
         } else {
             if (params == null) {
                 params = makeParamsString(paramsList);
@@ -275,8 +283,20 @@ public class HTemplateGen {
                     "        return sb.toString();\n" +
                     "    }\n\n");
 
-            classHeader.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
-                    "        try {\n");
+            if (state.classDepth > 0) {
+                classHeader.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
+                        "        try {\n");
+            } else {
+                classHeader.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
+                        "        INSTANCE.renderImpl(buffer");
+                for (String[] param: paramsList) {
+                    classHeader.append(", " + param[1]);
+                }
+                classHeader.append(");\n" +
+                        "}\n\n");
+                classHeader.append("    public static void renderImpl(Appendable buffer, " + params + ") {\n" +
+                        "        try {\n");
+            }
         }
 
 
@@ -290,6 +310,9 @@ public class HTemplateGen {
                 "        return o == null ? \"\" : o.toString();\n" +
                 "    }\n" +
                 "}");
+
+
+        state.classDepth--;
 
         return classHeader.append(jspContent);
     }

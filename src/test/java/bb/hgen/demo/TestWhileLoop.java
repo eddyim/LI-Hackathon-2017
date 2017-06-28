@@ -5,6 +5,9 @@ import java.io.IOException;
 
 public class TestWhileLoop {
 
+private static TestWhileLoop INSTANCE = new TestWhileLoop();
+
+
     public static String render() {
         StringBuilder sb = new StringBuilder();
         renderInto(sb);
@@ -12,6 +15,8 @@ public class TestWhileLoop {
     }
 
     public static void renderInto(Appendable buffer) {
+  INSTANCE.renderImpl(buffer);
+}    public static void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n");
             int fontSize = 0;

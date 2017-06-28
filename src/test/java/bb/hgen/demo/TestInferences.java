@@ -5,6 +5,9 @@ import java.io.IOException;
 
 public class TestInferences {
 
+private static TestInferences INSTANCE = new TestInferences();
+
+
 public static class mySection {
 
     public static String render(String str) {
@@ -54,6 +57,8 @@ public static class shouldBeABoolean {
     }
 
     public static void renderInto(Appendable buffer) {
+  INSTANCE.renderImpl(buffer);
+}    public static void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
             boolean blah = false;

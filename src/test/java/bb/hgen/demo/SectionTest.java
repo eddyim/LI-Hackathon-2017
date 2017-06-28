@@ -6,6 +6,9 @@ import java.util.*;
 
 public class SectionTest {
 
+private static SectionTest INSTANCE = new SectionTest();
+
+
 public static class MySection {
 
 public static class yourSection {
@@ -67,6 +70,8 @@ yourSection.renderInto(buffer, num);
     }
 
     public static void renderInto(Appendable buffer) {
+  INSTANCE.renderImpl(buffer);
+}    public static void renderImpl(Appendable buffer) {
         try {
             buffer.append("<html>\n<head><title>First JSP</title></head>\n<body>\n");
             double num = Math.random();

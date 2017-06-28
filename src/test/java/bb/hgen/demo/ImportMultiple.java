@@ -8,6 +8,9 @@ import java.util.TreeSet;
 
 public class ImportMultiple {
 
+private static ImportMultiple INSTANCE = new ImportMultiple();
+
+
     public static String render() {
         StringBuilder sb = new StringBuilder();
         renderInto(sb);
@@ -15,6 +18,8 @@ public class ImportMultiple {
     }
 
     public static void renderInto(Appendable buffer) {
+  INSTANCE.renderImpl(buffer);
+}    public static void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n");
             buffer.append("\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Test for Multiple Imports</title>\n</head>\n<body>\n    <h1>This test will make sure that multiple imports in random places is valid</h1>\n    ");

@@ -6,6 +6,9 @@ import java.util.*;
 
 public class NestedImportTest {
 
+private static NestedImportTest INSTANCE = new NestedImportTest();
+
+
 public static class mySection {
 
     public static String render() {
@@ -46,6 +49,8 @@ public static class mySection {
     }
 
     public static void renderInto(Appendable buffer) {
+  INSTANCE.renderImpl(buffer);
+}    public static void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Nested Import Tests</title>\n</head>\n<body>\n    <h1>This will make sure that nested imports are handled correctly.</h1>\n    ");
 

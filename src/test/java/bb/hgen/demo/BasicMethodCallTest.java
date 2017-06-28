@@ -5,6 +5,9 @@ import java.io.IOException;
 
 public class BasicMethodCallTest {
 
+private static BasicMethodCallTest INSTANCE = new BasicMethodCallTest();
+
+
     public static String render() {
         StringBuilder sb = new StringBuilder();
         renderInto(sb);
@@ -12,6 +15,8 @@ public class BasicMethodCallTest {
     }
 
     public static void renderInto(Appendable buffer) {
+  INSTANCE.renderImpl(buffer);
+}    public static void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n<html>\n    <head><title>First JSP</title></head>\n    <body>\n        ");
             double num = Math.random();
