@@ -3,7 +3,7 @@ package bb.tokenizer;
 
 public class Token {
 
-    enum TokenType {
+    public enum TokenType {
         STRING_CONTENT,
         EXPRESSION,
         STATEMENT,

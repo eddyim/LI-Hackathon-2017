@@ -1,4 +1,7 @@
-package bb.tokenizer;
+package bb.codegen;
+
+import bb.tokenizer.HTokenizer;
+import bb.tokenizer.Token;
 
 import java.io.*;
 
@@ -13,6 +16,8 @@ import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static bb.tokenizer.Token.TokenType.STATEMENT;
 
 
 public class HTemplateGen {
@@ -120,7 +125,7 @@ public class HTemplateGen {
 
         for (int i = state.tokenPos - 1; i >= 0; i--) {
             Token t = state.tokens.get(i);
-            if (t.getType() == Token.TokenType.STATEMENT) {
+            if (t.getType() == STATEMENT) {
                 String[] content = t.getContent().split("\\s+");
                 for (int j = content.length - 1; j >= 0; j--) {
                     if (content[j].matches(name + "(.*)")) {
