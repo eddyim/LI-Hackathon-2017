@@ -262,7 +262,7 @@ public class HTemplateGen {
             classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
                     "        INSTANCE.renderImpl(buffer);\n" +
                     "    }\n");
-            classHeader.append("    public static void renderImpl(Appendable buffer) {\n");
+            classHeader.append("    public void renderImpl(Appendable buffer) {\n");
 
         } else {
             if (params == null) {
@@ -287,7 +287,7 @@ public class HTemplateGen {
             }
             classHeader.append(");\n" +
                     "    }\n\n");
-            classHeader.append("    public static void renderImpl(Appendable buffer, " + params + ") {\n");
+            classHeader.append("    public void renderImpl(Appendable buffer, " + params + ") {\n");
 
         }
 
@@ -303,7 +303,7 @@ public class HTemplateGen {
 
 
         jspContent.append("\n" +
-                "    private static String toS(Object o) {\n" +
+                "    public String toS(Object o) {\n" +
                 "        return o == null ? \"\" : o.toString();\n" +
                 "    }\n" +
                 "}");
