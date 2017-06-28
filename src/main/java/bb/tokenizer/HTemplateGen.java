@@ -188,26 +188,34 @@ public class HTemplateGen {
                         state.classDepth++;
                         String[] content = token.getContent().substring(7).trim().split("\\(", 2);
                         String innerName = content[0];
-                        String innerVars = content[1].replace(" {", "{");
-                        innerVars = innerVars.substring(0, innerVars.length() - 1);
-                        String[][] innerVarsList = splitParamsList(innerVars);
-                        //@TODO: use the params list
-                        findParamTypes(innerVarsList, state);
-                        innerClass.append(makeClassContent(innerName, state, innerVarsList));
-                        jspContent.append("\n" + innerName + "." + "renderInto(buffer");
-                        for (int i = 0; i <innerVarsList.length; i++) {
-                            jspContent.append(", " + innerVarsList[i][1]);
+                        if (content.length == 2 && !content[1].trim().equals("\\)")) {
+                            String innerVars = content[1].replace(" {", "{");
+                            innerVars = innerVars.substring(0, innerVars.length() - 1);
+                            String[][] innerVarsList = splitParamsList(innerVars);
+                            findParamTypes(innerVarsList, state);
+                            innerClass.append(makeClassContent(innerName, state, innerVarsList));
+                            jspContent.append("\n" + innerName + "." + "renderInto(buffer");
+                            for (int i = 0; i < innerVarsList.length; i++) {
+                                jspContent.append(", " + innerVarsList[i][1]);
+                            }
+                            jspContent.append(");\n");
+                        } else {
+                            innerClass.append(makeClassContent(innerName, state, null));
+                            jspContent.append("\n" + innerName + "." + "renderInto(buffer);\n");
                         }
-                        jspContent.append(");\n");
                     } else if (token.getContent().equals("end section")) {
                         break outerloop;
                     } else if (token.getContent().matches("params.*")) {
-                        if (paramsList == null) {
-                            String content = token.getContent();
-                            params = content.substring(7, content.length() - 1).trim();
-                            paramsList = splitParamsList(params);
+                        if (state.classDepth == 0) {
+                            if (paramsList == null) {
+                                String content = token.getContent();
+                                params = content.substring(7, content.length() - 1).trim();
+                                paramsList = splitParamsList(params);
+                            } else {
+                                throw new RuntimeException("Cannot have 2 params directives: on line" + token.getLine());
+                            }
                         } else {
-                            throw new RuntimeException("Cannot have 2 params directives: on line" + token.getLine());
+                            throw new RuntimeException("Cannot have a param directive inside a section.");
                         }
                     } else if (token.getContent().matches("include.*")) {
                         String content = token.getContent().substring(8);
@@ -292,7 +300,7 @@ public class HTemplateGen {
 
         Path root = Paths.get(inputDir);
 
-        try {//@TODO: there is a max depth, which is problematic, actual sol can't be hacky like this...
+        try {
             Object[] filesToConvert = Files.find(root, Integer.MAX_VALUE,  new fileTypeChecker()).toArray();
             for (Object p : filesToConvert){
                 Name name = new Name(inputDir, outputDir, (Path) p);
