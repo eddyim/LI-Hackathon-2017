@@ -202,12 +202,16 @@ public class HTemplateGen {
                     } else if (token.getContent().equals("end section")) {
                         break outerloop;
                     } else if (token.getContent().matches("params.*")) {
-                        if (paramsList == null) {
-                            String content = token.getContent();
-                            params = content.substring(7, content.length() - 1).trim();
-                            paramsList = splitParamsList(params);
+                        if (state.classDepth == 0) {
+                            if (paramsList == null) {
+                                String content = token.getContent();
+                                params = content.substring(7, content.length() - 1).trim();
+                                paramsList = splitParamsList(params);
+                            } else {
+                                throw new RuntimeException("Cannot have 2 params directives: on line" + token.getLine());
+                            }
                         } else {
-                            throw new RuntimeException("Cannot have 2 params directives: on line" + token.getLine());
+                            throw new RuntimeException("Cannot have a param directive inside a section.");
                         }
                     } else if (token.getContent().matches("include.*")) {
                         String content = token.getContent().substring(8);
@@ -292,7 +296,7 @@ public class HTemplateGen {
 
         Path root = Paths.get(inputDir);
 
-        try {//@TODO: there is a max depth, which is problematic, actual sol can't be hacky like this...
+        try {
             Object[] filesToConvert = Files.find(root, Integer.MAX_VALUE,  new fileTypeChecker()).toArray();
             for (Object p : filesToConvert){
                 Name name = new Name(inputDir, outputDir, (Path) p);
