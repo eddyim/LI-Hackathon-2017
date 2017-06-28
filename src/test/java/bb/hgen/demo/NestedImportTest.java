@@ -11,6 +11,9 @@ private static NestedImportTest INSTANCE = new NestedImportTest();
 
 public static class mySection {
 
+private static mySection INSTANCE = new mySection();
+
+
     public static String render() {
         StringBuilder sb = new StringBuilder();
         renderInto(sb);
@@ -18,6 +21,9 @@ public static class mySection {
     }
 
     public static void renderInto(Appendable buffer) {
+        INSTANCE.renderImpl(buffer);
+    }
+    public static void renderImpl(Appendable buffer) {
         try {            buffer.append("\n        ");
             buffer.append("\n        ");
             HashSet<Integer> myHashSet = new HashSet<>();

@@ -10,6 +10,9 @@ private static TestInferences INSTANCE = new TestInferences();
 
 public static class mySection {
 
+private static mySection INSTANCE = new mySection();
+
+
     public static String render(String str) {
         StringBuilder sb = new StringBuilder();
         renderInto(sb, str);
@@ -17,6 +20,10 @@ public static class mySection {
     }
 
     public static void renderInto(Appendable buffer, String str) {
+        INSTANCE.renderImpl(buffer, str);
+    }
+
+    public static void renderImpl(Appendable buffer, String str) {
         try {            buffer.append("\n            <h1> urmom</h1>\n        ");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -29,6 +36,9 @@ public static class mySection {
 }
 public static class shouldBeABoolean {
 
+private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
+
+
     public static String render(boolean blah) {
         StringBuilder sb = new StringBuilder();
         renderInto(sb, blah);
@@ -36,6 +46,10 @@ public static class shouldBeABoolean {
     }
 
     public static void renderInto(Appendable buffer, boolean blah) {
+        INSTANCE.renderImpl(buffer, blah);
+    }
+
+    public static void renderImpl(Appendable buffer, boolean blah) {
         try {            buffer.append("\n    <h1>");
             buffer.append(toS(blah));
             buffer.append("</h1>\n    ");
