@@ -11,7 +11,13 @@ private static SectionTest INSTANCE = new SectionTest();
 
 public static class MySection {
 
+private static MySection INSTANCE = new MySection();
+
+
 public static class yourSection {
+
+private static yourSection INSTANCE = new yourSection();
+
 
     public static String render(double num) {
         StringBuilder sb = new StringBuilder();
@@ -20,6 +26,10 @@ public static class yourSection {
     }
 
     public static void renderInto(Appendable buffer, double num) {
+        INSTANCE.renderImpl(buffer, num);
+    }
+
+    public static void renderImpl(Appendable buffer, double num) {
         try {            buffer.append("\n        <body>\n        ");
             int fontSize;
             buffer.append("\n        ");
@@ -45,6 +55,10 @@ public static class yourSection {
     }
 
     public static void renderInto(Appendable buffer, double num) {
+        INSTANCE.renderImpl(buffer, num);
+    }
+
+    public static void renderImpl(Appendable buffer, double num) {
         try {            buffer.append("\n    ");
             buffer.append("\n        <body>\n            <h1>This is a demo template</h1>\n            <p>1 + 1 = ");
             buffer.append(toS(1 + 1));
