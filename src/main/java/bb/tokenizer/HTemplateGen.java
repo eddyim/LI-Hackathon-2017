@@ -188,17 +188,21 @@ public class HTemplateGen {
                         state.classDepth++;
                         String[] content = token.getContent().substring(7).trim().split("\\(", 2);
                         String innerName = content[0];
-                        String innerVars = content[1].replace(" {", "{");
-                        innerVars = innerVars.substring(0, innerVars.length() - 1);
-                        String[][] innerVarsList = splitParamsList(innerVars);
-                        //@TODO: use the params list
-                        findParamTypes(innerVarsList, state);
-                        innerClass.append(makeClassContent(innerName, state, innerVarsList));
-                        jspContent.append("\n" + innerName + "." + "renderInto(buffer");
-                        for (int i = 0; i <innerVarsList.length; i++) {
-                            jspContent.append(", " + innerVarsList[i][1]);
+                        if (content.length == 2 && !content[1].trim().equals("\\)")) {
+                            String innerVars = content[1].replace(" {", "{");
+                            innerVars = innerVars.substring(0, innerVars.length() - 1);
+                            String[][] innerVarsList = splitParamsList(innerVars);
+                            findParamTypes(innerVarsList, state);
+                            innerClass.append(makeClassContent(innerName, state, innerVarsList));
+                            jspContent.append("\n" + innerName + "." + "renderInto(buffer");
+                            for (int i = 0; i < innerVarsList.length; i++) {
+                                jspContent.append(", " + innerVarsList[i][1]);
+                            }
+                            jspContent.append(");\n");
+                        } else {
+                            innerClass.append(makeClassContent(innerName, state, null));
+                            jspContent.append("\n" + innerName + "." + "renderInto(buffer);\n");
                         }
-                        jspContent.append(");\n");
                     } else if (token.getContent().equals("end section")) {
                         break outerloop;
                     } else if (token.getContent().matches("params.*")) {
