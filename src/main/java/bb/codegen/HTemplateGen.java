@@ -17,6 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static bb.codegen.HTemplateGen.Directive.DirType.*;
+import static bb.tokenizer.Token.TokenType.DIRECTIVE;
 import static bb.tokenizer.Token.TokenType.STATEMENT;
 
 
@@ -27,6 +29,104 @@ public class HTemplateGen {
         public boolean test(Object path, Object attr){
             String regexStr = ".*\\.bb\\..*";
             return path.toString().matches(regexStr);
+        }
+    }
+
+    private static class Directive {
+        int tokenPos;
+        Token dir;
+
+        enum DirType {
+            IMPORT,     //className
+            EXTENDS,    //className
+            PARAMS,     //           params, paramsList
+            INCLUDE,     //className, params
+            SECTION,    //className, params, paramsList
+            END_SECTION//
+            }
+
+        DirType dirType;
+
+        //import "[class_name]"
+        //extends "[class_name]"
+        //params ([paramType paramName], [paramType paramName],...)                  <---nothing stored for params or end section
+        //include "[templateName]"([paramVal], [paramVal],...)
+        //section "[sectionName]"([paramType paramName], [paramType paramName],...)
+        //end section
+        String className;
+
+        //iff section, params, and include (empty string if params not given for include)
+        String params;
+
+        //iff section and params only (include doesn't need it broken down bc types aren't given)
+        String[][] paramsList;
+
+        Directive(int tokenPos, Token dir) {
+            assert(dir.getType() == DIRECTIVE);
+            this.tokenPos = tokenPos;
+            this.dir = dir;
+        }
+
+        private DirType identifyType() {
+            String content = dir.getContent();
+
+            if (content.matches("import.*")) {
+                dirType = IMPORT;
+            } else if (content.matches("extends.*")) {
+                dirType = EXTENDS;
+            } else if (content.matches("params.*")) {
+                dirType = PARAMS;
+            } else if (content.matches("include.*")) {
+                dirType = INCLUDE;
+            } else if (content.matches("section.*")) {
+                dirType = SECTION;
+            } else if (content.trim().matches("end section")) {
+                dirType = END_SECTION;
+            } else {
+                throw new RuntimeException("Unsupported Directive Type on Line " + dir.getLine());
+            }
+        }
+
+        private void fillVars() {
+            switch (dirType) {
+
+                case IMPORT:
+                    className = dir.getContent().substring(6).trim();
+                    break;
+                case EXTENDS:
+                    className = dir.getContent().substring(7).trim();
+                    break;
+                case PARAMS:
+                    String content = dir.getContent().substring(6);
+                    params = content.trim().substring(1, content.length());
+                    paramsList = splitParamsList(params);
+                    break;
+                case INCLUDE:
+                    String[] parts = dir.getContent().substring(8).trim().split("\\(", 2);
+                    className = parts[0];
+
+                    if (parts.length == 2) {
+                        params = parts[1].substring(0, parts[1].length() - 1).trim();
+                    } else {
+                        params = "";
+                    }
+
+                    break;
+                case SECTION:
+                    String[] temp = dir.getContent().substring(7).trim().split("\\(", 2);
+                    className = temp[0];
+
+                    if (temp.length == 2) {
+                        params = temp[1].substring(0, temp[1].length() - 1).trim();
+                        paramsList = splitParamsList(params);
+                        findParamTypes(paramsList);
+                    } else {
+                        params = "";
+                    }
+                    break;
+                case END_SECTION:
+                    break;
+            }
         }
     }
 
@@ -156,6 +256,8 @@ public class HTemplateGen {
     private static StringBuilder makeClassContent(State state) {
         return makeClassContent(state.name.fileName, state, null);
     }
+
+
 
     private static StringBuilder makeClassContent(String name, State state, String [][] paramsList) {
         StringBuilder classHeader = new StringBuilder();
@@ -312,6 +414,25 @@ public class HTemplateGen {
         state.classDepth--;
 
         return classHeader.append(jspContent);
+    }
+
+    private List<Directive> getDirectives(List<Token> tokens) {
+        ArrayList<Directive> dirList = new ArrayList<>();
+
+        for (int i = 0; i < tokens.size(); i++) {
+            Token token = tokens.get(i);
+            if (token.getType() == DIRECTIVE) {
+                dirList.add(new Directive(i, token));
+            }
+        }
+
+        return dirList;
+    }
+
+    private void addImports(StringBuilder sb, List<Directive> dirList) {
+        for (Directive dir: dirList) {
+            if
+        }
     }
 
     public static void main(String[] args) {
