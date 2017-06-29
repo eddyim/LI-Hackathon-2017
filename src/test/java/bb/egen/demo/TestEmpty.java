@@ -1,6 +1,5 @@
 package bb.egen.demo;
-import java.io.IOException;
-public class TestEmpty  {
+public class TestEmpty extends bb.runtime.BaseBBTemplate {
 
 private static TestEmpty INSTANCE = new TestEmpty();
     public static String render() {
@@ -9,7 +8,7 @@ private static TestEmpty INSTANCE = new TestEmpty();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 

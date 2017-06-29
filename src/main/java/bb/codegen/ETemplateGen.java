@@ -1,5 +1,8 @@
 //TODO: REMOVE SECTION CONTENT FROM STUFF
-package bb.tokenizer;
+package bb.codegen;
+import bb.tokenizer.ETokenizer;
+import bb.tokenizer.Token;
+
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;

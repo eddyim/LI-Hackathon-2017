@@ -1,6 +1,5 @@
 package bb.egen.demo;
-import java.io.IOException;
-public class Bootstrap  {
+public class Bootstrap extends bb.runtime.BaseBBTemplate {
 
 private static Bootstrap INSTANCE = new Bootstrap();
     public static String render() {
@@ -9,7 +8,7 @@ private static Bootstrap INSTANCE = new Bootstrap();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 

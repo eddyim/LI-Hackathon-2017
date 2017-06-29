@@ -1,6 +1,5 @@
 package bb.egen.demo;
-import java.io.IOException;
-public class TestWhileLoop  {
+public class TestWhileLoop extends bb.runtime.BaseBBTemplate {
 
 private static TestWhileLoop INSTANCE = new TestWhileLoop();
     public static String render() {
@@ -9,7 +8,7 @@ private static TestWhileLoop INSTANCE = new TestWhileLoop();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 

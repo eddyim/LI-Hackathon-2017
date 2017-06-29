@@ -1,6 +1,5 @@
 package bb.egen.demo;
-import java.io.IOException;
-public class IncludeAndParamsDirectivesTest  {
+public class IncludeAndParamsDirectivesTest extends bb.runtime.BaseBBTemplate {
 
 private static IncludeAndParamsDirectivesTest INSTANCE = new IncludeAndParamsDirectivesTest();
     public static String render(String string, String[] strings) {
@@ -9,7 +8,7 @@ private static IncludeAndParamsDirectivesTest INSTANCE = new IncludeAndParamsDir
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 

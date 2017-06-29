@@ -1,39 +1,8 @@
 package bb.egen.demo;
-import java.io.IOException;
-public class TestInferences  {
+public class TestInferences extends bb.runtime.BaseBBTemplate {
 
 private static TestInferences INSTANCE = new TestInferences();
-    public static String render() {
-        StringBuilder sb = new StringBuilder();
-        renderInto(sb);
-        return sb.toString();
-    }
-
-    private static String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
-     public static void renderInto(Appendable buffer) {INSTANCE.renderImpl(buffer);}    public void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
-            boolean blah = false;
-            buffer.append("\n    ");
-            if(blah) {
-        int str = 0;
-            buffer.append("\n        ");
-            shouldBeInt.renderInto(buffer, str);
-            } else {
-        String str = "i am a int str wow";
-            buffer.append("\n        ");
-            mySection.renderInto(buffer, str);
-            }
-            buffer.append("\n    ");
-            shouldBeABoolean.renderInto(buffer, blah);
-} catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-static class shouldBeInt  {
+static class shouldBeInt extends bb.runtime.BaseBBTemplate {
 
 private static shouldBeInt INSTANCE = new shouldBeInt();
     public static String render(int str) {
@@ -42,7 +11,7 @@ private static shouldBeInt INSTANCE = new shouldBeInt();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 
@@ -56,7 +25,7 @@ private static shouldBeInt INSTANCE = new shouldBeInt();
         }
     }
 }
-static class mySection  {
+static class mySection extends bb.runtime.BaseBBTemplate {
 
 private static mySection INSTANCE = new mySection();
     public static String render(String str) {
@@ -65,7 +34,7 @@ private static mySection INSTANCE = new mySection();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 
@@ -77,7 +46,7 @@ private static mySection INSTANCE = new mySection();
         }
     }
 }
-static class shouldBeABoolean  {
+static class shouldBeABoolean extends bb.runtime.BaseBBTemplate {
 
 private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
     public static String render(boolean blah) {
@@ -86,7 +55,7 @@ private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 
@@ -100,4 +69,37 @@ private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
         }
     }
 }
+    public static String render() {
+        StringBuilder sb = new StringBuilder();
+        renderInto(sb);
+        return sb.toString();
+    }
+
+    public String toS(Object o) {
+        return o == null ? "" : o.toString();
+    }
+
+     public static void renderInto(Appendable buffer) {INSTANCE.renderImpl(buffer);}    public void renderImpl(Appendable buffer) {
+        try {
+            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
+            boolean blah = false;
+            buffer.append("\n    ");
+            if(blah) {
+        int str = 0;
+            buffer.append("\n        ");
+            shouldBeInt.renderInto(buffer, str);
+            buffer.append("\n    ");
+            } else {
+        String str = "i am a int str wow";
+            buffer.append("\n        ");
+            mySection.renderInto(buffer, str);
+            buffer.append("\n    ");
+            }
+            buffer.append("\n    ");
+            shouldBeABoolean.renderInto(buffer, blah);
+            buffer.append("\n</html>\n");
+} catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

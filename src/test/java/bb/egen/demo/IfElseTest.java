@@ -1,6 +1,5 @@
 package bb.egen.demo;
-import java.io.IOException;
-public class IfElseTest  {
+public class IfElseTest extends bb.runtime.BaseBBTemplate {
 
 private static IfElseTest INSTANCE = new IfElseTest();
     public static String render() {
@@ -9,7 +8,7 @@ private static IfElseTest INSTANCE = new IfElseTest();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 
