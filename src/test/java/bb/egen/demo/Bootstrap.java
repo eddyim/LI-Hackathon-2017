@@ -8,10 +8,6 @@ private static Bootstrap INSTANCE = new Bootstrap();
         return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
      public static void renderInto(Appendable buffer) {INSTANCE.renderImpl(buffer);}    public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<html>\n<body>\n<h1>This is a demo template</h1>\n<p>1 + 1 = ");

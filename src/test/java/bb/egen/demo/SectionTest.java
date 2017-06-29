@@ -15,10 +15,6 @@ private static yourSection INSTANCE = new yourSection();
         return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
      public static void renderInto(Appendable buffer,double num) {INSTANCE.renderImpl(buffer,num);}    public void renderImpl(Appendable buffer,double num) {
         try {
             buffer.append("\n        <body>\n        ");
@@ -41,10 +37,6 @@ private static yourSection INSTANCE = new yourSection();
         return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
      public static void renderInto(Appendable buffer,double num) {INSTANCE.renderImpl(buffer,num);}    public void renderImpl(Appendable buffer,double num) {
         try {
             buffer.append("\n    ");
@@ -62,10 +54,6 @@ private static yourSection INSTANCE = new yourSection();
         StringBuilder sb = new StringBuilder();
         renderInto(sb);
         return sb.toString();
-    }
-
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
     }
 
      public static void renderInto(Appendable buffer) {INSTANCE.renderImpl(buffer);}    public void renderImpl(Appendable buffer) {

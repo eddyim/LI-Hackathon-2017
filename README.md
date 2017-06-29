@@ -1,5 +1,16 @@
-# Project Barbarossa #
-TODO: Insert a brief description of our Project
+# Background #
+- [Basic Syntax](#basic-syntax)
+  * [String Content](#string-content)
+  * [Statements](#statements)
+  * [Expressions](#expressions)
+  * [Directives](#directives)
+  * [Comments](#comments)
+- [Directive Keywords](#directive-keywords)
+  * [Import](#import)
+  * [extends](#extends)
+  * [Include](#include)
+  * [Params](#params)
+  * [Section](#section)
 
 # Basic Syntax #
 ## String Content ##

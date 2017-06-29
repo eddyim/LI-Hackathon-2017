@@ -12,10 +12,6 @@ private static mySection INSTANCE = new mySection();
         return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
      public static void renderInto(Appendable buffer) {INSTANCE.renderImpl(buffer);}    public void renderImpl(Appendable buffer) {
         try {
             buffer.append("\n        ");
@@ -43,10 +39,6 @@ private static mySection INSTANCE = new mySection();
         return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
      public static void renderInto(Appendable buffer) {INSTANCE.renderImpl(buffer);}    public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Nested Import Tests</title>\n</head>\n<body>\n    <h1>This will make sure that nested imports are handled correctly.</h1>\n    ");
@@ -55,5 +47,9 @@ private static mySection INSTANCE = new mySection();
 } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void main(String[] args) {
+    System.out.println(render());
     }
 }
