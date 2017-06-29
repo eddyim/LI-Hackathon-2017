@@ -1,3 +1,4 @@
+//TODO: REMOVE SECTION CONTENT FROM STUFF
 package bb.tokenizer;
 import java.io.*;
 import java.util.*;
@@ -138,9 +139,9 @@ public class ETemplateGen {
             Map<String, String> parsedDeclaration = parseSectionDeclaration(t.getContent().substring(8));
             List<Token> sectionTokens = new ArrayList<>();
             int endSectionCount = 1;
+            index += 1;
             while(endSectionCount > 0) {
-                index += 1;
-                Token currentToken = this.tokens.get(index);
+                Token currentToken = this.tokens.remove(index);
                 if(currentToken.getType() == DIRECTIVE && getDirectiveType(currentToken) == DirectiveType.SECTION) {
                     endSectionCount += 1;
                 } else if(currentToken.getType() == DIRECTIVE && getDirectiveType(currentToken) == DirectiveType.END_SECTION) {
@@ -210,7 +211,7 @@ public class ETemplateGen {
         }
 
         private String getToSMethod() {
-            return "    private static String toS(Object o) {\n" +
+            return "    public String toS(Object o) {\n" +
                     "        return o == null ? \"\" : o.toString();\n" +
                     "    }\n\n";
         }
@@ -243,6 +244,9 @@ public class ETemplateGen {
                     pastStatements.add(t.getContent());
                 }
                 index += 1;
+            }
+            if(extendsKeyword.length() == 0) {
+                extendsKeyword.append("extends bb.runtime.BaseBBTemplate");
             }
             index = 0;
             if(!isSection) {
