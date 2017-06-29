@@ -3,9 +3,15 @@ package bb.hgen.demo;
 import java.io.IOException;
 
 
-public class TestInferences {
+public class TestInferences extends bb.runtime.BaseBBTemplate {
 
-public static class mySection {
+private static TestInferences INSTANCE = new TestInferences();
+
+
+public static class mySection extends bb.runtime.BaseBBTemplate {
+
+private static mySection INSTANCE = new mySection();
+
 
     public static String render(String str) {
         StringBuilder sb = new StringBuilder();
@@ -14,18 +20,24 @@ public static class mySection {
     }
 
     public static void renderInto(Appendable buffer, String str) {
-        try {
-            buffer.append("\n            <h1> urmom</h1>\n        ");
+        INSTANCE.renderImpl(buffer, str);
+    }
+
+    public void renderImpl(Appendable buffer, String str) {
+        try {            buffer.append("\n            <h1> urmom</h1>\n        ");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }
-public static class shouldBeABoolean {
+public static class shouldBeABoolean extends bb.runtime.BaseBBTemplate {
+
+private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
+
 
     public static String render(boolean blah) {
         StringBuilder sb = new StringBuilder();
@@ -34,8 +46,11 @@ public static class shouldBeABoolean {
     }
 
     public static void renderInto(Appendable buffer, boolean blah) {
-        try {
-            buffer.append("\n    <h1>");
+        INSTANCE.renderImpl(buffer, blah);
+    }
+
+    public void renderImpl(Appendable buffer, boolean blah) {
+        try {            buffer.append("\n    <h1>");
             buffer.append(toS(blah));
             buffer.append("</h1>\n    ");
         } catch (IOException e) {
@@ -43,7 +58,7 @@ public static class shouldBeABoolean {
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }
@@ -54,8 +69,10 @@ public static class shouldBeABoolean {
     }
 
     public static void renderInto(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
+        try {            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
             boolean blah = false;
             buffer.append("\n    ");
             if(blah) {
@@ -76,7 +93,7 @@ shouldBeABoolean.renderInto(buffer, blah);
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }

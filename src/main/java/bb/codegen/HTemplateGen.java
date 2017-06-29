@@ -1,4 +1,7 @@
-package bb.tokenizer;
+package bb.codegen;
+
+import bb.tokenizer.HTokenizer;
+import bb.tokenizer.Token;
 
 import java.io.*;
 
@@ -14,8 +17,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static bb.tokenizer.Token.TokenType.STATEMENT;
+
 
 public class HTemplateGen {
+    private static final String baseClassName = "extends bb.runtime.BaseBBTemplate";
+
     private static class fileTypeChecker implements BiPredicate {
         public boolean test(Object path, Object attr){
             String regexStr = ".*\\.bb\\..*";
@@ -120,7 +127,7 @@ public class HTemplateGen {
 
         for (int i = state.tokenPos - 1; i >= 0; i--) {
             Token t = state.tokens.get(i);
-            if (t.getType() == Token.TokenType.STATEMENT) {
+            if (t.getType() == STATEMENT) {
                 String[] content = t.getContent().split("\\s+");
                 for (int j = content.length - 1; j >= 0; j--) {
                     if (content[j].matches(name + "(.*)")) {
@@ -154,7 +161,7 @@ public class HTemplateGen {
         StringBuilder classHeader = new StringBuilder();
         StringBuilder innerClass = new StringBuilder();
         StringBuilder jspContent = new StringBuilder();
-        String superClass = null;
+        String superClass = baseClassName;
         String params = null;
 
         outerloop:
@@ -179,7 +186,7 @@ public class HTemplateGen {
                         state.header.append(token.getContent() + ";\n");
                     } else if (token.getContent().matches("extends.*")) {
                         //@TODO: deal with extends not having a space after it
-                        if (superClass == null) {
+                        if (superClass == baseClassName) {
                             superClass = token.getContent();
                         } else {
                             throw new RuntimeException("Cannot extend 2 classes:" + superClass + " and " + token.getContent());
@@ -234,20 +241,13 @@ public class HTemplateGen {
             }
         }
         if (state.classDepth == 0) {
-            if (superClass == null) {
-                classHeader.append("\npublic class " + state.name.fileName + " {\n");
-            } else {
-                classHeader.append("\npublic class " + state.name.fileName + " " + superClass + " {\n");
-            }
+            classHeader.append("\npublic class " + state.name.fileName + " " + superClass + " {\n");
         } else {
-            if (superClass == null) {
-                classHeader.append("\npublic static class " + name + " {\n");
-            } else {
-                classHeader.append("\npublic static class " + name + " " + superClass + " {\n");
-            }
+            classHeader.append("\npublic static class " + name + " " + superClass + " {\n");
         }
 
-        state.classDepth--;
+        classHeader.append("\nprivate static " + name + " INSTANCE = new " + name + "();\n\n");
+
 
         classHeader.append(innerClass);
 
@@ -258,8 +258,12 @@ public class HTemplateGen {
                     "        renderInto(sb);\n" +
                     "        return sb.toString();\n" +
                     "    }\n\n");
+
             classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
-                    "        try {\n");
+                    "        INSTANCE.renderImpl(buffer);\n" +
+                    "    }\n");
+            classHeader.append("    public void renderImpl(Appendable buffer) {\n");
+
         } else {
             if (params == null) {
                 params = makeParamsString(paramsList);
@@ -275,21 +279,37 @@ public class HTemplateGen {
                     "        return sb.toString();\n" +
                     "    }\n\n");
 
+
             classHeader.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
-                    "        try {\n");
+                    "        INSTANCE.renderImpl(buffer");
+            for (String[] param: paramsList) {
+                classHeader.append(", " + param[1]);
+            }
+            classHeader.append(");\n" +
+                    "    }\n\n");
+            classHeader.append("    public void renderImpl(Appendable buffer, " + params + ") {\n");
+
         }
 
+        if (jspContent.length() > 0) {
+            classHeader.append("        try {");
 
-        jspContent.append("        } catch (IOException e) {\n" +
-                "            throw new RuntimeException(e);\n" +
-                "        }\n" +
-                "    }\n");
+            jspContent.append("        } catch (IOException e) {\n" +
+                    "            throw new RuntimeException(e);\n" +
+                    "        }\n");
+        }
+
+        jspContent.append("    }\n");
+
 
         jspContent.append("\n" +
-                "    private static String toS(Object o) {\n" +
+                "    public String toS(Object o) {\n" +
                 "        return o == null ? \"\" : o.toString();\n" +
                 "    }\n" +
                 "}");
+
+
+        state.classDepth--;
 
         return classHeader.append(jspContent);
     }

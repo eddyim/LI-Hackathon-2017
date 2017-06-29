@@ -3,7 +3,10 @@ package bb.hgen.demo;
 import java.io.IOException;
 
 
-public class TestForLoop {
+public class TestForLoop extends bb.runtime.BaseBBTemplate {
+
+private static TestForLoop INSTANCE = new TestForLoop();
+
 
     public static String render() {
         StringBuilder sb = new StringBuilder();
@@ -12,8 +15,10 @@ public class TestForLoop {
     }
 
     public static void renderInto(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n");
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
+        try {            buffer.append("<!DOCTYPE html>\n");
             int fontSize;
             buffer.append("\n<html>\n    <head><title>FOR LOOP Example</title></head>\n    <body>\n        ");
             for ( fontSize = 1; fontSize <= 3; fontSize++){
@@ -27,7 +32,7 @@ public class TestForLoop {
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }

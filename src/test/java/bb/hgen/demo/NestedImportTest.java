@@ -4,9 +4,15 @@ import java.io.IOException;
 
 import java.util.*;
 
-public class NestedImportTest {
+public class NestedImportTest extends bb.runtime.BaseBBTemplate {
 
-public static class mySection {
+private static NestedImportTest INSTANCE = new NestedImportTest();
+
+
+public static class mySection extends bb.runtime.BaseBBTemplate {
+
+private static mySection INSTANCE = new mySection();
+
 
     public static String render() {
         StringBuilder sb = new StringBuilder();
@@ -15,8 +21,10 @@ public static class mySection {
     }
 
     public static void renderInto(Appendable buffer) {
-        try {
-            buffer.append("\n        ");
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
+        try {            buffer.append("\n        ");
             buffer.append("\n        ");
             HashSet<Integer> myHashSet = new HashSet<>();
         myHashSet.add(1);
@@ -35,7 +43,7 @@ public static class mySection {
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }
@@ -46,8 +54,10 @@ public static class mySection {
     }
 
     public static void renderInto(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Nested Import Tests</title>\n</head>\n<body>\n    <h1>This will make sure that nested imports are handled correctly.</h1>\n    ");
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
+        try {            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Nested Import Tests</title>\n</head>\n<body>\n    <h1>This will make sure that nested imports are handled correctly.</h1>\n    ");
 
 mySection.renderInto(buffer);
             buffer.append("\n        <p> The above section should work </p>\n</body>\n</html>");
@@ -56,7 +66,7 @@ mySection.renderInto(buffer);
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }

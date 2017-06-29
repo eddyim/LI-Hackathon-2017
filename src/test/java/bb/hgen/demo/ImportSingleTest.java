@@ -4,7 +4,10 @@ import java.io.IOException;
 
 import java.util.TreeSet;
 
-public class ImportSingleTest {
+public class ImportSingleTest extends bb.runtime.BaseBBTemplate {
+
+private static ImportSingleTest INSTANCE = new ImportSingleTest();
+
 
     public static String render() {
         StringBuilder sb = new StringBuilder();
@@ -13,8 +16,10 @@ public class ImportSingleTest {
     }
 
     public static void renderInto(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n");
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
+        try {            buffer.append("<!DOCTYPE html>\n");
             buffer.append("\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Import Single Test</title>\n</head>\n<body>\n    <h1>I am going to import some stuff right now</h1>\n    <p>About to use the TreeMap </p>\n    ");
             TreeSet<Integer> myTreeSet = new TreeSet<>();
             buffer.append("\n    ");
@@ -32,7 +37,7 @@ public class ImportSingleTest {
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }

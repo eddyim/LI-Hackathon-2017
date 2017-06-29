@@ -4,11 +4,20 @@ import java.io.IOException;
 
 import java.util.*;
 
-public class SectionTest {
+public class SectionTest extends bb.runtime.BaseBBTemplate {
 
-public static class MySection {
+private static SectionTest INSTANCE = new SectionTest();
 
-public static class yourSection {
+
+public static class MySection extends bb.runtime.BaseBBTemplate {
+
+private static MySection INSTANCE = new MySection();
+
+
+public static class yourSection extends bb.runtime.BaseBBTemplate {
+
+private static yourSection INSTANCE = new yourSection();
+
 
     public static String render(double num) {
         StringBuilder sb = new StringBuilder();
@@ -17,8 +26,11 @@ public static class yourSection {
     }
 
     public static void renderInto(Appendable buffer, double num) {
-        try {
-            buffer.append("\n        <body>\n        ");
+        INSTANCE.renderImpl(buffer, num);
+    }
+
+    public void renderImpl(Appendable buffer, double num) {
+        try {            buffer.append("\n        <body>\n        ");
             int fontSize;
             buffer.append("\n        ");
             for ( fontSize = 1; fontSize <= 3; fontSize++){
@@ -32,7 +44,7 @@ public static class yourSection {
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }
@@ -43,8 +55,11 @@ public static class yourSection {
     }
 
     public static void renderInto(Appendable buffer, double num) {
-        try {
-            buffer.append("\n    ");
+        INSTANCE.renderImpl(buffer, num);
+    }
+
+    public void renderImpl(Appendable buffer, double num) {
+        try {            buffer.append("\n    ");
             buffer.append("\n        <body>\n            <h1>This is a demo template</h1>\n            <p>1 + 1 = ");
             buffer.append(toS(1 + 1));
             buffer.append("</p>\n        </body>\n    ");
@@ -56,7 +71,7 @@ yourSection.renderInto(buffer, num);
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }
@@ -67,8 +82,10 @@ yourSection.renderInto(buffer, num);
     }
 
     public static void renderInto(Appendable buffer) {
-        try {
-            buffer.append("<html>\n<head><title>First JSP</title></head>\n<body>\n");
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
+        try {            buffer.append("<html>\n<head><title>First JSP</title></head>\n<body>\n");
             double num = Math.random();
 if (num > 0.95) {
             buffer.append("\n<h2>You'll have a luck day!</h2><p>( ");
@@ -88,7 +105,7 @@ MySection.renderInto(buffer, num);
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }

@@ -3,7 +3,10 @@ package bb.hgen.demo;
 import java.io.IOException;
 
 
-public class Bootstrap {
+public class Bootstrap extends bb.runtime.BaseBBTemplate {
+
+private static Bootstrap INSTANCE = new Bootstrap();
+
 
     public static String render() {
         StringBuilder sb = new StringBuilder();
@@ -12,8 +15,10 @@ public class Bootstrap {
     }
 
     public static void renderInto(Appendable buffer) {
-        try {
-            buffer.append("<html>\n<body>\n<h1>This is a demo template</h1>\n<p>1 + 1 = ");
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
+        try {            buffer.append("<html>\n<body>\n<h1>This is a demo template</h1>\n<p>1 + 1 = ");
             buffer.append(toS(1 + 1));
             buffer.append("</p>\n</body>\n</html>");
         } catch (IOException e) {
@@ -21,7 +26,7 @@ public class Bootstrap {
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }

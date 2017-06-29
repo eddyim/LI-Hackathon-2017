@@ -6,7 +6,10 @@ import java.util.LinkedList;
 import java.util.HashSet;
 import java.util.TreeSet;
 
-public class ImportMultiple {
+public class ImportMultiple extends bb.runtime.BaseBBTemplate {
+
+private static ImportMultiple INSTANCE = new ImportMultiple();
+
 
     public static String render() {
         StringBuilder sb = new StringBuilder();
@@ -15,8 +18,10 @@ public class ImportMultiple {
     }
 
     public static void renderInto(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n");
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
+        try {            buffer.append("<!DOCTYPE html>\n");
             buffer.append("\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Test for Multiple Imports</title>\n</head>\n<body>\n    <h1>This test will make sure that multiple imports in random places is valid</h1>\n    ");
             LinkedList<Integer> myLinkedList = new LinkedList<>();
        HashSet<LinkedList<Integer>> myHashSet = new HashSet<>();
@@ -37,7 +42,7 @@ public class ImportMultiple {
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }

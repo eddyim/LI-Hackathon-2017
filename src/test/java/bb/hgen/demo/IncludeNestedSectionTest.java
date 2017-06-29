@@ -3,7 +3,10 @@ package bb.hgen.demo;
 import java.io.IOException;
 
 
-public class IncludeNestedSectionTest {
+public class IncludeNestedSectionTest extends bb.runtime.BaseBBTemplate {
+
+private static IncludeNestedSectionTest INSTANCE = new IncludeNestedSectionTest();
+
 
     public static String render() {
         StringBuilder sb = new StringBuilder();
@@ -12,8 +15,10 @@ public class IncludeNestedSectionTest {
     }
 
     public static void renderInto(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Including Nested Sections Test</title>\n</head>\n<body>\n    ");
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
+        try {            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Including Nested Sections Test</title>\n</head>\n<body>\n    ");
             NestedImportTest.mySection.renderInto(buffer);
             buffer.append("\n</body>\n</html>");
         } catch (IOException e) {
@@ -21,7 +26,7 @@ public class IncludeNestedSectionTest {
         }
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }

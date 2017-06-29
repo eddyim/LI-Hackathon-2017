@@ -3,7 +3,10 @@ package bb.hgen.demo;
 import java.io.IOException;
 
 
-public class TestEmpty {
+public class TestEmpty extends bb.runtime.BaseBBTemplate {
+
+private static TestEmpty INSTANCE = new TestEmpty();
+
 
     public static String render() {
         StringBuilder sb = new StringBuilder();
@@ -12,13 +15,12 @@ public class TestEmpty {
     }
 
     public static void renderInto(Appendable buffer) {
-        try {
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 }
