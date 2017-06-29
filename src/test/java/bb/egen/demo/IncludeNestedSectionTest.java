@@ -1,6 +1,5 @@
 package bb.egen.demo;
-import java.io.IOException;
-public class IncludeNestedSectionTest  {
+public class IncludeNestedSectionTest extends bb.runtime.BaseBBTemplate {
 
 private static IncludeNestedSectionTest INSTANCE = new IncludeNestedSectionTest();
     public static String render() {
@@ -9,7 +8,7 @@ private static IncludeNestedSectionTest INSTANCE = new IncludeNestedSectionTest(
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 

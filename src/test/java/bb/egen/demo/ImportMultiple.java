@@ -1,9 +1,8 @@
 package bb.egen.demo;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.HashSet;
 import java.util.TreeSet;
-public class ImportMultiple  {
+public class ImportMultiple extends bb.runtime.BaseBBTemplate {
 
 private static ImportMultiple INSTANCE = new ImportMultiple();
     public static String render() {
@@ -12,7 +11,7 @@ private static ImportMultiple INSTANCE = new ImportMultiple();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 

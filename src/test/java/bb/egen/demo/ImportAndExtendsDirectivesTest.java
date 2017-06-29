@@ -1,5 +1,4 @@
 package bb.egen.demo;
-import java.io.IOException;
 import java.util.*;
 public class ImportAndExtendsDirectivesTest extends Object {
 
@@ -10,7 +9,7 @@ private static ImportAndExtendsDirectivesTest INSTANCE = new ImportAndExtendsDir
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 

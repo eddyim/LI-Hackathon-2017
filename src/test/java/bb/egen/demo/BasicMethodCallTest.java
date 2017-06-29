@@ -1,6 +1,5 @@
 package bb.egen.demo;
-import java.io.IOException;
-public class BasicMethodCallTest  {
+public class BasicMethodCallTest extends bb.runtime.BaseBBTemplate {
 
 private static BasicMethodCallTest INSTANCE = new BasicMethodCallTest();
     public static String render() {
@@ -9,7 +8,7 @@ private static BasicMethodCallTest INSTANCE = new BasicMethodCallTest();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 

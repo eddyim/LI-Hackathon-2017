@@ -1,7 +1,6 @@
 package bb.egen.demo;
-import java.io.IOException;
 import java.util.TreeSet;
-public class ImportSingleTest  {
+public class ImportSingleTest extends bb.runtime.BaseBBTemplate {
 
 private static ImportSingleTest INSTANCE = new ImportSingleTest();
     public static String render() {
@@ -10,7 +9,7 @@ private static ImportSingleTest INSTANCE = new ImportSingleTest();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 

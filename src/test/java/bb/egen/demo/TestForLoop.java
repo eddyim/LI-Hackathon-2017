@@ -1,6 +1,5 @@
 package bb.egen.demo;
-import java.io.IOException;
-public class TestForLoop  {
+public class TestForLoop extends bb.runtime.BaseBBTemplate {
 
 private static TestForLoop INSTANCE = new TestForLoop();
     public static String render() {
@@ -9,7 +8,7 @@ private static TestForLoop INSTANCE = new TestForLoop();
         return sb.toString();
     }
 
-    private static String toS(Object o) {
+    public String toS(Object o) {
         return o == null ? "" : o.toString();
     }
 
