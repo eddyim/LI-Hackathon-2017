@@ -60,7 +60,7 @@ public class ETemplateGen {
             fileContents.append(getIntro(this.name, ""));
             handleTokens(renderImplContent);
             fileContents.append(getRenderMethod());
-            fileContents.append(getToSMethod());
+            //fileContents.append(getToSMethod());
             fileContents.append(getRenderIntoMethod());
             fileContents.append(getRenderImplMethod(renderImplContent));
             fileContents.append("}\n");
@@ -74,7 +74,7 @@ public class ETemplateGen {
             fileContents.append(getIntro(getFileName(templateFile), outputPath + relativePath));
             handleTokens(renderImplContent);
             fileContents.append(getRenderMethod());
-            fileContents.append(getToSMethod());
+            //fileContents.append(getToSMethod());
             fileContents.append(getRenderIntoMethod());
             fileContents.append(getRenderImplMethod(renderImplContent));
             fileContents.append("}");
