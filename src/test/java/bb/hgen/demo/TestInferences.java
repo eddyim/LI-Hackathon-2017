@@ -8,32 +8,80 @@ public class TestInferences extends bb.runtime.BaseBBTemplate {
 private static TestInferences INSTANCE = new TestInferences();
 
 
-public static class mySection extends bb.runtime.BaseBBTemplate {
+    public static String render() {
+        StringBuilder sb = new StringBuilder();
+        renderInto(sb);
+        return sb.toString();
+    }
 
-private static mySection INSTANCE = new mySection();
+    public static void renderInto(Appendable buffer) {
+        INSTANCE.renderImpl(buffer);
+    }
+    public void renderImpl(Appendable buffer) {
+        try {
+            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
+            boolean blah = false;
+            buffer.append("\n    ");
+            if(blah) {
+        int str = 0;
+            buffer.append("\n        ");
+            } else {
+        String str = "i am a int str wow";
+            buffer.append("\n        ");
+            }
+            buffer.append("\n    ");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+public static class shouldBeInt extends bb.runtime.BaseBBTemplate {
+
+private static shouldBeInt INSTANCE = new shouldBeInt();
 
 
-    public static String render(String str) {
+    public static String render(int str) {
         StringBuilder sb = new StringBuilder();
         renderInto(sb, str);
         return sb.toString();
     }
 
-    public static void renderInto(Appendable buffer, String str) {
+    public static void renderInto(Appendable buffer, int str) {
         INSTANCE.renderImpl(buffer, str);
     }
 
-    public void renderImpl(Appendable buffer, String str) {
-        try {            buffer.append("\n            <h1> urmom</h1>\n        ");
+    public void renderImpl(Appendable buffer, int str) {
+        try {
+            buffer.append("\n        ");
+            buffer.append(toS(str + 1));
+            buffer.append("\n        ");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }}
+
+public static class mySection extends bb.runtime.BaseBBTemplate {
+
+private static mySection INSTANCE = new mySection();
+
+
+    public static String render(int str) {
+        StringBuilder sb = new StringBuilder();
+        renderInto(sb, str);
+        return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
+    public static void renderInto(Appendable buffer, int str) {
+        INSTANCE.renderImpl(buffer, str);
     }
-}
+
+    public void renderImpl(Appendable buffer, int str) {
+        try {
+            buffer.append("\n            <h1> urmom</h1>\n        ");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }}
+
 public static class shouldBeABoolean extends bb.runtime.BaseBBTemplate {
 
 private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
@@ -50,50 +98,12 @@ private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
     }
 
     public void renderImpl(Appendable buffer, boolean blah) {
-        try {            buffer.append("\n    <h1>");
+        try {
+            buffer.append("\n    <h1>");
             buffer.append(toS(blah));
             buffer.append("</h1>\n    ");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-}
-    public static String render() {
-        StringBuilder sb = new StringBuilder();
-        renderInto(sb);
-        return sb.toString();
-    }
-
-    public static void renderInto(Appendable buffer) {
-        INSTANCE.renderImpl(buffer);
-    }
-    public void renderImpl(Appendable buffer) {
-        try {            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
-            boolean blah = false;
-            buffer.append("\n    ");
-            if(blah) {
-        int str = 0;
-    } else {
-        String str = "int str";
-            buffer.append("\n        ");
-
-mySection.renderInto(buffer, str);
-            buffer.append("\n    ");
-            }
-            buffer.append("\n    ");
-
-shouldBeABoolean.renderInto(buffer, blah);
-            buffer.append("\n</html>");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
+    }}
 }

@@ -19,7 +19,8 @@ private static IncludeAndParamsDirectivesTest INSTANCE = new IncludeAndParamsDir
     }
 
     public void renderImpl(Appendable buffer, String string, String[] strings) {
-        try {            buffer.append("<!DOCTYPE html>\n<html>\n\n    <body>\n    ");
+        try {
+            buffer.append("<!DOCTYPE html>\n<html>\n\n    <body>\n    ");
             IncludeAndParamsDirectivesTest.renderInto(buffer, "", null);
             buffer.append("\n    ");
             buffer.append("\n    ");
@@ -30,9 +31,4 @@ private static IncludeAndParamsDirectivesTest INSTANCE = new IncludeAndParamsDir
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-}
+    }}

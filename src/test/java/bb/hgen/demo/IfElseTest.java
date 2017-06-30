@@ -18,7 +18,8 @@ private static IfElseTest INSTANCE = new IfElseTest();
         INSTANCE.renderImpl(buffer);
     }
     public void renderImpl(Appendable buffer) {
-        try {            buffer.append("<!DOCTYPE html>\n");
+        try {
+            buffer.append("<!DOCTYPE html>\n");
             int day = 3;
             buffer.append("\n<html>\n    <head><title>IF...ELSE Example</title></head>\n\n    <body>\n        ");
             if (day == 1 | day == 7) {
@@ -26,13 +27,10 @@ private static IfElseTest INSTANCE = new IfElseTest();
             } else {
             buffer.append("\n            <p> Today is not weekend</p>\n        ");
             }
+            buffer.append("\n        ");
+            Bootstrap.renderInto(buffer);
             buffer.append("\n    </body>\n</html>");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-}
+    }}
