@@ -2,8 +2,8 @@ package bb.runtime;
 
 public interface ILayout {
 
-    void renderHeader(Appendable buffer);
+    void header(Appendable buffer);
 
-    void renderFooter(Appendable buffer);
+    void footer(Appendable buffer);
 
 }
