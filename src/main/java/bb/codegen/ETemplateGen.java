@@ -271,19 +271,6 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             return intro.toString();
         }
 
-        private String getPackageStatement(String outputDir) {
-            String fullPath = outputDir;
-            if (fullPath.contains("java")) {
-                int javaIndex = fullPath.indexOf("java");
-                fullPath = fullPath.substring(0, javaIndex) + fullPath.substring(javaIndex + 5);
-            }
-            fullPath = fullPath.replaceAll("/", ".");
-            while(fullPath.charAt(0) == '.') {
-                fullPath = fullPath.substring(1);
-            }
-            return "package " + fullPath + ";";
-        }
-
         void handleTokens(StringBuilder renderInto) {
             while(index < tokens.size())
                 handleNextToken(this.tokens.get(index++), renderInto);
