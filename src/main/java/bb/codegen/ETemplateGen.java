@@ -224,10 +224,25 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             return getIntro(splitName[splitName.length - 1], "package " + packageStatement.substring(0, packageStatement.length() - 1) + ";");
         }
 
+        private void handleLayoutCreation(Token t, StringBuilder additionalClasses, StringBuilder importStatements) {
+            List<Token> header = new ArrayList<>();
+            List<Token> footer = new ArrayList<>();
+            for(int i = 0; i < index; i += 1) {
+                header.add(tokens.get(i));
+            }
+            for(int i = index + 1; i < tokens.size(); i += 1) {
+                footer.add(tokens.get(i));
+            }
+            FileGenerator headerContent = new FileGenerator(header, new ArrayList<String>(), "header", "");
+            FileGenerator footerContent = new FileGenerator(footer, new ArrayList<String>(), "footer", "");
+            additionalClasses.append(headerContent.buildSection(importStatements));
+            additionalClasses.append(footerContent.buildSection(importStatements));
+        }
         private String getIntro(String name, String packageStatement) {
             StringBuilder extendsKeyword = new StringBuilder();
             StringBuilder additionalClasses = new StringBuilder();
             StringBuilder intro = new StringBuilder();
+            boolean layoutCreated = false;
 
             while(index < tokens.size()) {
                 Token t = tokens.get(index);
@@ -249,7 +264,14 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                     } else if(getDirectiveType(t) == DirectiveType.SECTION) {
                         handleSectionCreation(t, additionalClasses, importStatements);
                     } else if(getDirectiveType(t) == DirectiveType.CREATE_LAYOUT) {
-
+                        handleLayoutCreation(t, additionalClasses, importStatements);
+                        this.tokens = new ArrayList<Token>();
+                        this.tokens.add(new Token(DIRECTIVE, "section header", 0,0,0));
+                        this.tokens.add(new Token(DIRECTIVE, "section footer", 0,0,0));
+                        layoutCreated = true;
+                        importStatements.append("import java.io.IOException;\n");
+                        importStatements.append("import bb.runtime.ILayout;\n");
+                        break;
                     }
                 } else if (t.getType() == STATEMENT) {
                     pastStatements.add(t.getContent());
@@ -266,7 +288,11 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             if (!isSection) {
                 intro.append(importStatements);
             }
-            String classStatement = "class "+ name + " " + extendsKeyword + " {\n";
+            String classStatement = "class " + name + " " + extendsKeyword;
+            if (layoutCreated) {
+                classStatement = classStatement + " implements ILayout";
+            }
+            classStatement = classStatement + " {\n";
             if (!isSection) {
                 classStatement = "public " + classStatement;
             } else {
@@ -275,12 +301,27 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             intro.append(classStatement).append("\n");
             intro.append("private static ").append(name).append(" INSTANCE = new ")
                     .append(name).append("();\n").append(additionalClasses);
+            if(layoutCreated) {
+                intro.append(getILayoutContent());
+            }
             return intro.toString();
         }
 
         void handleTokens(StringBuilder renderInto) {
             while(index < tokens.size())
                 handleNextToken(this.tokens.get(index++), renderInto);
+        }
+
+        private String getILayoutContent() {
+            return "@Override\n" +
+                    "    public void header(Appendable buffer) throws IOException {\n" +
+                    "        header.renderInto(buffer);\n" +
+                    "    }\n" +
+                    "\n" +
+                    "    @Override\n" +
+                    "    public void footer(Appendable buffer) throws IOException {\n" +
+                    "        footer.renderInto(buffer);\n" +
+                    "    }\n";
         }
 
         private void handleNextToken(Token t, StringBuilder renderInto) {
@@ -301,7 +342,8 @@ public class ETemplateGen implements ITemplateCodeGenerator {
 
         private void handleDirective(Token t, StringBuilder renderInto) {
             DirectiveType type = getDirectiveType(t);
-            if (type == DirectiveType.IMPORT_STATEMENT || type == DirectiveType.EXTENDS || type == DirectiveType.PARAM || type == DirectiveType.END_SECTION) {
+            if (type == DirectiveType.IMPORT_STATEMENT || type == DirectiveType.EXTENDS || type == DirectiveType.PARAM ||
+                    type == DirectiveType.END_SECTION || type == DirectiveType.CREATE_LAYOUT) {
             } else if (type == DirectiveType.INCLUDE) {
                 handleInclude(t, renderInto);
             } else if (type == DirectiveType.SECTION) {
