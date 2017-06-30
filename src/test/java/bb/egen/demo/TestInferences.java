@@ -11,10 +11,6 @@ private static shouldBeInt INSTANCE = new shouldBeInt();
         return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
      public static void renderInto(Appendable buffer,int str) {INSTANCE.renderImpl(buffer,str);}    public void renderImpl(Appendable buffer,int str) {
         try {
             buffer.append("\n        ");
@@ -34,10 +30,6 @@ private static mySection INSTANCE = new mySection();
         return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
      public static void renderInto(Appendable buffer,String str) {INSTANCE.renderImpl(buffer,str);}    public void renderImpl(Appendable buffer,String str) {
         try {
             buffer.append("\n            <h1> urmom</h1>\n        ");
@@ -55,10 +47,6 @@ private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
         return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
      public static void renderInto(Appendable buffer,boolean blah) {INSTANCE.renderImpl(buffer,blah);}    public void renderImpl(Appendable buffer,boolean blah) {
         try {
             buffer.append("\n    <h1>");
@@ -73,10 +61,6 @@ private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
         StringBuilder sb = new StringBuilder();
         renderInto(sb);
         return sb.toString();
-    }
-
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
     }
 
      public static void renderInto(Appendable buffer) {INSTANCE.renderImpl(buffer);}    public void renderImpl(Appendable buffer) {

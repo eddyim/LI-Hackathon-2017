@@ -8,10 +8,6 @@ private static BasicMethodCallTest INSTANCE = new BasicMethodCallTest();
         return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
      public static void renderInto(Appendable buffer) {INSTANCE.renderImpl(buffer);}    public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n<html>\n    <head><title>First JSP</title></head>\n    <body>\n        ");

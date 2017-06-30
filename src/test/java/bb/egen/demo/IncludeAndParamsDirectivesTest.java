@@ -8,10 +8,6 @@ private static IncludeAndParamsDirectivesTest INSTANCE = new IncludeAndParamsDir
         return sb.toString();
     }
 
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
      public static void renderInto(Appendable buffer,String string, String[] strings) {INSTANCE.renderImpl(buffer,string,strings);}    public void renderImpl(Appendable buffer,String string, String[] strings) {
         try {
             buffer.append("<!DOCTYPE html>\n<html>\n\n    <body>\n    ");

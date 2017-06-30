@@ -3,8 +3,12 @@
     <% boolean blah = false; %>
     <% if(blah) {
         int str = 0;
-    } else {
-        String str = "int str"; %>
+        %>
+        <%@ section shouldBeInt(str) %>
+        ${str + 1}
+        <%@ end section %>
+    <% } else {
+        String str = "i am a int str wow"; %>
         <%@ section mySection(str) %>
             <h1> urmom</h1>
         <%@ end section %>
@@ -13,3 +17,4 @@
     <h1>${blah}</h1>
     <%@ end section %>
 </html>
+<%-- What's up this is a comment --%>
