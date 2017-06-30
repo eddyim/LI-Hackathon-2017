@@ -15,7 +15,7 @@ import static bb.codegen.HTemplateGen.Directive.DirType.*;
 import static bb.tokenizer.Token.TokenType.*;
 
 
-public class HTemplateGen {
+public class HTemplateGen implements ITemplateCodeGenerator{
     private static final String BASE_CLASS_NAME = "extends bb.runtime.BaseBBTemplate";
 
     private static class fileTypeChecker implements BiPredicate {
@@ -483,7 +483,7 @@ public class HTemplateGen {
 
     }
 
-    public static String generateCode(String fullyQualifiedName, String source) {
+    public String generateCode(String fullyQualifiedName, String source) {
         String[] parts = fullyQualifiedName.split("\\.");
         String className = parts[parts.length - 1];
         String packageName = parts[1];

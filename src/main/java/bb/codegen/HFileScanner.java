@@ -9,8 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.BiPredicate;
 
-import static bb.codegen.HTemplateGen.generateCode;
-
 
 public class HFileScanner {
     private static class fileTypeChecker implements BiPredicate {
@@ -56,7 +54,8 @@ public class HFileScanner {
                     System.out.println("File already exists.");
                 }
 
-                String content = generateCode(fullyQualifiedOutputName, new String(Files.readAllBytes(Paths.get(p.toString()))));
+                ITemplateCodeGenerator codeGenerator = new HTemplateGen();
+                String content = codeGenerator.generateCode(fullyQualifiedOutputName, new String(Files.readAllBytes(Paths.get(p.toString()))));
                 FileWriter fw = null;
                 BufferedWriter bw = null;
 
