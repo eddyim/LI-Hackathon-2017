@@ -36,4 +36,5 @@ private static ImportSingleTest INSTANCE = new ImportSingleTest();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}

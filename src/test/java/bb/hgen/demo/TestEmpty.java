@@ -18,4 +18,5 @@ private static TestEmpty INSTANCE = new TestEmpty();
         INSTANCE.renderImpl(buffer);
     }
     public void renderImpl(Appendable buffer) {
-    }}
+    }
+}

@@ -33,4 +33,5 @@ private static TestWhileLoop INSTANCE = new TestWhileLoop();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}

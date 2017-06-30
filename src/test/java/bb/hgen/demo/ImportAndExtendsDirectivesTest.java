@@ -30,4 +30,5 @@ private static ImportAndExtendsDirectivesTest INSTANCE = new ImportAndExtendsDir
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}

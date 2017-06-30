@@ -25,4 +25,5 @@ private static Bootstrap INSTANCE = new Bootstrap();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}

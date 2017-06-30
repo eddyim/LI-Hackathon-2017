@@ -31,4 +31,5 @@ private static TestForLoop INSTANCE = new TestForLoop();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}

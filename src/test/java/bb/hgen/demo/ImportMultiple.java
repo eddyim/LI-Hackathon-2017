@@ -41,4 +41,5 @@ private static ImportMultiple INSTANCE = new ImportMultiple();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}

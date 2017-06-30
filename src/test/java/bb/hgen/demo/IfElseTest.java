@@ -33,4 +33,5 @@ private static IfElseTest INSTANCE = new IfElseTest();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}

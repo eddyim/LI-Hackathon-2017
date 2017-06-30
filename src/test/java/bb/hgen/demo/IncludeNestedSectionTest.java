@@ -19,4 +19,5 @@ private static IncludeNestedSectionTest INSTANCE = new IncludeNestedSectionTest(
     }
     public void renderImpl(Appendable buffer) {
             NestedImportTest.mySection.renderInto(buffer);
-    }}
+    }
+}
