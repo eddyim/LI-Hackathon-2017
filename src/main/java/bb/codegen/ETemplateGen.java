@@ -73,6 +73,10 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             return fileContents.toString();
         }
 
+        String buildLayout(String name, String packageStatement) {
+            return "";
+        }
+
         private Map<String, String> parseSectionDeclaration(String section) {
             Map<String, String> returnValues = new HashMap<>();
             if(section.contains("(")) {
@@ -219,6 +223,7 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             }
             return getIntro(splitName[splitName.length - 1], "package " + packageStatement.substring(0, packageStatement.length() - 1) + ";");
         }
+
         private String getIntro(String name, String packageStatement) {
             StringBuilder extendsKeyword = new StringBuilder();
             StringBuilder additionalClasses = new StringBuilder();
@@ -243,6 +248,8 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                         additionalParameters.append(parameterContent);
                     } else if(getDirectiveType(t) == DirectiveType.SECTION) {
                         handleSectionCreation(t, additionalClasses, importStatements);
+                    } else if(getDirectiveType(t) == DirectiveType.CREATE_LAYOUT) {
+
                     }
                 } else if (t.getType() == STATEMENT) {
                     pastStatements.add(t.getContent());
@@ -344,6 +351,8 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                 return DirectiveType.END_SECTION;
             } else if (token.getContent().contains("section")) {
                 return DirectiveType.SECTION;
+            } else if (token.getContent().equals("content")) {
+                return DirectiveType.CREATE_LAYOUT;
             } else {
                     throw new RuntimeException("Invalid Directive");
                 }
@@ -390,7 +399,8 @@ public class ETemplateGen implements ITemplateCodeGenerator {
         PARAM,
         INCLUDE,
         SECTION,
-        END_SECTION
+        END_SECTION,
+        CREATE_LAYOUT
     }
 
 }
