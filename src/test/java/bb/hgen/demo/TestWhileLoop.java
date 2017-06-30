@@ -18,7 +18,8 @@ private static TestWhileLoop INSTANCE = new TestWhileLoop();
         INSTANCE.renderImpl(buffer);
     }
     public void renderImpl(Appendable buffer) {
-        try {            buffer.append("<!DOCTYPE html>\n");
+        try {
+            buffer.append("<!DOCTYPE html>\n");
             int fontSize = 0;
             buffer.append("\n<html>\n    <head><title>WHILE LOOP Example</title></head>\n\n    <body>\n        ");
             while ( fontSize <= 3){
@@ -32,9 +33,5 @@ private static TestWhileLoop INSTANCE = new TestWhileLoop();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
     }
 }

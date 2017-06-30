@@ -10,35 +10,29 @@ import java.util.regex.Pattern;
 
 import static bb.tokenizer.Token.TokenType.*;
 
-public class ETemplateGen {
-    private static final String additionalDirectory = "/bb/egen";
+public class ETemplateGen implements ITemplateCodeGenerator {
     private static final String bufferCallBeginning = "            buffer.append(";
-    private String outputPath;
-    private String inputPath;
 
     /** This class takes in a list of tokens and generates the correct file. */
     class FileGenerator {
-        File templateFile;
         private List<Token> tokens;
         private List<String> pastStatements;
         boolean isSection;
         private StringBuilder additionalParameters;
         private StringBuilder importStatements;
         String name;
-        String relativePath;
         int index;
 
 
-        FileGenerator(File f, String relativePath) {
-            templateFile = f;
-            index = 0;
+        FileGenerator(String fullyQualifiedName, String source) {
+            tokens = new ETokenizer().tokenize(source);
             pastStatements = new ArrayList<>();
-            this.name = templateFile.getName();
+            this.name = fullyQualifiedName;
             isSection = false;
-            this.relativePath = relativePath;
-            parseFile();
             additionalParameters = new StringBuilder();
             importStatements = new StringBuilder();
+            index = 0;
+
         }
 
         FileGenerator(List<Token> tokens, List<String> pastStatements, String name, String params) {
@@ -60,7 +54,6 @@ public class ETemplateGen {
             fileContents.append(getIntro(this.name, ""));
             handleTokens(renderImplContent);
             fileContents.append(getRenderMethod());
-            //fileContents.append(getToSMethod());
             fileContents.append(getRenderIntoMethod());
             fileContents.append(getRenderImplMethod(renderImplContent));
             fileContents.append("}\n");
@@ -71,14 +64,17 @@ public class ETemplateGen {
         String buildFile() {
             StringBuilder fileContents = new StringBuilder();
             StringBuilder renderImplContent = new StringBuilder();
-            fileContents.append(getIntro(getFileName(templateFile), outputPath + relativePath));
+            fileContents.append(getIntro(name));
             handleTokens(renderImplContent);
             fileContents.append(getRenderMethod());
-            //fileContents.append(getToSMethod());
             fileContents.append(getRenderIntoMethod());
             fileContents.append(getRenderImplMethod(renderImplContent));
             fileContents.append("}");
             return fileContents.toString();
+        }
+
+        String buildLayout(String name, String packageStatement) {
+            return "";
         }
 
         private Map<String, String> parseSectionDeclaration(String section) {
@@ -219,10 +215,35 @@ public class ETemplateGen {
                     "    }\n\n";
         }
 
-        private String getIntro(String fileName, String filePath) {
+        private String getIntro(String fullyQualifiedName) {
+            String[] splitName = fullyQualifiedName.split("\\.");
+            String packageStatement = "";
+            for(int i = 0; i < splitName.length - 1; i += 1) {
+                packageStatement = packageStatement + splitName[i] + ".";
+            }
+            return getIntro(splitName[splitName.length - 1], "package " + packageStatement.substring(0, packageStatement.length() - 1) + ";");
+        }
+
+        private void handleLayoutCreation(Token t, StringBuilder additionalClasses, StringBuilder importStatements) {
+            List<Token> header = new ArrayList<>();
+            List<Token> footer = new ArrayList<>();
+            for(int i = 0; i < index; i += 1) {
+                header.add(tokens.get(i));
+            }
+            for(int i = index + 1; i < tokens.size(); i += 1) {
+                footer.add(tokens.get(i));
+            }
+            FileGenerator headerContent = new FileGenerator(header, new ArrayList<String>(), "header", "");
+            FileGenerator footerContent = new FileGenerator(footer, new ArrayList<String>(), "footer", "");
+            additionalClasses.append(headerContent.buildSection(importStatements));
+            additionalClasses.append(footerContent.buildSection(importStatements));
+        }
+        private String getIntro(String name, String packageStatement) {
             StringBuilder extendsKeyword = new StringBuilder();
             StringBuilder additionalClasses = new StringBuilder();
             StringBuilder intro = new StringBuilder();
+            boolean layoutCreated = false;
+
             while(index < tokens.size()) {
                 Token t = tokens.get(index);
                 if(t.getType() == DIRECTIVE) {
@@ -242,6 +263,15 @@ public class ETemplateGen {
                         additionalParameters.append(parameterContent);
                     } else if(getDirectiveType(t) == DirectiveType.SECTION) {
                         handleSectionCreation(t, additionalClasses, importStatements);
+                    } else if(getDirectiveType(t) == DirectiveType.CREATE_LAYOUT) {
+                        handleLayoutCreation(t, additionalClasses, importStatements);
+                        this.tokens = new ArrayList<Token>();
+                        this.tokens.add(new Token(DIRECTIVE, "section header", 0,0,0));
+                        this.tokens.add(new Token(DIRECTIVE, "section footer", 0,0,0));
+                        layoutCreated = true;
+                        importStatements.append("import java.io.IOException;\n");
+                        importStatements.append("import bb.runtime.ILayout;\n");
+                        break;
                     }
                 } else if (t.getType() == STATEMENT) {
                     pastStatements.add(t.getContent());
@@ -253,53 +283,45 @@ public class ETemplateGen {
             }
             index = 0;
             if(!isSection) {
-                intro.append(getPackageStatement(filePath)).append("\n");
+                intro.append(packageStatement).append("\n");
             }
             if (!isSection) {
                 intro.append(importStatements);
             }
-            String classStatement = "class "+ fileName.replace(".java", "") + " " + extendsKeyword + " {\n";
+            String classStatement = "class " + name + " " + extendsKeyword;
+            if (layoutCreated) {
+                classStatement = classStatement + " implements ILayout";
+            }
+            classStatement = classStatement + " {\n";
             if (!isSection) {
                 classStatement = "public " + classStatement;
             } else {
                 classStatement = "static " + classStatement;
             }
             intro.append(classStatement).append("\n");
-            intro.append("private static ").append(fileName.replace(".java", "")).append(" INSTANCE = new ")
-                    .append(fileName.replace(".java", "")).append("();\n").append(additionalClasses);
+            intro.append("private static ").append(name).append(" INSTANCE = new ")
+                    .append(name).append("();\n").append(additionalClasses);
+            if(layoutCreated) {
+                intro.append(getILayoutContent());
+            }
             return intro.toString();
-        }
-
-        private String getPackageStatement(String outputDir) {
-            String fullPath = outputDir;
-            if (fullPath.contains("java")) {
-                int javaIndex = fullPath.indexOf("java");
-                fullPath = fullPath.substring(0, javaIndex) + fullPath.substring(javaIndex + 5);
-            }
-            fullPath = fullPath.replaceAll("/", ".");
-            while(fullPath.charAt(0) == '.') {
-                fullPath = fullPath.substring(1);
-            }
-            return "package " + fullPath + ";";
-        }
-
-        private void parseFile() {
-            try {
-                Scanner contentScanner = new Scanner(templateFile).useDelimiter("\\Z");
-                String content = null;
-                if (contentScanner.hasNext()) {
-                    content = contentScanner.next();
-                }
-                List<Token> tokens = new ETokenizer().tokenize(content);
-                this.tokens = tokens;
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
         }
 
         void handleTokens(StringBuilder renderInto) {
             while(index < tokens.size())
                 handleNextToken(this.tokens.get(index++), renderInto);
+        }
+
+        private String getILayoutContent() {
+            return "@Override\n" +
+                    "    public void header(Appendable buffer) throws IOException {\n" +
+                    "        header.renderInto(buffer);\n" +
+                    "    }\n" +
+                    "\n" +
+                    "    @Override\n" +
+                    "    public void footer(Appendable buffer) throws IOException {\n" +
+                    "        footer.renderInto(buffer);\n" +
+                    "    }\n";
         }
 
         private void handleNextToken(Token t, StringBuilder renderInto) {
@@ -320,7 +342,8 @@ public class ETemplateGen {
 
         private void handleDirective(Token t, StringBuilder renderInto) {
             DirectiveType type = getDirectiveType(t);
-            if (type == DirectiveType.IMPORT_STATEMENT || type == DirectiveType.EXTENDS || type == DirectiveType.PARAM || type == DirectiveType.END_SECTION) {
+            if (type == DirectiveType.IMPORT_STATEMENT || type == DirectiveType.EXTENDS || type == DirectiveType.PARAM ||
+                    type == DirectiveType.END_SECTION || type == DirectiveType.CREATE_LAYOUT) {
             } else if (type == DirectiveType.INCLUDE) {
                 handleInclude(t, renderInto);
             } else if (type == DirectiveType.SECTION) {
@@ -370,6 +393,8 @@ public class ETemplateGen {
                 return DirectiveType.END_SECTION;
             } else if (token.getContent().contains("section")) {
                 return DirectiveType.SECTION;
+            } else if (token.getContent().equals("content")) {
+                return DirectiveType.CREATE_LAYOUT;
             } else {
                     throw new RuntimeException("Invalid Directive");
                 }
@@ -405,31 +430,9 @@ public class ETemplateGen {
         }
     }
 
-    public ETemplateGen(String inputPath, String outputPath) {
-        this.outputPath = outputPath;
-        this.inputPath = inputPath;
-    }
-
-    private void generateFiles() {
-        Map<File, String> files = new HashMap<>();
-        File startDirectory = new File(inputPath);
-        scanDirectory(startDirectory, "", files);
-        for (File f: files.keySet()) {
-            String relPath = files.get(f);
-            FileGenerator fileGen = new FileGenerator(f, relPath);
-            try {
-                File toWrite = new File(parseOutputFile(f, outputPath, relPath));
-                File directory = new File(outputPath + relPath);
-                if (!directory.exists()) {
-                    directory.mkdirs();
-                }
-                BufferedWriter bw = new BufferedWriter(new FileWriter(toWrite.getAbsoluteFile()));
-                bw.write(fileGen.buildFile());
-                bw.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+    public String generateCode(String fullyQualifiedName, String source) {
+        FileGenerator fileGen = new FileGenerator(fullyQualifiedName, source);
+        return fileGen.buildFile();
     }
 
     enum DirectiveType {
@@ -438,47 +441,8 @@ public class ETemplateGen {
         PARAM,
         INCLUDE,
         SECTION,
-        END_SECTION
+        END_SECTION,
+        CREATE_LAYOUT
     }
 
-    public static void main(String[] args) {
-        String inputDir = args[0];
-        String outputDir = args[1] + additionalDirectory;
-        ETemplateGen generator = new ETemplateGen(inputDir, outputDir);
-        generator.generateFiles();
-    }
-
-    private static String parseOutputFile(File f, String outputDir, String relativePath) {
-        String path = outputDir + relativePath + "/" + getFileName(f);
-        while (path.charAt(0) == '.' || path.charAt(0) == '/') {
-            path = path.substring(1);
-        }
-        return path;
-    }
-
-
-    private static String getFileName(File f) {
-        String fileName = f.getName();
-        fileName = fileName.substring(0, fileName.indexOf("bb")) + "java";
-        return fileName;
-    }
-    /** Scans the directory for files that have an ending of .bb.*.
-     *  Upon seeing a valid filename, will add to validFiles, with the value being
-     *  the relative path from the initial directory. If a given file is a directory, the
-     * method will recursively scan the directory.
-     * @param directory the directory to search
-     * @param relativePath in a recursive call, the file path relative to the initial directory
-     * @param validFiles the set of validFiles that will be added to
-     */
-    private static void scanDirectory(File directory, String relativePath, Map<File, String> validFiles) {
-        File[] files = directory.listFiles();
-        for (File file: files) {
-            if (file.isDirectory()) {
-                scanDirectory(file, "/" + file.getName(), validFiles);
-            }
-            else if (file.getName().matches(".*\\.bb\\..*")) {
-                validFiles.put(file, relativePath);
-            }
-        }
-    }
 }

@@ -18,7 +18,8 @@ private static BasicMethodCallTest INSTANCE = new BasicMethodCallTest();
         INSTANCE.renderImpl(buffer);
     }
     public void renderImpl(Appendable buffer) {
-        try {            buffer.append("<!DOCTYPE html>\n<html>\n    <head><title>First JSP</title></head>\n    <body>\n        ");
+        try {
+            buffer.append("<!DOCTYPE html>\n<html>\n    <head><title>First JSP</title></head>\n    <body>\n        ");
             double num = Math.random();
         if (num > 0.95) {
             buffer.append("\n            <h2>You'll have a luck day!</h2><p>( ");
@@ -33,9 +34,5 @@ private static BasicMethodCallTest INSTANCE = new BasicMethodCallTest();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
     }
 }

@@ -19,8 +19,4 @@ private static TestEmpty INSTANCE = new TestEmpty();
     }
     public void renderImpl(Appendable buffer) {
     }
-
-    public String toS(Object o) {
-        return o == null ? "" : o.toString();
-    }
 }
