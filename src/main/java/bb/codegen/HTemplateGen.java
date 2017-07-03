@@ -3,11 +3,8 @@ package bb.codegen;
 import bb.tokenizer.HTokenizer;
 import bb.tokenizer.Token;
 
-import java.io.*;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BiPredicate;
 
@@ -17,13 +14,6 @@ import static bb.tokenizer.Token.TokenType.*;
 
 public class HTemplateGen implements ITemplateCodeGenerator{
     private static final String BASE_CLASS_NAME = "extends bb.runtime.BaseBBTemplate";
-
-    private static class fileTypeChecker implements BiPredicate {
-        public boolean test(Object path, Object attr){
-            String regexStr = ".*\\.bb\\..*";
-            return path.toString().matches(regexStr);
-        }
-    }
 
     static class ClassInfo {
         ClassInfo outerClass;
@@ -217,56 +207,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
             }
         }
     }
-
-    private static class Name {
-        String inputDir;
-        String outputDir;
-        String fileName;
-        String relativePath;
-        String javaWholePath;
-
-
-        Name(String inputDir, String outputDir, Path bbFile) {
-
-            this.inputDir = inputDir;
-            this.outputDir = outputDir;
-
-            fileName = bbFile.toFile().getName().split("\\.bb\\.")[0];
-            String withoutFileType = bbFile.toString().split(fileName + "\\.bb\\.")[0];
-            //@TODO: \bb\hgen is temporary
-            relativePath = "bb\\hgen" + withoutFileType.substring(inputDir.length(), withoutFileType.length() - 1);
-            javaWholePath = outputDir + "\\" + relativePath + "\\" + fileName + ".java";
-
-        }
-
-    }
-    private static class State {
-        Name name;
-        int tokenPos = 0;
-        int classDepth = 0;
-        List<Token> tokens;
-        Iterator<Token> tokenIterator;
-        StringBuilder header = new StringBuilder();
-
-        State(Name name, List<Token> tokens) {
-            this.name = name;
-            this.tokens = tokens;
-            tokenIterator = tokens.iterator();
-        }
-
-    }
-
-//    //@TODO: \bb\hgen is temporary
-//    private static String getNewFileName(String inputDir, String outputDir, String bbFileLoc) {
-//        String regexString = "(.*\\.bb\\.)";
-//        Pattern pat = Pattern.compile(regexString);
-//        Matcher mat = pat.matcher(bbFileLoc);
-//        mat.find();
-//        String withoutFileType = mat.group(0);
-//        String extra = withoutFileType.substring(inputDir.length(), withoutFileType.length() - 4);
-//        return outputDir + "\\bb\\hgen" + extra + ".java";
-//    }
-
+    
 
     //given a trimmed string of variables,
     // returns a list with a string list per variable with the type and variable name (when both are given)
