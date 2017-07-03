@@ -207,7 +207,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
             }
         }
     }
-    
+
 
     //given a trimmed string of variables,
     // returns a list with a string list per variable with the type and variable name (when both are given)
