@@ -1,4 +1,4 @@
-![](https://kek.gg/i/372rfd.png)
+![](https://kek.gg/i/896zsY.png)
 
 Bare Bones Templates (BB Templates) is a lightweight & type safe templating technology for the JVM.
 It is modeled loosely on Java Server Pages (JSP), but is divorced from the Servlet API and thus can be
