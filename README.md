@@ -1,4 +1,4 @@
-# ![](https://kek.gg/i/4cvsmP.png =100px) Bare Bones Templates #
+![](https://kek.gg/i/32K7cX.png)
 
 Bare Bones Templates (BB Templates) is a lightweight, type safe templating technology for java.
 It is based on a subset of JSP but is divorced from the servlet API and thus can be used in any
@@ -10,7 +10,8 @@ layouts and custom base classes for templates.
 BB templates have the suffix `bb` in their name, often optionally followed by the language the
 template is targeting (e.g. `index.bb.html`).
 
-# Background #
+# Table of Contents#
+
 - [Basic Syntax](#basic-syntax)
   * [Statements](#statements)
   * [Expressions](#expressions)
@@ -22,6 +23,7 @@ template is targeting (e.g. `index.bb.html`).
   * [`include`](#include)
   * [`params`](#params)
   * [`section`](#section)
+- [Layouts](#layouts)
 
 # Basic Syntax #
 
@@ -265,7 +267,7 @@ Then, the following HTML will be generated:
 </html>
 ```
 
-## `section`##
+## `section` ##
 
 The `section` keyword will create a subsection of the current template that can
 then be added via an `include` keyword in other templates.
@@ -318,3 +320,6 @@ Which will result in the following HTML:
 <h2 style="font-size: 2">Font size: 2</h2>
 <h2 style="font-size: 3">Font size: 3</h2>
 ```
+# Layouts
+
+TODO: fill in
