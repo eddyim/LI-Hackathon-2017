@@ -1,3 +1,9 @@
+#About Barbarossa#
+Barbarossa is a lightweight technology for developing Webpages that supports dynamic content
+without the need for servlets. It allows developers to use a simple tagging system to integrate
+Java code into HTML pages in a type safe manner. Barbarossa also supports layouts.
+
+
 # Background #
 - [Basic Syntax](#basic-syntax)
   * [String Content](#string-content)
