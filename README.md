@@ -1,4 +1,4 @@
-# Bare Bones Templates #
+#![](https://kek.gg/i/4cvsmP.png =100px) Bare Bones Templates #
 
 Bare Bones Templates (BB Templates) is a lightweight, type safe templating technology for java.
 It is based on a subset of JSP but is divorced from the servlet API and thus can be used in any
@@ -17,11 +17,11 @@ template is targeting (e.g. `index.bb.html`).
   * [Directives](#directives)
   * [Comments](#comments)
 - [Directive Keywords](#directive-keywords)
-  * [Import](#import)
-  * [extends](#extends)
-  * [Include](#include)
-  * [Params](#params)
-  * [Section](#section)
+  * [`import`](#import)
+  * [`extends`](#extends)
+  * [`include`](#include)
+  * [`params`](#params)
+  * [`section`](#section)
 
 # Basic Syntax #
 
