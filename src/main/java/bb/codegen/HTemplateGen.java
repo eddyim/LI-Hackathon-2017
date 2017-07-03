@@ -4,6 +4,7 @@ import bb.tokenizer.HTokenizer;
 import bb.tokenizer.Token;
 
 
+import javax.swing.text.AbstractDocument;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -25,6 +26,10 @@ public class HTemplateGen implements ITemplateCodeGenerator{
         int startTokenPos;
         Integer endTokenPos;
         int depth;
+        boolean isLayout = false;
+        boolean hasLayout = false;
+        Directive layoutDir;
+        int contentPos;
 
         //only for the outermost class
         ClassInfo(Iterator<Directive> dirIterator, String name, Integer endTokenPos, boolean outermost) {
@@ -90,6 +95,27 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                         }
                         endSec = true;
                         break outerLoop;
+                    case CONTENT:
+                        if (isLayout) {
+                            throw new RuntimeException("Second Content Directive appears on line " + dir.token.getLine());
+                        } else if (depth > 0) {
+                            throw new RuntimeException("Cannot have a Content Directive inside a section. Appears on line " + dir.token.getLine());
+                        } else {
+                            isLayout = true;
+                            contentPos = dir.tokenPos;
+                        }
+                        break;
+                    case LAYOUT:
+                        if (hasLayout) {
+                            throw new RuntimeException("Second Layout Directive appears on line " + dir.token.getLine());
+                        } else if (depth > 0) {
+                            throw new RuntimeException("Cannot have a Layout Directive inside a section. Appears on line " + dir.token.getLine());
+                        } else {
+                            hasLayout = true;
+                            layoutDir = dir;
+                        }
+                        break;
+
                 }
             }
             if (endSec == false) {
@@ -115,9 +141,11 @@ public class HTemplateGen implements ITemplateCodeGenerator{
             IMPORT,     //className
             EXTENDS,    //className
             PARAMS,     //           params, paramsList
-            INCLUDE,     //className, params
+            INCLUDE,    //className, params
             SECTION,    //className, params, paramsList
-            END_SECTION//
+            END_SECTION,//
+            CONTENT,    //
+            LAYOUT      //className
             }
 
         DirType dirType;
@@ -160,6 +188,10 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                 dirType = SECTION;
             } else if (content.trim().matches("end section")) {
                 dirType = END_SECTION;
+            } else if (content.trim().matches("content")) {
+                dirType = CONTENT;
+            } else if (content.trim().matches("layout.*")) {
+                dirType = LAYOUT;
             } else {
                 throw new RuntimeException("Unsupported Directive Type on Line " + token.getLine());
             }
@@ -182,19 +214,16 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                 case INCLUDE:
                     String[] parts = token.getContent().substring(8).trim().split("\\(", 2);
                     className = parts[0];
-
                     if (parts.length == 2) {
                         String temp = parts[1].substring(0, parts[1].length() - 1).trim();
                         if (temp.length() > 0) {
                             params = temp;
                         }
                     }
-
                     break;
                 case SECTION:
                     String[] temp = token.getContent().substring(7).trim().split("\\(", 2);
                     className = temp[0];
-
                     if (temp.length == 2) {
                         params = temp[1].substring(0, temp[1].length() - 1).trim();
                         paramsList = splitParamsList(params);
@@ -203,6 +232,11 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                     }
                     break;
                 case END_SECTION:
+                    break;
+                case CONTENT:
+                    break;
+                case LAYOUT:
+                    className = token.getContent().substring(6).trim();
                     break;
             }
         }
@@ -361,12 +395,22 @@ public class HTemplateGen implements ITemplateCodeGenerator{
         ArrayList<ClassInfo> nestedClasses = new ArrayList<>();
         boolean willAppend = false;
 
+        if (classInfo.hasLayout) {
+
+        }
+
         for (int i = classInfo.startTokenPos; i < classInfo.endTokenPos; i++) {
-            Token.TokenType tokenType = tokens.get(i).getType();
+            Token token = tokens.get(i);
+            Token.TokenType tokenType = token.getType();
             if (tokenType == STRING_CONTENT || tokenType == EXPRESSION) {
                 willAppend = true;
                 sb.append("        try {\n");
                 break;
+            } else if (tokenType == DIRECTIVE) {
+                Directive dir = dirMap.get(i);
+                if (dir.dirType == CONTENT) {
+
+                }
             }
         }
 
