@@ -5,12 +5,12 @@ It is based on a subset of JSP but is divorced from the servlet API and thus can
 application environment.
 
 BB Templates support type safe arguments to templates, type safe inclusion of other templates,
-layouts and custom base classes for templates.
+layouts and custom base classes for templates, among other features.
 
-BB templates have the suffix `bb` in their name, often optionally followed by the language the
+BB templates have the suffix `bb` in their name, often optionally followed by the language that the
 template is targeting (e.g. `index.bb.html`).
 
-# Table of Contents#
+# Table of Contents
 
 - [Basic Syntax](#basic-syntax)
   * [Statements](#statements)
