@@ -3,18 +3,15 @@ package bb.codegen;
 import bb.tokenizer.HTokenizer;
 import bb.tokenizer.Token;
 
-
-import javax.swing.text.AbstractDocument;
-import java.nio.file.Path;
 import java.util.*;
-import java.util.function.BiPredicate;
 
 import static bb.codegen.HTemplateGen.Directive.DirType.*;
 import static bb.tokenizer.Token.TokenType.*;
 
 
 public class HTemplateGen implements ITemplateCodeGenerator{
-    private static final String BASE_CLASS_NAME = "extends bb.runtime.BaseBBTemplate";
+    private static final String BASE_CLASS_NAME = "bb.runtime.BaseBBTemplate";
+    private static final String LAYOUT_INTERFACE = "bb.runtime.ILayout";
 
     static class ClassInfo {
         ClassInfo outerClass;
@@ -329,9 +326,13 @@ public class HTemplateGen implements ITemplateCodeGenerator{
 
     private static void addHeader(StringBuilder sb, ClassInfo classInfo) {
         if (classInfo.depth == 0) {
-            sb.append("\npublic class " + classInfo.name + " " + classInfo.superClass + " {\n");
+            if (classInfo.isLayout) {
+                sb.append("\npublic class " + classInfo.name + " extends " + classInfo.superClass + " implements " + LAYOUT_INTERFACE + " {\n");
+            } else {
+                sb.append("\npublic class " + classInfo.name + " extends " + classInfo.superClass + " {\n");
+            }
         } else {
-            sb.append("\npublic static class " + classInfo.name + " " + classInfo.superClass + " {\n");
+            sb.append("\npublic static class " + classInfo.name + " extends " + classInfo.superClass + " {\n");
         }
 
         sb.append("\nprivate static " + classInfo.name + " INSTANCE = new " + classInfo.name + "();\n\n");
@@ -389,32 +390,8 @@ public class HTemplateGen implements ITemplateCodeGenerator{
         }
     }
 
-    private static void makeClassContent(StringBuilder sb, ClassInfo classInfo, List<Token> tokens, Map<Integer, Directive> dirMap) {
-        addHeader(sb, classInfo);
-        addRenders(sb, classInfo.params, classInfo.paramsList);
-        ArrayList<ClassInfo> nestedClasses = new ArrayList<>();
-        boolean willAppend = false;
-
-        if (classInfo.hasLayout) {
-
-        }
-
-        for (int i = classInfo.startTokenPos; i < classInfo.endTokenPos; i++) {
-            Token token = tokens.get(i);
-            Token.TokenType tokenType = token.getType();
-            if (tokenType == STRING_CONTENT || tokenType == EXPRESSION) {
-                willAppend = true;
-                sb.append("        try {\n");
-                break;
-            }
-        }
-
-        if (classInfo.hasLayout == true) {
-            sb.append("            " + classInfo.layoutDir.className + ".header(buffer);\n");
-        }
-
-        outerLoop:
-        for (int i = classInfo.startTokenPos; i < classInfo.endTokenPos; i++) {
+    private static void makeFuncContent(StringBuilder sb, ClassInfo classInfo, List<Token> tokens, Map<Integer, Directive> dirMap, int startPos, int endPos, List<ClassInfo> nestedClasses) {
+        for (int i = startPos; i <= endPos; i++) {
             Token token = tokens.get(i);
             switch (token.getType()) {
                 case STRING_CONTENT:
@@ -441,25 +418,71 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                         }
                         i = classToSkipOver.endTokenPos + 1;
                     } else if (dir.dirType == END_SECTION) {
-                        assert(i == classInfo.endTokenPos);
+                        assert(i == endPos);
                         assert(classInfo.depth > 0);
-                        break outerLoop;
+                        return;
                     } else if (dir.dirType == INCLUDE) {
                         addInclude(sb, dir);
+                    } else if (dir.dirType == CONTENT) {
+                        assert(i == endPos);
                     }
                     break;
             }
         }
-        //close the renderImpl
+    }
+
+    private static void makeClassContent(StringBuilder sb, ClassInfo classInfo, List<Token> tokens, Map<Integer, Directive> dirMap) {
+        addHeader(sb, classInfo);
+        addRenders(sb, classInfo.params, classInfo.paramsList);
+        ArrayList<ClassInfo> nestedClasses = new ArrayList<>();
+        boolean willAppend = false;
+
+        if (classInfo.hasLayout == true) {
+            sb.append("            " + classInfo.layoutDir.className + ".header(buffer);\n");
+        }
+
+        for (int i = classInfo.startTokenPos; i < classInfo.endTokenPos; i++) {
+            Token token = tokens.get(i);
+            Token.TokenType tokenType = token.getType();
+            if (tokenType == STRING_CONTENT || tokenType == EXPRESSION) {
+                willAppend = true;
+                sb.append("        try {\n");
+                break;
+            }
+        }
+
+
+        if (!classInfo.isLayout) {
+            makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.endTokenPos, nestedClasses);
+        } else {
+            sb.append("            header(buffer);\n" +
+                    "            footer(buffer);\n");
+        }
+
+
         if (willAppend) {
             sb.append("        } catch (IOException e) {\n" +
                     "            throw new RuntimeException(e);\n" +
                     "        }\n");
         }
-         sb.append("    }\n");
 
         if (classInfo.hasLayout == true) {
             sb.append("            " + classInfo.layoutDir.className + ".footer(buffer);\n");
+        }
+
+        //close the renderImpl
+        sb.append("    }\n");
+
+        if (classInfo.isLayout) {
+            sb.append("@Override\n" +
+                    "    public void header(Appendable buffer) throws IOException {\n");
+            makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.contentPos, nestedClasses);
+            sb.append("    }\n");
+
+            sb.append("@Override\n" +
+                    "    public void footer(Appendable buffer) throws IOException {\n");
+            makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.contentPos, classInfo.endTokenPos, nestedClasses);
+            sb.append("    }\n");
         }
 
         for (ClassInfo nested : nestedClasses) {
@@ -483,7 +506,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
         StringBuilder sb = new StringBuilder();
         List<Directive> dirList = getDirectivesList(tokens);
         Map<Integer, Directive> dirMap = getDirectivesMap(dirList);
-        ClassInfo currClass = new ClassInfo(dirList.iterator(), className, tokens.size(), true);
+        ClassInfo currClass = new ClassInfo(dirList.iterator(), className, tokens.size() - 1, true);
 
 
         sb.append("package " + packageName + ";\n\n");
