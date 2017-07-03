@@ -18,6 +18,7 @@ private static ImportSingleTest INSTANCE = new ImportSingleTest();
     public static void renderInto(Appendable buffer) {
         INSTANCE.renderImpl(buffer);
     }
+
     public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n");

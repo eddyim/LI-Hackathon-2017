@@ -350,7 +350,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
 
             sb.append("    public static void renderInto(Appendable buffer) {\n" +
                     "        INSTANCE.renderImpl(buffer);\n" +
-                    "    }\n");
+                    "    }\n\n");
             sb.append("    public void renderImpl(Appendable buffer) {\n");
 
         } else {
@@ -406,12 +406,11 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                 willAppend = true;
                 sb.append("        try {\n");
                 break;
-            } else if (tokenType == DIRECTIVE) {
-                Directive dir = dirMap.get(i);
-                if (dir.dirType == CONTENT) {
-
-                }
             }
+        }
+
+        if (classInfo.hasLayout == true) {
+            sb.append("            " + classInfo.layoutDir.className + ".header(buffer);\n");
         }
 
         outerLoop:
@@ -458,6 +457,10 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                     "        }\n");
         }
          sb.append("    }\n");
+
+        if (classInfo.hasLayout == true) {
+            sb.append("            " + classInfo.layoutDir.className + ".footer(buffer);\n");
+        }
 
         for (ClassInfo nested : nestedClasses) {
             makeClassContent(sb, nested, tokens, dirMap);

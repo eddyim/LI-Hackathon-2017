@@ -18,6 +18,7 @@ private static ImportAndExtendsDirectivesTest INSTANCE = new ImportAndExtendsDir
     public static void renderInto(Appendable buffer) {
         INSTANCE.renderImpl(buffer);
     }
+
     public void renderImpl(Appendable buffer) {
         try {
             buffer.append("\n<HTML>\n<BODY>\n");

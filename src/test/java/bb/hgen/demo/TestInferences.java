@@ -17,6 +17,7 @@ private static TestInferences INSTANCE = new TestInferences();
     public static void renderInto(Appendable buffer) {
         INSTANCE.renderImpl(buffer);
     }
+
     public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");

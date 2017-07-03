@@ -17,6 +17,7 @@ private static LayoutExample INSTANCE = new LayoutExample();
     public static void renderInto(Appendable buffer) {
         INSTANCE.renderImpl(buffer);
     }
+
     public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<html>\n<body>\n");

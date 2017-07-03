@@ -17,6 +17,7 @@ private static IfElseTest INSTANCE = new IfElseTest();
     public static void renderInto(Appendable buffer) {
         INSTANCE.renderImpl(buffer);
     }
+
     public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n");
