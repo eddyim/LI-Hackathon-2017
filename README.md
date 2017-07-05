@@ -1,4 +1,16 @@
-# Background #
+![](https://kek.gg/i/896zsY.png)
+
+Bare Bones Templates (BB Templates) is a lightweight & type safe templating technology for the JVM.
+It is modeled loosely on Java Server Pages (JSP), but is divorced from the Servlet API and thus can be
+used in any application environment.
+
+BB Templates supports type safe arguments to templates, type safe inclusion of other templates,
+shared layouts for templates and custom base classes for application-specific logic, among other features.
+
+BB templates have the suffix `bb` in their name, often optionally followed by the language that the
+template is targeting (e.g. `index.bb.html`).
+
+# Table of Contents
 - [Basic Syntax](#basic-syntax)
   * [Statements](#statements)
   * [Expressions](#expressions)
