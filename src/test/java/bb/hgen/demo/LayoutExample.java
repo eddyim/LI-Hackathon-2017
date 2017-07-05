@@ -19,7 +19,8 @@ private static LayoutExample INSTANCE = new LayoutExample();
     }
 
     public void renderImpl(Appendable buffer) {
-    try {            header(buffer);
+    try {
+            header(buffer);
             footer(buffer);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -27,7 +28,6 @@ private static LayoutExample INSTANCE = new LayoutExample();
     }
     @Override
     public void header(Appendable buffer) throws IOException {
-            buffer.append("<html>\n<body>\n");
     }
     @Override
     public void footer(Appendable buffer) throws IOException {

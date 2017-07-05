@@ -226,8 +226,9 @@ TODO: mention parameter passing
 
 ## `params` ##
 
-The `params` keyword is used to give parameters to a template. This is generally
-only useful when creating templates that are meant to be included in other templates.
+The `params` keyword is used to give parameters to a template. It is only allowed
+for the outermost class (not sections ) and is generally only useful when creating
+templates that are meant to be included in other templates.
 
 The syntax of the `params` command is as follows:
 ```jsp

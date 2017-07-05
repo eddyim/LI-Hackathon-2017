@@ -19,7 +19,8 @@ private static BasicMethodCallTest INSTANCE = new BasicMethodCallTest();
     }
 
     public void renderImpl(Appendable buffer) {
-    try {            buffer.append("<!DOCTYPE html>\n<html>\n    <head><title>First JSP</title></head>\n    <body>\n        ");
+    try {
+            buffer.append("<!DOCTYPE html>\n<html>\n    <head><title>First JSP</title></head>\n    <body>\n        ");
             double num = Math.random();
         if (num > 0.95) {
             buffer.append("\n            <h2>You'll have a luck day!</h2><p>( ");

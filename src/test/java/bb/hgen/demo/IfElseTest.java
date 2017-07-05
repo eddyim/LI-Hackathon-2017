@@ -19,7 +19,8 @@ private static IfElseTest INSTANCE = new IfElseTest();
     }
 
     public void renderImpl(Appendable buffer) {
-    try {            buffer.append("<!DOCTYPE html>\n");
+    try {
+            buffer.append("<!DOCTYPE html>\n");
             int day = 3;
             buffer.append("\n<html>\n    <head><title>IF...ELSE Example</title></head>\n\n    <body>\n        ");
             if (day == 1 | day == 7) {

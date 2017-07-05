@@ -337,7 +337,6 @@ public class HTemplateGen implements ITemplateCodeGenerator{
 
         sb.append("\nprivate static " + classInfo.name + " INSTANCE = new " + classInfo.name + "();\n\n");
 
-
     }
 
     private static void addRenders(StringBuilder sb, String params, String[][] paramsList) {
@@ -453,7 +452,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
         }
 
         if (willAppend) {
-            sb.append("    try {");
+            sb.append("    try {\n");
         }
 
         if (classInfo.isLayout) {
