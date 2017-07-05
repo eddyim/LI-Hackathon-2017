@@ -99,6 +99,7 @@ Here are the valid types of directives:
 | Section        | `<%@ section mySection(optional-params) %>` | Creates a sub-template within the template, that can be called from other templates |
 A more detailed explanation of various directive types [can be found
 below.](#directive-types)
+
 ## Comments ##
 Comments are blocks of code that the Barbarossa compiler will ignore. They will **not** be generated as comments in the generated Java code.
 
@@ -107,7 +108,7 @@ The syntax of a comment is as follows:
 <%-- This is a comment --%>
 ```
 # Directive Keywords #
-## Import ##
+## `Import` ##
 The `import` keyword is used to import external packages into the generated Java file.
 
 The syntax of the import keyword is as follows:
@@ -149,9 +150,9 @@ of given import statements; thus, invalid imports may result in compiler errors.
 Additionally, note that the location of import statements within the template file
 is irrelevant. Although it is idiomatic to include all imports at the beginning of the file,
 imports can be placed anywhere and will not affect the generated file.
-## extends ##
+## `extends` ##
 The `extends` keyword is used to extend a superclass in the generated Java file.
-## Include ##
+## `include` ##
 The `include` keyword allows users to insert other templates inside of the given template.
 
 The syntax of the include keyword is as follows:
@@ -200,7 +201,7 @@ Both statements will result in the following HTML code:
 </html>
 
 ```
-## Params ##
+## `params` ##
 The `params` keyword is used to give parameters to a template. This is generally
 only useful when creating templates that are meant to be included in other templates.
 
@@ -242,7 +243,7 @@ Then, the following HTML will be generated:
     </body>
 </html>
 ```
-## Section ##
+## `section` ##
 The `section` keyword will create a subsection of the current template that can
 then be added via an `include` keyword in other templates.
 
