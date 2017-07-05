@@ -86,12 +86,14 @@ Comments are blocks of code that the Barbarossa compiler will ignore. They will 
 The syntax of a comment is as follows:
 ```jsp
 <%-- This is a comment --%>
+```
 
 ## Directives ##
 
 Directives are commands that are evaluated by the Barbarossa compiler, and will affect the overall page structure.
 
 The syntax of a directive is as follows:
+
 ```jsp
 <%@ directive %>
 ```
