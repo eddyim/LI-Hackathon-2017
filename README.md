@@ -224,7 +224,7 @@ I can then include it in another template as follows:
     <head><title>PARAMS Example</title></head>
     <body>
       <%@ include createName("Sally") %>
-      <%@ include createName("Carson") %>
+      <%@ include createName("Carson Gross") %>
       <%@ include createName("Edward") %>
       <%@ include createName("Harika") %>
     </body>
@@ -237,7 +237,7 @@ Then, the following HTML will be generated:
     <head><title>PARAMS Example</title></head>
     <body>
       <p>Your name is: Sally </p>
-      <p>Your name is: Carson </p>
+      <p>Your name is: Carson Gross </p>
       <p>Your name is: Edward </p>
       <p>Your name is: Harika </p>
     </body>
