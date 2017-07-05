@@ -177,7 +177,7 @@ safe manner.
 
 The syntax of the include keyword is as follows:
 ```jsp
-<$@ include [template to include] %>
+<%@ include [template to include] %>
 ```
 
 For example, consider the following template, `myTemplate.bb.html`:
