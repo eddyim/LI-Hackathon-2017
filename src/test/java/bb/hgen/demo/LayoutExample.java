@@ -28,9 +28,10 @@ private static LayoutExample INSTANCE = new LayoutExample();
     }
     @Override
     public void header(Appendable buffer) throws IOException {
+            buffer.append("</html>\n</body>\n");
     }
     @Override
     public void footer(Appendable buffer) throws IOException {
-            buffer.append("\n</body>\n</html>");
+            buffer.append("\n</body>\n</html>\n");
     }
 }

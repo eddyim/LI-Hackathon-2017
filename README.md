@@ -22,6 +22,7 @@ template is targeting (e.g. `index.bb.html`).
   * [`include`](#include)
   * [`params`](#params)
   * [`section`](#section)
+  * [`layout`](#layout)
 - [Layouts](#layouts)
 
 # Basic Syntax #
@@ -227,7 +228,7 @@ TODO: mention parameter passing
 ## `params` ##
 
 The `params` keyword is used to give parameters to a template. It is only allowed
-for the outermost class (not sections ) and is generally only useful when creating
+for the outermost class (not within sections) and is generally only useful when creating
 templates that are meant to be included in other templates.
 
 The syntax of the `params` command is as follows:
@@ -304,24 +305,79 @@ For example, I can create the template `nestedImport.bb.html` as the following:
 
 The above code will generate the following HTML:
 ```html
-<h1>This will make sure that nested imports are handled correctly.</h1>
-<h2 style="font-size: 1">Font size: 1</h2>
-<h2 style="font-size: 2">Font size: 2</h2>  
-<h2 style="font-size: 3">Font size: 3</h2>
-<p> The above section should work </p>
+    <h1>This will make sure that nested imports are handled correctly.</h1>
+    <h2 style="font-size: 1">Font size: 1</h2>
+    <h2 style="font-size: 2">Font size: 2</h2>
+    <h2 style="font-size: 3">Font size: 3</h2>
+    <p> The above section should work </p>
 ```
 
 Then, I can include `mySection` it in a separate template:
 ```jsp
-<%@ include nestedImport.mySection %>
+    <%@ include nestedImport.mySection %>
 ```
 
 Which will result in the following HTML:
 ```html
-<h2 style="font-size: 1">Font size: 1</h2>
-<h2 style="font-size: 2">Font size: 2</h2>
-<h2 style="font-size: 3">Font size: 3</h2>
+    <h2 style="font-size: 1">Font size: 1</h2>
+    <h2 style="font-size: 2">Font size: 2</h2>
+    <h2 style="font-size: 3">Font size: 3</h2>
 ```
-# Layouts
 
-TODO: fill in
+
+## `layout` ##
+
+See below.
+
+# Layouts #
+
+Layouts can be made and used with the `content` and `layout` directives respectively.
+
+The `content` keyword will split the current template into the header and footer
+of a layout.
+
+The `layout` keyword will make the header and footer of the layout frame the
+current template. The code from the current template will appear where the
+`content` keyword was originally.
+
+Both the `content` directive and `layout` directive are only valid in the outermost class
+(not within sections) and can only appear once in a template.
+
+The `params` directive is not yet supported for a template that contains the `content` keyword.
+
+The syntax of a content template is as follows:
+```jsp
+  <%-- Content of the Header. --%>
+  <%@ content %>
+  <%-- Content of the Footer. --%>
+```
+
+
+
+For example, I can create the template `layoutEx.bb.html` as the following:
+```jsp
+    </html>
+        </body>
+            <%@ content %>
+        </body>
+    </html>
+```
+
+And use the layout in the following template:
+```jsp
+    <h1>This is a template that uses a layout.</h1>
+    <%@ layout layoutEx %>
+    <h2>The directive can appear anywhere in the template.</h2>
+```
+
+
+The above code will generate the following HTML:
+```html
+    </html>
+        </body>
+            <h1>This is a template that uses a layout.</h1>
+            <h2>The directive can appear anywhere in the template.</h2>
+        </body>
+    </html>
+```
+
