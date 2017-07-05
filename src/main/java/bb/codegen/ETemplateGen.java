@@ -51,7 +51,7 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             }
             StringBuilder fileContents = new StringBuilder();
             StringBuilder renderImplContent = new StringBuilder();
-            fileContents.append(getIntro(this.name, ""));
+            fileContents.append(getIntro(this.name, "", 0));
             handleTokens(renderImplContent);
             fileContents.append(getRenderMethod());
             fileContents.append(getRenderIntoMethod());
@@ -60,6 +60,23 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             otherImports.append(importStatements);
             return fileContents.toString();
         }
+
+        String buildSection(StringBuilder otherImports, int numLayouts) {
+            if (!isSection) {
+                throw new RuntimeException("Cannot build section");
+            }
+            StringBuilder fileContents = new StringBuilder();
+            StringBuilder renderImplContent = new StringBuilder();
+            fileContents.append(getIntro(this.name, "", numLayouts));
+            handleTokens(renderImplContent);
+            fileContents.append(getRenderMethod());
+            fileContents.append(getRenderIntoMethod());
+            fileContents.append(getRenderImplMethod(renderImplContent));
+            fileContents.append("}\n");
+            otherImports.append(importStatements);
+            return fileContents.toString();
+        }
+
 
         String buildFile() {
             StringBuilder fileContents = new StringBuilder();
@@ -71,10 +88,6 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             fileContents.append(getRenderImplMethod(renderImplContent));
             fileContents.append("}");
             return fileContents.toString();
-        }
-
-        String buildLayout(String name, String packageStatement) {
-            return "";
         }
 
         private Map<String, String> parseSectionDeclaration(String section) {
@@ -221,10 +234,13 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             for(int i = 0; i < splitName.length - 1; i += 1) {
                 packageStatement = packageStatement + splitName[i] + ".";
             }
-            return getIntro(splitName[splitName.length - 1], "package " + packageStatement.substring(0, packageStatement.length() - 1) + ";");
+            return getIntro(splitName[splitName.length - 1], "package " + packageStatement.substring(0, packageStatement.length() - 1) + ";", 0);
         }
 
-        private void handleLayoutCreation(Token t, StringBuilder additionalClasses, StringBuilder importStatements) {
+        //TODO: Handle various special cases for layouts
+        //TODO: Support nested layouts
+        //TODO: Write Tests for layouts
+        private void handleLayoutCreation(Token t, StringBuilder additionalClasses, StringBuilder importStatements, int num) {
             List<Token> header = new ArrayList<>();
             List<Token> footer = new ArrayList<>();
             for(int i = 0; i < index; i += 1) {
@@ -233,12 +249,13 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             for(int i = index + 1; i < tokens.size(); i += 1) {
                 footer.add(tokens.get(i));
             }
-            FileGenerator headerContent = new FileGenerator(header, new ArrayList<String>(), "header", "");
-            FileGenerator footerContent = new FileGenerator(footer, new ArrayList<String>(), "footer", "");
-            additionalClasses.append(headerContent.buildSection(importStatements));
-            additionalClasses.append(footerContent.buildSection(importStatements));
+            FileGenerator headerContent = new FileGenerator(header, new ArrayList<String>(), "header" + num, "");
+            FileGenerator footerContent = new FileGenerator(footer, new ArrayList<String>(), "footer" + num, "");
+            additionalClasses.append(headerContent.buildSection(importStatements, num));
+            additionalClasses.append(footerContent.buildSection(importStatements, num));
         }
-        private String getIntro(String name, String packageStatement) {
+
+        private String getIntro(String name, String packageStatement, int numLayouts) {
             StringBuilder extendsKeyword = new StringBuilder();
             StringBuilder additionalClasses = new StringBuilder();
             StringBuilder intro = new StringBuilder();
@@ -264,10 +281,10 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                     } else if(getDirectiveType(t) == DirectiveType.SECTION) {
                         handleSectionCreation(t, additionalClasses, importStatements);
                     } else if(getDirectiveType(t) == DirectiveType.CREATE_LAYOUT) {
-                        handleLayoutCreation(t, additionalClasses, importStatements);
+                        handleLayoutCreation(t, additionalClasses, importStatements, numLayouts + 1);
                         this.tokens = new ArrayList<Token>();
-                        this.tokens.add(new Token(DIRECTIVE, "section header", 0,0,0));
-                        this.tokens.add(new Token(DIRECTIVE, "section footer", 0,0,0));
+                        this.tokens.add(new Token(DIRECTIVE, "section header" + (numLayouts + 1), 0,0,0));
+                        this.tokens.add(new Token(DIRECTIVE, "section footer" + (numLayouts + 1), 0,0,0));
                         layoutCreated = true;
                         importStatements.append("import java.io.IOException;\n");
                         importStatements.append("import bb.runtime.ILayout;\n");
@@ -302,7 +319,7 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             intro.append("private static ").append(name).append(" INSTANCE = new ")
                     .append(name).append("();\n").append(additionalClasses);
             if(layoutCreated) {
-                intro.append(getILayoutContent());
+                intro.append(getILayoutContent(numLayouts));
             }
             return intro.toString();
         }
@@ -312,15 +329,15 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                 handleNextToken(this.tokens.get(index++), renderInto);
         }
 
-        private String getILayoutContent() {
+        private String getILayoutContent(int num) {
             return "@Override\n" +
                     "    public void header(Appendable buffer) throws IOException {\n" +
-                    "        header.renderInto(buffer);\n" +
+                    "        header" + (num + 1)+ ".renderInto(buffer);\n" +
                     "    }\n" +
                     "\n" +
                     "    @Override\n" +
                     "    public void footer(Appendable buffer) throws IOException {\n" +
-                    "        footer.renderInto(buffer);\n" +
+                    "        footer" + (num + 1) + ".renderInto(buffer);\n" +
                     "    }\n";
         }
 
