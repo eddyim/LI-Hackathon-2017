@@ -20,8 +20,7 @@ private static ImportAndExtendsDirectivesTest INSTANCE = new ImportAndExtendsDir
     }
 
     public void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("\n<HTML>\n<BODY>\n");
+    try {            buffer.append("\n<HTML>\n<BODY>\n");
             System.out.println( "Evaluating date now" );
             buffer.append("\n");
             Date date = new Date();

@@ -19,8 +19,7 @@ private static TestInferences INSTANCE = new TestInferences();
     }
 
     public void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
+    try {            buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n    ");
             boolean blah = false;
             buffer.append("\n    ");
             if(blah) {
@@ -52,8 +51,7 @@ private static shouldBeInt INSTANCE = new shouldBeInt();
     }
 
     public void renderImpl(Appendable buffer, int str) {
-        try {
-            buffer.append("\n        ");
+    try {            buffer.append("\n        ");
             buffer.append(toS(str + 1));
             buffer.append("\n        ");
         } catch (IOException e) {
@@ -78,8 +76,7 @@ private static mySection INSTANCE = new mySection();
     }
 
     public void renderImpl(Appendable buffer, int str) {
-        try {
-            buffer.append("\n            <h1> urmom</h1>\n        ");
+    try {            buffer.append("\n            <h1> urmom</h1>\n        ");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -102,8 +99,7 @@ private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
     }
 
     public void renderImpl(Appendable buffer, boolean blah) {
-        try {
-            buffer.append("\n    <h1>");
+    try {            buffer.append("\n    <h1>");
             buffer.append(toS(blah));
             buffer.append("</h1>\n    ");
         } catch (IOException e) {
