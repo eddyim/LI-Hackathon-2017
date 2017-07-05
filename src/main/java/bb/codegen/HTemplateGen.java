@@ -391,6 +391,9 @@ public class HTemplateGen implements ITemplateCodeGenerator{
     }
 
     private static void makeFuncContent(StringBuilder sb, ClassInfo classInfo, List<Token> tokens, Map<Integer, Directive> dirMap, int startPos, int endPos, List<ClassInfo> nestedClasses) {
+
+
+        outerLoop:
         for (int i = startPos; i <= endPos; i++) {
             Token token = tokens.get(i);
             switch (token.getType()) {
@@ -420,7 +423,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                     } else if (dir.dirType == END_SECTION) {
                         assert(i == endPos);
                         assert(classInfo.depth > 0);
-                        return;
+                        break outerLoop;
                     } else if (dir.dirType == INCLUDE) {
                         addInclude(sb, dir);
                     } else if (dir.dirType == CONTENT) {
@@ -429,59 +432,67 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                     break;
             }
         }
+
     }
 
     private static void makeClassContent(StringBuilder sb, ClassInfo classInfo, List<Token> tokens, Map<Integer, Directive> dirMap) {
         addHeader(sb, classInfo);
         addRenders(sb, classInfo.params, classInfo.paramsList);
         ArrayList<ClassInfo> nestedClasses = new ArrayList<>();
-        boolean willAppend = false;
+        boolean willAppend = classInfo.isLayout || classInfo.hasLayout;
 
-        if (classInfo.hasLayout == true) {
-            sb.append("            " + classInfo.layoutDir.className + ".header(buffer);\n");
-        }
-
-        for (int i = classInfo.startTokenPos; i < classInfo.endTokenPos; i++) {
-            Token token = tokens.get(i);
-            Token.TokenType tokenType = token.getType();
-            if (tokenType == STRING_CONTENT || tokenType == EXPRESSION) {
-                willAppend = true;
-                sb.append("        try {\n");
-                break;
+        if (!willAppend) {
+            for (int i = classInfo.startTokenPos; i <= classInfo.endTokenPos; i++) {
+                Token token = tokens.get(i);
+                Token.TokenType tokenType = token.getType();
+                if (tokenType == STRING_CONTENT || tokenType == EXPRESSION) {
+                    willAppend = true;
+                    break;
+                }
             }
         }
 
-
-        if (!classInfo.isLayout) {
-            makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.endTokenPos, nestedClasses);
-        } else {
-            sb.append("            header(buffer);\n" +
-                    "            footer(buffer);\n");
+        if (willAppend) {
+            sb.append("    try {");
         }
 
+        if (classInfo.isLayout) {
+            sb.append("            header(buffer);\n" +
+                    "            footer(buffer);\n");
+        } else {
+            if (classInfo.hasLayout == true) {
+                sb.append("            " + classInfo.layoutDir.className + ".header(buffer);\n");
+            }
+            makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.endTokenPos, nestedClasses);
+            if (classInfo.hasLayout == true) {
+                sb.append("            " + classInfo.layoutDir.className + ".footer(buffer);\n");
+            }
+        }
 
         if (willAppend) {
             sb.append("        } catch (IOException e) {\n" +
                     "            throw new RuntimeException(e);\n" +
                     "        }\n");
         }
-
-        if (classInfo.hasLayout == true) {
-            sb.append("            " + classInfo.layoutDir.className + ".footer(buffer);\n");
-        }
-
         //close the renderImpl
         sb.append("    }\n");
 
+
         if (classInfo.isLayout) {
-            sb.append("@Override\n" +
+            sb.append("    @Override\n" +
                     "    public void header(Appendable buffer) throws IOException {\n");
+            if (classInfo.hasLayout == true) {
+                sb.append("            " + classInfo.layoutDir.className + ".header(buffer);\n");
+            }
             makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.contentPos, nestedClasses);
             sb.append("    }\n");
 
-            sb.append("@Override\n" +
+            sb.append("    @Override\n" +
                     "    public void footer(Appendable buffer) throws IOException {\n");
             makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.contentPos, classInfo.endTokenPos, nestedClasses);
+            if (classInfo.hasLayout == true) {
+                sb.append("            " + classInfo.layoutDir.className + ".footer(buffer);\n");
+            }
             sb.append("    }\n");
         }
 

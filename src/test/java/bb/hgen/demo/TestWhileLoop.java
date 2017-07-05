@@ -19,8 +19,7 @@ private static TestWhileLoop INSTANCE = new TestWhileLoop();
     }
 
     public void renderImpl(Appendable buffer) {
-        try {
-            buffer.append("<!DOCTYPE html>\n");
+    try {            buffer.append("<!DOCTYPE html>\n");
             int fontSize = 0;
             buffer.append("\n<html>\n    <head><title>WHILE LOOP Example</title></head>\n\n    <body>\n        ");
             while ( fontSize <= 3){

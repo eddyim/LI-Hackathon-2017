@@ -13,14 +13,25 @@ import java.util.function.BiPredicate;
 public class HFileScanner {
     private static class fileTypeChecker implements BiPredicate {
         public boolean test(Object path, Object attr){
-            String regexStr = ".*\\.bb\\..*";
-            return path.toString().matches(regexStr);
+            String regexStr1 = ".*\\.bb\\..*";
+            String regexStr2 = ".*\\.bb";
+            return (path.toString().matches(regexStr1) || path.toString().matches(regexStr2));
         }
     }
 
     private static String getPathName(String inputDir, String outputDir, Path bbFile) {
-        String fileName = bbFile.toFile().getName().split("\\.bb\\.")[0];
-        String withoutFileType = bbFile.toString().split(fileName + "\\.bb\\.")[0];
+        String fileName;
+        String withoutFileType;
+        if (bbFile.toString().matches(".*\\.bb\\..*")) {
+            fileName = bbFile.toFile().getName().split("\\.bb\\.")[0];
+            withoutFileType = bbFile.toString().split(fileName + "\\.bb\\.")[0];
+        } else if (bbFile.toString().matches(".*\\.bb")) {
+            fileName = bbFile.toFile().getName();
+            fileName = fileName.substring(0, fileName.length() - 3);
+            withoutFileType = bbFile.toString().split(fileName + "\\.bb")[0];
+        } else {
+            throw new RuntimeException(bbFile.toString() + "is not an supported file type");
+        }
         //@TODO: \bb\hgen is temporary
         String relativePath = "bb\\hgen" + withoutFileType.substring(inputDir.length(), withoutFileType.length() - 1);
         String javaWholePath = outputDir + "\\" + relativePath + "\\" + fileName;
