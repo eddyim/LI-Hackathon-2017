@@ -1,17 +1,16 @@
-![](https://kek.gg/i/32K7cX.png)
+![](https://kek.gg/i/896zsY.png)
 
-Bare Bones Templates (BB Templates) is a lightweight, type safe templating technology for java.
-It is based on a subset of JSP but is divorced from the servlet API and thus can be used in any
-application environment.
+Bare Bones Templates (BB Templates) is a lightweight & type safe templating technology for the JVM.
+It is modeled loosely on Java Server Pages (JSP), but is divorced from the Servlet API and thus can be
+used in any application environment.
 
-BB Templates support type safe arguments to templates, type safe inclusion of other templates,
-layouts and custom base classes for templates.
+BB Templates supports type safe arguments to templates, type safe inclusion of other templates,
+shared layouts for templates and custom base classes for application-specific logic, among other features.
 
-BB templates have the suffix `bb` in their name, often optionally followed by the language the
+BB templates have the suffix `bb` in their name, often optionally followed by the language that the
 template is targeting (e.g. `index.bb.html`).
 
-# Table of Contents#
-
+# Table of Contents
 - [Basic Syntax](#basic-syntax)
   * [Statements](#statements)
   * [Expressions](#expressions)
@@ -99,12 +98,14 @@ Comments are blocks of code that the Barbarossa compiler will ignore. They will 
 The syntax of a comment is as follows:
 ```jsp
 <%-- This is a comment --%>
+```
 
 ## Directives ##
 
 Directives are commands that are evaluated by the Barbarossa compiler, and will affect the overall page structure.
 
 The syntax of a directive is as follows:
+
 ```jsp
 <%@ directive %>
 ```
@@ -121,7 +122,7 @@ Here are the valid types of directives:
 A more detailed explanation of various directive types [can be found
 below.](#directive-types)
 
-```
+
 # Directive Keywords #
 
 ## `import` ##
@@ -247,7 +248,7 @@ You can then include it in another template as follows:
     <head><title>PARAMS Example</title></head>
     <body>
       <%@ include NameDisplay("Sally") %>
-      <%@ include NameDisplay("Carson") %>
+      <%@ include NameDisplay("Carson Gross") %>
       <%@ include NameDisplay("Edward") %>
       <%@ include NameDisplay("Harika") %>
     </body>
@@ -260,7 +261,7 @@ Then, the following HTML will be generated:
     <head><title>PARAMS Example</title></head>
     <body>
       <p>Your name is: Sally </p>
-      <p>Your name is: Carson </p>
+      <p>Your name is: Carson Gross </p>
       <p>Your name is: Edward </p>
       <p>Your name is: Harika </p>
     </body>
