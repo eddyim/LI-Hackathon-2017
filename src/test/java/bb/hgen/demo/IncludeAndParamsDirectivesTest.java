@@ -31,4 +31,5 @@ private static IncludeAndParamsDirectivesTest INSTANCE = new IncludeAndParamsDir
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}

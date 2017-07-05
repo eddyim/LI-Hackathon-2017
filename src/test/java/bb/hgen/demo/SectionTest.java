@@ -18,6 +18,7 @@ private static SectionTest INSTANCE = new SectionTest();
     public static void renderInto(Appendable buffer) {
         INSTANCE.renderImpl(buffer);
     }
+
     public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<html>\n<head><title>First JSP</title></head>\n<body>\n");
@@ -36,6 +37,7 @@ if (num > 0.95) {
             throw new RuntimeException(e);
         }
     }
+
 public static class MySection extends bb.runtime.BaseBBTemplate {
 
 private static MySection INSTANCE = new MySection();
@@ -61,6 +63,7 @@ private static MySection INSTANCE = new MySection();
             throw new RuntimeException(e);
         }
     }
+
 public static class yourSection extends bb.runtime.BaseBBTemplate {
 
 private static yourSection INSTANCE = new yourSection();
@@ -90,6 +93,7 @@ private static yourSection INSTANCE = new yourSection();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}
 }
 }

@@ -18,6 +18,7 @@ private static NestedImportTest INSTANCE = new NestedImportTest();
     public static void renderInto(Appendable buffer) {
         INSTANCE.renderImpl(buffer);
     }
+
     public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Nested Import Tests</title>\n</head>\n<body>\n    <h1>This will make sure that nested imports are handled correctly.</h1>\n    ");
@@ -25,6 +26,7 @@ private static NestedImportTest INSTANCE = new NestedImportTest();
             throw new RuntimeException(e);
         }
     }
+
 public static class mySection extends bb.runtime.BaseBBTemplate {
 
 private static mySection INSTANCE = new mySection();
@@ -39,6 +41,7 @@ private static mySection INSTANCE = new mySection();
     public static void renderInto(Appendable buffer) {
         INSTANCE.renderImpl(buffer);
     }
+
     public void renderImpl(Appendable buffer) {
         try {
             buffer.append("\n        ");
@@ -58,5 +61,6 @@ private static mySection INSTANCE = new mySection();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}
 }

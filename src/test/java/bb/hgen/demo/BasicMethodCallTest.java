@@ -17,6 +17,7 @@ private static BasicMethodCallTest INSTANCE = new BasicMethodCallTest();
     public static void renderInto(Appendable buffer) {
         INSTANCE.renderImpl(buffer);
     }
+
     public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n<html>\n    <head><title>First JSP</title></head>\n    <body>\n        ");
@@ -34,4 +35,5 @@ private static BasicMethodCallTest INSTANCE = new BasicMethodCallTest();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}

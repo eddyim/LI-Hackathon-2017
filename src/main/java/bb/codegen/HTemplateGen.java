@@ -3,27 +3,15 @@ package bb.codegen;
 import bb.tokenizer.HTokenizer;
 import bb.tokenizer.Token;
 
-import java.io.*;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.BiPredicate;
 
 import static bb.codegen.HTemplateGen.Directive.DirType.*;
 import static bb.tokenizer.Token.TokenType.*;
 
 
-public class HTemplateGen {
-    private static final String BASE_CLASS_NAME = "extends bb.runtime.BaseBBTemplate";
-
-    private static class fileTypeChecker implements BiPredicate {
-        public boolean test(Object path, Object attr){
-            String regexStr = ".*\\.bb\\..*";
-            return path.toString().matches(regexStr);
-        }
-    }
+public class HTemplateGen implements ITemplateCodeGenerator{
+    private static final String BASE_CLASS_NAME = "bb.runtime.BaseBBTemplate";
+    private static final String LAYOUT_INTERFACE = "bb.runtime.ILayout";
 
     static class ClassInfo {
         ClassInfo outerClass;
@@ -35,6 +23,10 @@ public class HTemplateGen {
         int startTokenPos;
         Integer endTokenPos;
         int depth;
+        boolean isLayout = false;
+        boolean hasLayout = false;
+        Directive layoutDir;
+        int contentPos;
 
         //only for the outermost class
         ClassInfo(Iterator<Directive> dirIterator, String name, Integer endTokenPos, boolean outermost) {
@@ -100,6 +92,27 @@ public class HTemplateGen {
                         }
                         endSec = true;
                         break outerLoop;
+                    case CONTENT:
+                        if (isLayout) {
+                            throw new RuntimeException("Second Content Directive appears on line " + dir.token.getLine());
+                        } else if (depth > 0) {
+                            throw new RuntimeException("Cannot have a Content Directive inside a section. Appears on line " + dir.token.getLine());
+                        } else {
+                            isLayout = true;
+                            contentPos = dir.tokenPos;
+                        }
+                        break;
+                    case LAYOUT:
+                        if (hasLayout) {
+                            throw new RuntimeException("Second Layout Directive appears on line " + dir.token.getLine());
+                        } else if (depth > 0) {
+                            throw new RuntimeException("Cannot have a Layout Directive inside a section. Appears on line " + dir.token.getLine());
+                        } else {
+                            hasLayout = true;
+                            layoutDir = dir;
+                        }
+                        break;
+
                 }
             }
             if (endSec == false) {
@@ -125,9 +138,11 @@ public class HTemplateGen {
             IMPORT,     //className
             EXTENDS,    //className
             PARAMS,     //           params, paramsList
-            INCLUDE,     //className, params
+            INCLUDE,    //className, params
             SECTION,    //className, params, paramsList
-            END_SECTION//
+            END_SECTION,//
+            CONTENT,    //
+            LAYOUT      //className
             }
 
         DirType dirType;
@@ -170,6 +185,10 @@ public class HTemplateGen {
                 dirType = SECTION;
             } else if (content.trim().matches("end section")) {
                 dirType = END_SECTION;
+            } else if (content.trim().matches("content")) {
+                dirType = CONTENT;
+            } else if (content.trim().matches("layout.*")) {
+                dirType = LAYOUT;
             } else {
                 throw new RuntimeException("Unsupported Directive Type on Line " + token.getLine());
             }
@@ -192,19 +211,16 @@ public class HTemplateGen {
                 case INCLUDE:
                     String[] parts = token.getContent().substring(8).trim().split("\\(", 2);
                     className = parts[0];
-
                     if (parts.length == 2) {
                         String temp = parts[1].substring(0, parts[1].length() - 1).trim();
                         if (temp.length() > 0) {
                             params = temp;
                         }
                     }
-
                     break;
                 case SECTION:
                     String[] temp = token.getContent().substring(7).trim().split("\\(", 2);
                     className = temp[0];
-
                     if (temp.length == 2) {
                         params = temp[1].substring(0, temp[1].length() - 1).trim();
                         paramsList = splitParamsList(params);
@@ -214,77 +230,15 @@ public class HTemplateGen {
                     break;
                 case END_SECTION:
                     break;
+                case CONTENT:
+                    break;
+                case LAYOUT:
+                    className = token.getContent().substring(6).trim();
+                    break;
             }
         }
     }
 
-    private static class Name {
-        String inputDir;
-        String outputDir;
-        String fileName;
-        String relativePath;
-        String javaWholePath;
-
-
-        Name(String inputDir, String outputDir, Path bbFile) {
-
-            this.inputDir = inputDir;
-            this.outputDir = outputDir;
-
-            fileName = bbFile.toFile().getName().split("\\.bb\\.")[0];
-//            String regexString = ".*" + fileName;
-//            Pattern pat = Pattern.compile(regexString);
-//            Matcher mat = pat.matcher(bbFile.toString());
-//            mat.find();
-//            String withoutFileType = mat.group(0);
-            String withoutFileType = bbFile.toString().split(fileName + "\\.bb\\.")[0];
-            //@TODO: \bb\hgen is temporary
-            relativePath = "bb\\hgen" + withoutFileType.substring(inputDir.length(), withoutFileType.length() - 1);
-            javaWholePath = outputDir + "\\" + relativePath + "\\" + fileName + ".java";
-
-        }
-
-    }
-    private static class State {
-        Name name;
-        int tokenPos = 0;
-        int classDepth = 0;
-        List<Token> tokens;
-        Iterator<Token> tokenIterator;
-        StringBuilder header = new StringBuilder();
-
-        State(Name name, List<Token> tokens) {
-            this.name = name;
-            this.tokens = tokens;
-            tokenIterator = tokens.iterator();
-        }
-
-    }
-
-//    //@TODO: \bb\hgen is temporary
-//    private static String getNewFileName(String inputDir, String outputDir, String bbFileLoc) {
-//        String regexString = "(.*\\.bb\\.)";
-//        Pattern pat = Pattern.compile(regexString);
-//        Matcher mat = pat.matcher(bbFileLoc);
-//        mat.find();
-//        String withoutFileType = mat.group(0);
-//        String extra = withoutFileType.substring(inputDir.length(), withoutFileType.length() - 4);
-//        return outputDir + "\\bb\\hgen" + extra + ".java";
-//    }
-
-
-    private static String getJavaContent(Name name, String bbContent) {
-        HTokenizer tokenizer = new HTokenizer();
-        List<Token> tokens = tokenizer.tokenize(bbContent);
-        State state = new State(name, tokens);
-        state.header.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
-        state.header.append("import java.io.IOException;\n\n");
-
-        StringBuilder classContent = getClassContent(state);
-
-
-        return state.header.append(classContent).toString();
-    }
 
     //given a trimmed string of variables,
     // returns a list with a string list per variable with the type and variable name (when both are given)
@@ -341,169 +295,6 @@ public class HTemplateGen {
         }
     }
 
-    private static StringBuilder getClassContent(State state) {
-        return getClassContent(state.name.fileName, state, null);
-    }
-
-
-
-    private static StringBuilder getClassContent(String name, State state, String [][] paramsList) {
-        StringBuilder classHeader = new StringBuilder();
-        StringBuilder innerClass = new StringBuilder();
-        StringBuilder jspContent = new StringBuilder();
-        String superClass = BASE_CLASS_NAME;
-        String params = null;
-
-        outerloop:
-        while (state.tokenIterator.hasNext()) {
-            Token token = state.tokenIterator.next();
-            state.tokenPos++;
-            switch (token.getType()) {
-                case STRING_CONTENT:
-                    jspContent.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n");
-                    break;
-                case STATEMENT:
-                    jspContent.append("            " + token.getContent() + "\n");
-                    break;
-                case EXPRESSION:
-                    jspContent.append("            buffer.append(toS(" + token.getContent() + "));\n");
-                    break;
-                case COMMENT:
-                    break;
-                case DIRECTIVE:
-                    if (token.getContent().matches("import.*")) {
-                        //@TODO: deal with import not having a space after it
-                        state.header.append(token.getContent() + ";\n");
-                    } else if (token.getContent().matches("extends.*")) {
-                        //@TODO: deal with extends not having a space after it
-                        if (superClass == BASE_CLASS_NAME) {
-                            superClass = token.getContent();
-                        } else {
-                            throw new RuntimeException("Cannot extend 2 classes:" + superClass + " and " + token.getContent());
-                        }
-                    } else if (token.getContent().matches("section.*")) {
-                        state.classDepth++;
-                        String[] content = token.getContent().substring(7).trim().split("\\(", 2);
-                        String innerName = content[0];
-                        if (content.length == 2 && !content[1].trim().equals("\\)")) {
-                            String innerVars = content[1].replace(" {", "{");
-                            innerVars = innerVars.substring(0, innerVars.length() - 1);
-                            String[][] innerVarsList = splitParamsList(innerVars);
-                            findParamTypes(innerVarsList, state.tokenPos, state.tokens);
-                            innerClass.append(getClassContent(innerName, state, innerVarsList));
-                            jspContent.append("\n" + innerName + "." + "renderInto(buffer");
-                            for (int i = 0; i < innerVarsList.length; i++) {
-                                jspContent.append(", " + innerVarsList[i][1]);
-                            }
-                            jspContent.append(");\n");
-                        } else {
-                            innerClass.append(getClassContent(innerName, state, null));
-                            jspContent.append("\n" + innerName + "." + "renderInto(buffer);\n");
-                        }
-                    } else if (token.getContent().equals("end section")) {
-                        break outerloop;
-                    } else if (token.getContent().matches("params.*")) {
-                        if (state.classDepth == 0) {
-                            if (paramsList == null) {
-                                String content = token.getContent();
-                                params = content.substring(7, content.length() - 1).trim();
-                                paramsList = splitParamsList(params);
-                            } else {
-                                throw new RuntimeException("Cannot have 2 params directives: on line" + token.getLine());
-                            }
-                        } else {
-                            throw new RuntimeException("Cannot have a param directive inside a section.");
-                        }
-                    } else if (token.getContent().matches("include.*")) {
-                        String content = token.getContent().substring(8);
-                        String[] parts = content.split("\\(", 2);
-
-                        if (parts.length == 1 || (parts.length == 2 && parts[1].trim().equals(")"))) {
-                            jspContent.append("            " + parts[0] + ".renderInto(buffer);\n");
-                        } else {
-                            jspContent.append("            " + parts[0] + ".renderInto(buffer, ");
-                            jspContent.append(parts[1] + ";\n");
-                        }
-                    } else {
-                        throw new RuntimeException("Unsupported Directive on line" + token.getLine() + ":" + token.getContent());
-                    }
-                    break;
-            }
-        }
-        if (state.classDepth == 0) {
-            classHeader.append("\npublic class " + state.name.fileName + " " + superClass + " {\n");
-        } else {
-            classHeader.append("\npublic static class " + name + " " + superClass + " {\n");
-        }
-
-        classHeader.append("\nprivate static " + name + " INSTANCE = new " + name + "();\n\n");
-
-
-        classHeader.append(innerClass);
-
-        if (paramsList == null) {
-            classHeader.append("\n" +
-                    "    public static String render() {\n" +
-                    "        StringBuilder sb = new StringBuilder();\n" +
-                    "        renderInto(sb);\n" +
-                    "        return sb.toString();\n" +
-                    "    }\n\n");
-
-            classHeader.append("    public static void renderInto(Appendable buffer) {\n" +
-                    "        INSTANCE.renderImpl(buffer);\n" +
-                    "    }\n");
-            classHeader.append("    public void renderImpl(Appendable buffer) {\n");
-
-        } else {
-            if (params == null) {
-                params = makeParamsString(paramsList);
-            }
-            classHeader.append("\n" +
-                    "    public static String render(" + params + ") {\n" +
-                    "        StringBuilder sb = new StringBuilder();\n" +
-                    "        renderInto(sb");
-            for (String[] p : paramsList) {
-                classHeader.append(", " + p[1]);
-            }
-            classHeader.append(");\n" +
-                    "        return sb.toString();\n" +
-                    "    }\n\n");
-
-
-            classHeader.append("    public static void renderInto(Appendable buffer, " + params + ") {\n" +
-                    "        INSTANCE.renderImpl(buffer");
-            for (String[] param: paramsList) {
-                classHeader.append(", " + param[1]);
-            }
-            classHeader.append(");\n" +
-                    "    }\n\n");
-            classHeader.append("    public void renderImpl(Appendable buffer, " + params + ") {\n");
-
-        }
-
-        if (jspContent.length() > 0) {
-            classHeader.append("        try {");
-
-            jspContent.append("        } catch (IOException e) {\n" +
-                    "            throw new RuntimeException(e);\n" +
-                    "        }\n");
-        }
-
-        jspContent.append("    }\n");
-
-
-        jspContent.append("\n" +
-                "    public String toS(Object o) {\n" +
-                "        return o == null ? \"\" : o.toString();\n" +
-                "    }\n" +
-                "}");
-
-
-        state.classDepth--;
-
-        return classHeader.append(jspContent);
-    }
-
     private static List<Directive> getDirectivesList(List<Token> tokens) {
         ArrayList<Directive> dirList = new ArrayList<>();
 
@@ -535,9 +326,13 @@ public class HTemplateGen {
 
     private static void addHeader(StringBuilder sb, ClassInfo classInfo) {
         if (classInfo.depth == 0) {
-            sb.append("\npublic class " + classInfo.name + " " + classInfo.superClass + " {\n");
+            if (classInfo.isLayout) {
+                sb.append("\npublic class " + classInfo.name + " extends " + classInfo.superClass + " implements " + LAYOUT_INTERFACE + " {\n");
+            } else {
+                sb.append("\npublic class " + classInfo.name + " extends " + classInfo.superClass + " {\n");
+            }
         } else {
-            sb.append("\npublic static class " + classInfo.name + " " + classInfo.superClass + " {\n");
+            sb.append("\npublic static class " + classInfo.name + " extends " + classInfo.superClass + " {\n");
         }
 
         sb.append("\nprivate static " + classInfo.name + " INSTANCE = new " + classInfo.name + "();\n\n");
@@ -556,7 +351,7 @@ public class HTemplateGen {
 
             sb.append("    public static void renderInto(Appendable buffer) {\n" +
                     "        INSTANCE.renderImpl(buffer);\n" +
-                    "    }\n");
+                    "    }\n\n");
             sb.append("    public void renderImpl(Appendable buffer) {\n");
 
         } else {
@@ -595,23 +390,8 @@ public class HTemplateGen {
         }
     }
 
-    private static void makeClassContent(StringBuilder sb, ClassInfo classInfo, List<Token> tokens, Map<Integer, Directive> dirMap) {
-        addHeader(sb, classInfo);
-        addRenders(sb, classInfo.params, classInfo.paramsList);
-        ArrayList<ClassInfo> nestedClasses = new ArrayList<>();
-        boolean willAppend = false;
-
-        for (int i = classInfo.startTokenPos; i < classInfo.endTokenPos; i++) {
-            Token.TokenType tokenType = tokens.get(i).getType();
-            if (tokenType == STRING_CONTENT || tokenType == EXPRESSION) {
-                willAppend = true;
-                sb.append("        try {\n");
-                break;
-            }
-        }
-
-        outerLoop:
-        for (int i = classInfo.startTokenPos; i < classInfo.endTokenPos; i++) {
+    private static void makeFuncContent(StringBuilder sb, ClassInfo classInfo, List<Token> tokens, Map<Integer, Directive> dirMap, int startPos, int endPos, List<ClassInfo> nestedClasses) {
+        for (int i = startPos; i <= endPos; i++) {
             Token token = tokens.get(i);
             switch (token.getType()) {
                 case STRING_CONTENT:
@@ -638,22 +418,72 @@ public class HTemplateGen {
                         }
                         i = classToSkipOver.endTokenPos + 1;
                     } else if (dir.dirType == END_SECTION) {
-                        assert(i == classInfo.endTokenPos);
+                        assert(i == endPos);
                         assert(classInfo.depth > 0);
-                        break outerLoop;
+                        return;
                     } else if (dir.dirType == INCLUDE) {
                         addInclude(sb, dir);
+                    } else if (dir.dirType == CONTENT) {
+                        assert(i == endPos);
                     }
                     break;
             }
         }
-        //close the renderImpl
+    }
+
+    private static void makeClassContent(StringBuilder sb, ClassInfo classInfo, List<Token> tokens, Map<Integer, Directive> dirMap) {
+        addHeader(sb, classInfo);
+        addRenders(sb, classInfo.params, classInfo.paramsList);
+        ArrayList<ClassInfo> nestedClasses = new ArrayList<>();
+        boolean willAppend = false;
+
+        if (classInfo.hasLayout == true) {
+            sb.append("            " + classInfo.layoutDir.className + ".header(buffer);\n");
+        }
+
+        for (int i = classInfo.startTokenPos; i < classInfo.endTokenPos; i++) {
+            Token token = tokens.get(i);
+            Token.TokenType tokenType = token.getType();
+            if (tokenType == STRING_CONTENT || tokenType == EXPRESSION) {
+                willAppend = true;
+                sb.append("        try {\n");
+                break;
+            }
+        }
+
+
+        if (!classInfo.isLayout) {
+            makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.endTokenPos, nestedClasses);
+        } else {
+            sb.append("            header(buffer);\n" +
+                    "            footer(buffer);\n");
+        }
+
+
         if (willAppend) {
             sb.append("        } catch (IOException e) {\n" +
                     "            throw new RuntimeException(e);\n" +
                     "        }\n");
         }
-         sb.append("    }");
+
+        if (classInfo.hasLayout == true) {
+            sb.append("            " + classInfo.layoutDir.className + ".footer(buffer);\n");
+        }
+
+        //close the renderImpl
+        sb.append("    }\n");
+
+        if (classInfo.isLayout) {
+            sb.append("@Override\n" +
+                    "    public void header(Appendable buffer) throws IOException {\n");
+            makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.contentPos, nestedClasses);
+            sb.append("    }\n");
+
+            sb.append("@Override\n" +
+                    "    public void footer(Appendable buffer) throws IOException {\n");
+            makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.contentPos, classInfo.endTokenPos, nestedClasses);
+            sb.append("    }\n");
+        }
 
         for (ClassInfo nested : nestedClasses) {
             makeClassContent(sb, nested, tokens, dirMap);
@@ -664,16 +494,22 @@ public class HTemplateGen {
 
     }
 
-    private static String makeJavaContent(Name name, String bbContent) {
+    public String generateCode(String fullyQualifiedName, String source) {
+        String[] parts = fullyQualifiedName.split("\\.");
+        String className = parts[parts.length - 1];
+        String packageName = parts[1];
+        for (int i = 2; i < parts.length - 1; i++) {
+            packageName += "." + parts[i];
+        }
         HTokenizer tokenizer = new HTokenizer();
-        List<Token> tokens = tokenizer.tokenize(bbContent);
+        List<Token> tokens = tokenizer.tokenize(source);
         StringBuilder sb = new StringBuilder();
         List<Directive> dirList = getDirectivesList(tokens);
         Map<Integer, Directive> dirMap = getDirectivesMap(dirList);
-        ClassInfo currClass = new ClassInfo(dirList.iterator(), name.fileName, tokens.size(), true);
+        ClassInfo currClass = new ClassInfo(dirList.iterator(), className, tokens.size() - 1, true);
 
 
-        sb.append("package " + name.relativePath.replaceAll("\\\\", ".") + ";\n\n");
+        sb.append("package " + packageName + ";\n\n");
         sb.append("import java.io.IOException;\n\n");
         addImports(sb, dirList);
 
@@ -682,61 +518,10 @@ public class HTemplateGen {
         return sb.toString();
     }
 
-    public static void main(String[] args) {
-        String inputDir = args[0];
-        String outputDir = args[1];
-
-        Path root = Paths.get(inputDir);
-
-        try {
-            Object[] filesToConvert = Files.find(root, Integer.MAX_VALUE,  new fileTypeChecker()).toArray();
-            for (Object p : filesToConvert){
-                Name name = new Name(inputDir, outputDir, (Path) p);
-
-                File writeTo = new File(name.javaWholePath);
-                if (!writeTo.getParentFile().exists()) {
-                    writeTo.getParentFile().mkdirs();
-                }
-                if (writeTo.createNewFile()){
-                    System.out.println("File is created!");
-                }else{
-                    System.out.println("File already exists.");
-                }
-
-                //String content = new String(Files.readAllBytes(Paths.get(p.toString())));
-                String content = makeJavaContent(name, new String(Files.readAllBytes(Paths.get(p.toString()))));
-                FileWriter fw = null;
-                BufferedWriter bw = null;
-
-                try {
-                    fw = new FileWriter(writeTo);
-                    bw = new BufferedWriter(fw);
-                    bw.write(content);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        if (bw != null) {
-                            bw.close();
-                        }
-                        if (fw != null) {
-                            fw.close();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("The given parameter is not a valid directory.");
-        }
-
-
 
         //TODO: scan input token for all files with .bb.* ending and generate
         // a corresponding java file to the given output token, preserving the package
         // relative to the input token root, with a .render() static function that
         // renders the template
-    }
+
 }

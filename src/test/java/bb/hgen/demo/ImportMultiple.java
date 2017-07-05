@@ -20,6 +20,7 @@ private static ImportMultiple INSTANCE = new ImportMultiple();
     public static void renderInto(Appendable buffer) {
         INSTANCE.renderImpl(buffer);
     }
+
     public void renderImpl(Appendable buffer) {
         try {
             buffer.append("<!DOCTYPE html>\n");
@@ -41,4 +42,5 @@ private static ImportMultiple INSTANCE = new ImportMultiple();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }}
+    }
+}
