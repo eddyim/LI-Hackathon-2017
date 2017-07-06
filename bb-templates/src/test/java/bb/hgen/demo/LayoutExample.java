@@ -20,12 +20,17 @@ private static LayoutExample INSTANCE = new LayoutExample();
 
     public void renderImpl(Appendable buffer) {
     try {
-            header(buffer);
-            footer(buffer);
+            INSTANCE.header(buffer);
+            INSTANCE.footer(buffer);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+    static bb.runtime.ILayout asLayout() {
+        return INSTANCE;
+    }
+
     @Override
     public void header(Appendable buffer) throws IOException {
             buffer.append("</html>\n</body>\n");

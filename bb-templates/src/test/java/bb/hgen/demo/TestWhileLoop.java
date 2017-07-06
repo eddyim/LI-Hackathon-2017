@@ -35,4 +35,5 @@ private static TestWhileLoop INSTANCE = new TestWhileLoop();
             throw new RuntimeException(e);
         }
     }
+
 }

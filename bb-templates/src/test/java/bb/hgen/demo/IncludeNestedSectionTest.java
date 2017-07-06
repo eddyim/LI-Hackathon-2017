@@ -1,5 +1,7 @@
 package bb.hgen.demo;
 
+import java.io.IOException;
+
 
 public class IncludeNestedSectionTest extends bb.runtime.BaseBBTemplate {
 
@@ -19,4 +21,5 @@ private static IncludeNestedSectionTest INSTANCE = new IncludeNestedSectionTest(
     public void renderImpl(Appendable buffer) {
             NestedImportTest.mySection.renderInto(buffer);
     }
+
 }

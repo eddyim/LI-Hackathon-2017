@@ -2,6 +2,8 @@ package bb.hgen.demo;
 
 import java.io.IOException;
 
+import java.util.*;
+
 public class SectionTest extends bb.runtime.BaseBBTemplate {
 
 private static SectionTest INSTANCE = new SectionTest();
@@ -36,6 +38,7 @@ if (num > 0.95) {
         }
     }
 
+
 public static class MySection extends bb.runtime.BaseBBTemplate {
 
 private static MySection INSTANCE = new MySection();
@@ -61,6 +64,7 @@ private static MySection INSTANCE = new MySection();
             throw new RuntimeException(e);
         }
     }
+
 
 public static class yourSection extends bb.runtime.BaseBBTemplate {
 
@@ -92,6 +96,7 @@ private static yourSection INSTANCE = new yourSection();
             throw new RuntimeException(e);
         }
     }
+
 }
 }
 }

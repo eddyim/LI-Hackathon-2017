@@ -35,4 +35,5 @@ private static IfElseTest INSTANCE = new IfElseTest();
             throw new RuntimeException(e);
         }
     }
+
 }

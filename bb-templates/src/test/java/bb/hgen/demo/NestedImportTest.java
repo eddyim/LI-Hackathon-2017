@@ -27,6 +27,7 @@ private static NestedImportTest INSTANCE = new NestedImportTest();
         }
     }
 
+
 public static class mySection extends bb.runtime.BaseBBTemplate {
 
 private static mySection INSTANCE = new mySection();
@@ -62,5 +63,6 @@ private static mySection INSTANCE = new mySection();
             throw new RuntimeException(e);
         }
     }
+
 }
 }

@@ -1,5 +1,7 @@
 package bb.hgen.demo;
 
+import java.io.IOException;
+
 
 public class TestEmpty extends bb.runtime.BaseBBTemplate {
 
@@ -18,4 +20,5 @@ private static TestEmpty INSTANCE = new TestEmpty();
 
     public void renderImpl(Appendable buffer) {
     }
+
 }

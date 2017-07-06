@@ -32,4 +32,5 @@ private static ImportAndExtendsDirectivesTest INSTANCE = new ImportAndExtendsDir
             throw new RuntimeException(e);
         }
     }
+
 }

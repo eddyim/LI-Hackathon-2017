@@ -36,4 +36,5 @@ private static BasicMethodCallTest INSTANCE = new BasicMethodCallTest();
             throw new RuntimeException(e);
         }
     }
+
 }
