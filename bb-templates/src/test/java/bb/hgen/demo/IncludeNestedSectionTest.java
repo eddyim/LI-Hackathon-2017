@@ -1,7 +1,5 @@
 package bb.hgen.demo;
 
-import java.io.IOException;
-
 
 public class IncludeNestedSectionTest extends bb.runtime.BaseBBTemplate {
 

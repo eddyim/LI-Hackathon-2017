@@ -1,5 +1,5 @@
 package bb.egen.demo;
-import java.util.*;
+
 public class SectionTest extends bb.runtime.BaseBBTemplate {
 
 private static SectionTest INSTANCE = new SectionTest();

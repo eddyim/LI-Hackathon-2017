@@ -2,8 +2,6 @@ package bb.hgen.demo;
 
 import java.io.IOException;
 
-import java.util.*;
-
 public class SectionTest extends bb.runtime.BaseBBTemplate {
 
 private static SectionTest INSTANCE = new SectionTest();

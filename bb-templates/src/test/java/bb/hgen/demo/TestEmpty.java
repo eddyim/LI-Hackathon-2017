@@ -1,7 +1,5 @@
 package bb.hgen.demo;
 
-import java.io.IOException;
-
 
 public class TestEmpty extends bb.runtime.BaseBBTemplate {
 
