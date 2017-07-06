@@ -221,7 +221,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                 case SECTION:
                     String[] temp = token.getContent().substring(7).trim().split("\\(", 2);
                     className = temp[0];
-                    if (temp.length == 2) {
+                    if (temp.length == 2 && !temp[1].equals(")")) {
                         params = temp[1].substring(0, temp[1].length() - 1).trim();
                         paramsList = splitParamsList(params);
                         findParamTypes(paramsList, tokenPos, tokens);
