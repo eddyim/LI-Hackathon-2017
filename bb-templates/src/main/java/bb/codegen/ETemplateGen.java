@@ -19,6 +19,7 @@ public class ETemplateGen implements ITemplateCodeGenerator {
         boolean isSection;
         private StringBuilder additionalParameters;
         private StringBuilder importStatements;
+        private String layout;
         String name;
         int index;
 
@@ -191,8 +192,15 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             }
             toReturn.append(") {\n");
             if (content.length() > 0) {
-                toReturn.append("        try {\n").append(content)
-                        .append("} catch (Exception e) {\n").append("            throw new RuntimeException(e);\n").append("        }\n");
+                toReturn.append("        try {\n");
+                if (layout != null) {
+                    toReturn.append(layout).append(".asLayout().header(buffer);");
+                }
+                toReturn.append(content);
+                if (layout != null) {
+                    toReturn.append(layout).append(".asLayout().footer(buffer);");
+                }
+                toReturn.append("} catch (Exception e) {\n").append("            throw new RuntimeException(e);\n").append("        }\n");
             }
             toReturn.append("    }\n");
             return toReturn.toString();
@@ -287,6 +295,11 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                         importStatements.append("import java.io.IOException;\n");
                         importStatements.append("import bb.runtime.ILayout;\n");
                         break;
+                    } else if (getDirectiveType(t) == DirectiveType.LAYOUT) {
+                        if (isSection) {
+                            throw new RuntimeException("Can't call a layout in a section");
+                        }
+                        this.layout = t.getContent().substring(7);
                     }
                 } else if (t.getType() == STATEMENT) {
                     pastStatements.add(t.getContent());
@@ -358,7 +371,7 @@ public class ETemplateGen implements ITemplateCodeGenerator {
         private void handleDirective(Token t, StringBuilder renderInto) {
             DirectiveType type = getDirectiveType(t);
             if (type == DirectiveType.IMPORT_STATEMENT || type == DirectiveType.EXTENDS || type == DirectiveType.PARAM ||
-                    type == DirectiveType.END_SECTION || type == DirectiveType.CREATE_LAYOUT) {
+                    type == DirectiveType.END_SECTION || type == DirectiveType.CREATE_LAYOUT || type == DirectiveType.LAYOUT) {
             } else if (type == DirectiveType.INCLUDE) {
                 handleInclude(t, renderInto);
             } else if (type == DirectiveType.SECTION) {
@@ -410,7 +423,10 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                 return DirectiveType.SECTION;
             } else if (token.getContent().equals("content")) {
                 return DirectiveType.CREATE_LAYOUT;
-            } else {
+            } else if (token.getContent().contains("layout")) {
+                return DirectiveType.LAYOUT;
+            }
+            else {
                     throw new RuntimeException("Invalid Directive");
                 }
         }
@@ -457,7 +473,8 @@ public class ETemplateGen implements ITemplateCodeGenerator {
         INCLUDE,
         SECTION,
         END_SECTION,
-        CREATE_LAYOUT
+        CREATE_LAYOUT,
+        LAYOUT
     }
 
 }
