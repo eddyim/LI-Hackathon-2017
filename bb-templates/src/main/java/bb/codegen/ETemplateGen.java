@@ -237,7 +237,6 @@ public class ETemplateGen implements ITemplateCodeGenerator {
         }
 
         //TODO: Handle various special cases for layouts
-        //TODO: Support nested layouts
         //TODO: Write Tests for layouts
         private void handleLayoutCreation(Token t, StringBuilder additionalClasses, StringBuilder importStatements, int num) {
             List<Token> header = new ArrayList<>();
