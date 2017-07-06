@@ -36,6 +36,7 @@ private static TestInferences INSTANCE = new TestInferences();
         }
     }
 
+
 public static class shouldBeInt extends bb.runtime.BaseBBTemplate {
 
 private static shouldBeInt INSTANCE = new shouldBeInt();
@@ -60,6 +61,7 @@ private static shouldBeInt INSTANCE = new shouldBeInt();
             throw new RuntimeException(e);
         }
     }
+
 }
 
 public static class mySection extends bb.runtime.BaseBBTemplate {
@@ -84,6 +86,7 @@ private static mySection INSTANCE = new mySection();
             throw new RuntimeException(e);
         }
     }
+
 }
 
 public static class shouldBeABoolean extends bb.runtime.BaseBBTemplate {
@@ -110,5 +113,6 @@ private static shouldBeABoolean INSTANCE = new shouldBeABoolean();
             throw new RuntimeException(e);
         }
     }
+
 }
 }

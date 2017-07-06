@@ -456,15 +456,15 @@ public class HTemplateGen implements ITemplateCodeGenerator{
         }
 
         if (classInfo.isLayout) {
-            sb.append("            header(buffer);\n" +
-                    "            footer(buffer);\n");
+            sb.append("            INSTANCE.header(buffer);\n" +
+                    "            INSTANCE.footer(buffer);\n");
         } else {
             if (classInfo.hasLayout == true) {
-                sb.append("            " + classInfo.layoutDir.className + ".header(buffer);\n");
+                sb.append("            " + classInfo.layoutDir.className + ".asLayout().header(buffer);\n");
             }
             makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.endTokenPos, nestedClasses);
             if (classInfo.hasLayout == true) {
-                sb.append("            " + classInfo.layoutDir.className + ".footer(buffer);\n");
+                sb.append("            " + classInfo.layoutDir.className + ".asLayout().footer(buffer);\n");
             }
         }
 
@@ -474,14 +474,17 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                     "        }\n");
         }
         //close the renderImpl
-        sb.append("    }\n");
+        sb.append("    }\n\n");
 
 
         if (classInfo.isLayout) {
+            sb.append("    static " + LAYOUT_INTERFACE + " asLayout() {\n" +
+                    "        return INSTANCE;\n" +
+                    "    }\n\n");
             sb.append("    @Override\n" +
                     "    public void header(Appendable buffer) throws IOException {\n");
             if (classInfo.hasLayout == true) {
-                sb.append("            " + classInfo.layoutDir.className + ".header(buffer);\n");
+                sb.append("            " + classInfo.layoutDir.className + ".asLayout().header(buffer);\n");
             }
             makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.contentPos, nestedClasses);
             sb.append("    }\n");
@@ -490,7 +493,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                     "    public void footer(Appendable buffer) throws IOException {\n");
             makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.contentPos, classInfo.endTokenPos, nestedClasses);
             if (classInfo.hasLayout == true) {
-                sb.append("            " + classInfo.layoutDir.className + ".footer(buffer);\n");
+                sb.append("            " + classInfo.layoutDir.className + ".asLayout().footer(buffer);\n");
             }
             sb.append("    }\n");
         }

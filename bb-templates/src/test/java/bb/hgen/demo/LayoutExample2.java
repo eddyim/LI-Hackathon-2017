@@ -21,14 +21,15 @@ private static LayoutExample2 INSTANCE = new LayoutExample2();
 
     public void renderImpl(Appendable buffer) {
     try {
-            LayoutExample.header(buffer);
+            LayoutExample.asLayout().header(buffer);
             buffer.append("<html>\n<head><title>First JSP</title></head>\n\n");
             buffer.append("\n\n");
-            LayoutExample.footer(buffer);
+            LayoutExample.asLayout().footer(buffer);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
 
 public static class MySection extends bb.runtime.BaseBBTemplate {
 
@@ -55,6 +56,7 @@ private static MySection INSTANCE = new MySection();
             throw new RuntimeException(e);
         }
     }
+
 
 public static class yourSection extends bb.runtime.BaseBBTemplate {
 
@@ -86,6 +88,7 @@ private static yourSection INSTANCE = new yourSection();
             throw new RuntimeException(e);
         }
     }
+
 }
 }
 }

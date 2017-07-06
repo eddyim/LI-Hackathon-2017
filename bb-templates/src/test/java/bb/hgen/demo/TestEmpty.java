@@ -20,4 +20,5 @@ private static TestEmpty INSTANCE = new TestEmpty();
 
     public void renderImpl(Appendable buffer) {
     }
+
 }
