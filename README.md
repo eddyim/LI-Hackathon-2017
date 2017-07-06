@@ -347,9 +347,9 @@ The `params` directive is not yet supported for a template that contains the `co
 
 The syntax of a content template is as follows:
 ```jsp
-  <%-- Content of the Header. --%>
+  HEADER CONTENT HERE
   <%@ content %>
-  <%-- Content of the Footer. --%>
+  FOOTER CONTENT HERE
 ```
 
 
