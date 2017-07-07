@@ -22,12 +22,35 @@ public class DemoServer {
         Message.addMessage("Hello Harika");
         Message.addMessage("Hello Interchan");
 
-        get("/", (req, resp) -> Index.render(Message.getAllMessages()));
+        get("/", (req, resp) -> {
+            if (req.session().attribute("userName") == null) {
+                resp.redirect("/login");
+                return null;
+            } else {
+                return Index.render(Message.getAllMessages(), Message.getUser());
+            }
+        });
 
         post("/", (req, resp) -> {
             String message = req.queryParams("message");
-            Message.addMessage(message);
+            if (message.length() > 0) {
+                Message.addMessage(message);
+            }
             resp.redirect("/");
+            return null;
+        });
+
+        get("/login", (req, resp) -> Login.render());
+
+        post("/login", (req, resp) -> {
+            String login = req.queryParams("userName");
+            if (login.length() > 0) {
+                req.session().attribute("userName", login);
+                Message.setUser(req.session().attribute("userName"));
+                resp.redirect("/");
+            } else {
+                resp.redirect("/login");
+            }
             return null;
         });
 
