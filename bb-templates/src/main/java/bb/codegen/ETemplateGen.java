@@ -77,7 +77,6 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             return fileContents.toString();
         }
 
-
         String buildFile() {
             StringBuilder fileContents = new StringBuilder();
             StringBuilder renderImplContent = new StringBuilder();
@@ -235,6 +234,12 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                     "    }\n\n";
         }
 
+        private String getAsLayoutMethod() {
+            return "    static ILayout asLayout() {\n" +
+                    "        return INSTANCE;\n" +
+                    "    }\n";
+        }
+
         private String getIntro(String fullyQualifiedName) {
             String[] splitName = fullyQualifiedName.split("\\.");
             String packageStatement = "";
@@ -331,6 +336,7 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                     .append(name).append("();\n").append(additionalClasses);
             if(layoutCreated) {
                 intro.append(getILayoutContent(numLayouts));
+                intro.append(getAsLayoutMethod());
             }
             return intro.toString();
         }

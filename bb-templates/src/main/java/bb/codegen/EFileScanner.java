@@ -38,8 +38,11 @@ public class EFileScanner {
 
     private static String getFullyQualifiedName(File f, String outputDir, String relPath) {
         String outputFile = parseOutputFile(f, outputDir, relPath);
-        return outputFile.replaceAll("/", ".").replaceAll("java.", "")
-                .replaceAll(".java", "");
+        outputFile = outputFile.replaceAll("\\.java", "");
+        if (outputFile.contains("java")) {
+            outputFile = outputFile.substring(outputFile.indexOf("java") + 5);
+        }
+        return outputFile.replaceAll("/", ".");
     }
 
     private static String parseOutputFile(File f, String outputDir, String relativePath) {
@@ -67,7 +70,7 @@ public class EFileScanner {
      */
     private static void scanDirectory(File directory, String relativePath, Map<File, String> validFiles) {
         File[] files = directory.listFiles();
-        for (File file: files) {
+         for (File file: files) {
             if (file.isDirectory()) {
                 scanDirectory(file, "/" + file.getName(), validFiles);
             }
