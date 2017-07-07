@@ -42,6 +42,9 @@ public class EFileScanner {
         if (outputFile.contains("java")) {
             outputFile = outputFile.substring(outputFile.indexOf("java") + 5);
         }
+        while (outputFile.charAt(0) == '.' || outputFile.charAt(0) == '/') {
+            outputFile = outputFile.substring(1);
+        }
         return outputFile.replaceAll("/", ".");
     }
 
