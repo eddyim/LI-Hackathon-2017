@@ -11,8 +11,8 @@ public class Message {
         return _message;
     }
 
-    public void setMessage(String _message) {
-        _message = _message;
+    public void setMessage(String message) {
+        _message = message;
     }
 
     private Message(String msg) {

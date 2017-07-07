@@ -397,7 +397,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
             Token token = tokens.get(i);
             switch (token.getType()) {
                 case STRING_CONTENT:
-                    sb.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\n", "\\\\n").replaceAll("\r\n", "\\\\n") + "\");\n");
+                    sb.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n");
                     break;
                 case STATEMENT:
                     sb.append("            " + token.getContent() + "\n");
