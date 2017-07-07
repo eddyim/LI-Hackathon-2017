@@ -2,7 +2,7 @@
 <%@ import demo.model.* %>
 <%@ extends bb.sparkjava.BBSparkTemplate %>
 <%@ layout Layout %>
-<%@ params(List<Message> messages) %>
+<%@ params(List<Message> messages, String user) %>
 
 <div id="outer-frame">
     <div id="who">
@@ -15,7 +15,7 @@
 
     <div id="top-bar">
         <div id="title">
-        Welcome to internchan
+        Welcome to internchan, ${user}
         </div>
     </div>
 
