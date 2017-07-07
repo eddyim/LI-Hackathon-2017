@@ -10,7 +10,7 @@ public class EFileScanner {
 
     public static void main(String[] args) {
         String inputDir = args[0];
-        String outputDir = args[1] + additionalDirectory;
+        String outputDir = args[1];
         generateFiles(inputDir, outputDir);
     }
 
@@ -42,6 +42,9 @@ public class EFileScanner {
         if (outputFile.contains("java")) {
             outputFile = outputFile.substring(outputFile.indexOf("java") + 5);
         }
+        while (outputFile.charAt(0) == '.' || outputFile.charAt(0) == '/') {
+            outputFile = outputFile.substring(1);
+        }
         return outputFile.replaceAll("/", ".");
     }
 
@@ -72,7 +75,7 @@ public class EFileScanner {
         File[] files = directory.listFiles();
          for (File file: files) {
             if (file.isDirectory()) {
-                scanDirectory(file, "/" + file.getName(), validFiles);
+                scanDirectory(file, relativePath + "/" + file.getName(), validFiles);
             }
             else if (file.getName().matches(".*\\.bb\\..*")) {
                 validFiles.put(file, relativePath);
