@@ -1,5 +1,6 @@
 package demo;
 
+import bb.hgen.demo.views.*;
 import bb.sparkjava.BBSparkTemplate;
 import spark.Request;
 import spark.Response;
@@ -15,7 +16,7 @@ public class DemoServer {
 
         BBSparkTemplate.init();
 
-        get("/", (req, resp) -> "DERP" /* Index.render() */); // <-- make this work
+        get("/", (req, resp) -> Index.render() ); // <-- make this work
 
     }
 }
