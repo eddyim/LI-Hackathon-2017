@@ -16,7 +16,13 @@ Layout.asLayout().header(buffer);            buffer.append("\n");
             buffer.append("\n");
             buffer.append("\n");
             buffer.append("\n");
-            buffer.append("\n\n<div id=\"outer-frame\">\n    <div id=\"who\">\n        <ul>\n            <li>Harika</li>\n            <li>Ed</li>\n            <li>Carson</li>\n        </ul>\n    </div>\n\n    <div id=\"top-bar\">\n        Welcome to internchan\n    </div>\n\n    <div id=\"messages\">\n        <div>\n            Demo Message\n        </div>\n    </div>\n\n    <div id=\"chat-box\">\n        <form action=\"/\" method=\"post\">\n        <textarea name=\"message\">\n        </textarea>\n            <button>Submit</button>\n        </form>\n    </div>\n</div>");
+            buffer.append("\n\n<div id=\"outer-frame\">\n    <div id=\"who\">\n        <ul>\n            <li>Harika</li>\n            <li>Ed</li>\n            <li>Carson</li>\n        </ul>\n    </div>\n\n    <div id=\"top-bar\">\n        <div id=\"title\">\n        Welcome to internchan\n        </div>\n    </div>\n\n    <div id=\"messages\">\n        <div class=\"message\">\n            Demo Message\n        </div>\n        ");
+            for (Message m: messages) {
+            buffer.append("\n        <div class=\"message\">\n            ");
+            buffer.append(toS(m.getMessage()));
+            buffer.append("\n        </div>\n        ");
+            }
+            buffer.append("\n    </div>\n\n    <div id=\"chat-box\">\n        <form action=\"/\" method=\"post\" autocomplete=\"off\">\n        <input type=\"text\" name=\"message\" autofocus=\"autofocus\">\n            <button>Submit</button>\n        </form>\n    </div>\n</div>");
 Layout.asLayout().footer(buffer);} catch (Exception e) {
             throw new RuntimeException(e);
         }
