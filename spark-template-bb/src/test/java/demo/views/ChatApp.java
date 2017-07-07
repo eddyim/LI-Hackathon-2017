@@ -1,4 +1,4 @@
-package bb.hgen.demo.views;
+package .demo.views;
 
 import java.io.IOException;
 

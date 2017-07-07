@@ -1,4 +1,4 @@
-package bb.hgen.demo.views;
+package .demo.views;
 
 import java.io.IOException;
 
@@ -33,7 +33,7 @@ private static Layout INSTANCE = new Layout();
 
     @Override
     public void header(Appendable buffer) throws IOException {
-            buffer.append("\n\n<html>\n<head>\n    <title>Hello Spark BB Templates!</title>\n</head>\n\n");
+            buffer.append("\n\n<html>\n<head>\n    <script src=\"/js/site.js\"></script>\n    <link rel=\"stylesheet\" type=\"text/css\"  href=\"/css/site.css\"/>\n    <title>Hello Spark BB Templates!</title>\n</head>\n\n");
     }
     @Override
     public void footer(Appendable buffer) throws IOException {
