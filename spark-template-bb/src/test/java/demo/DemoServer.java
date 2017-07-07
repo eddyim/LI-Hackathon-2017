@@ -28,7 +28,7 @@ public class DemoServer {
             String message = req.queryParams("message");
             Message.addMessage(message);
             resp.redirect("/");
-            return Index.render(Message.getAllMessages());
+            return null;
         });
 
     }
