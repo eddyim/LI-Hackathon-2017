@@ -10,7 +10,7 @@ public class EFileScanner {
 
     public static void main(String[] args) {
         String inputDir = args[0];
-        String outputDir = args[1] + additionalDirectory;
+        String outputDir = args[1];
         generateFiles(inputDir, outputDir);
     }
 
