@@ -1,11 +1,11 @@
-package demo.views;
+package views;ChatApp;
 
 import java.io.IOException;
 
 
-public class ChatApp extends bb.runtime.BaseBBTemplate {
+public class views;ChatApp extends bb.runtime.BaseBBTemplate {
 
-private static ChatApp INSTANCE = new ChatApp();
+private static views;ChatApp INSTANCE = new views;ChatApp();
 
 
     public static String render() {
@@ -21,7 +21,7 @@ private static ChatApp INSTANCE = new ChatApp();
     public void renderImpl(Appendable buffer) {
     try {
             Layout.asLayout().header(buffer);
-            buffer.append("\n<h1 style=\"text-align:center;color:DarkSlateGrey;\">Chat App</h1>");
+            buffer.append("\n<h1 style=\"text-align:center;color:DarkSlateGrey;\">Chat App</h1>");
             Layout.asLayout().footer(buffer);
         } catch (IOException e) {
             throw new RuntimeException(e);

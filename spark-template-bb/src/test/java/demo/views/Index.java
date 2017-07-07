@@ -1,4 +1,4 @@
-package .demo.views;
+package demo.views;
 
 import java.io.IOException;
 

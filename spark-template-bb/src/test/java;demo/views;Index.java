@@ -1,11 +1,11 @@
-package demo.views;
+package views;Index;
 
 import java.io.IOException;
 
 
-public class ChatApp extends bb.runtime.BaseBBTemplate {
+public class views;Index extends bb.sparkjava.BBSparkTemplate {
 
-private static ChatApp INSTANCE = new ChatApp();
+private static views;Index INSTANCE = new views;Index();
 
 
     public static String render() {
@@ -21,7 +21,8 @@ private static ChatApp INSTANCE = new ChatApp();
     public void renderImpl(Appendable buffer) {
     try {
             Layout.asLayout().header(buffer);
-            buffer.append("\n<h1 style=\"text-align:center;color:DarkSlateGrey;\">Chat App</h1>");
+            buffer.append("\n");
+            buffer.append("\n\n<h1>Hello Spark!</h1>");
             Layout.asLayout().footer(buffer);
         } catch (IOException e) {
             throw new RuntimeException(e);

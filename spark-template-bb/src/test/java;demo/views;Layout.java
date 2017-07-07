@@ -1,11 +1,11 @@
-package demo.views;
+package views;Layout;
 
 import java.io.IOException;
 
 
-public class Layout extends bb.sparkjava.BBSparkTemplate implements bb.runtime.ILayout {
+public class views;Layout extends bb.sparkjava.BBSparkTemplate implements bb.runtime.ILayout {
 
-private static Layout INSTANCE = new Layout();
+private static views;Layout INSTANCE = new views;Layout();
 
 
     public static String render() {
@@ -33,10 +33,10 @@ private static Layout INSTANCE = new Layout();
 
     @Override
     public void header(Appendable buffer) throws IOException {
-            buffer.append("\n\n<html>\n<head>\n    <script src=\"/js/site.js\"></script>\n    <link rel=\"stylesheet\" type=\"text/css\"  href=\"/css/site.css\"/>\n    <title>Hello Spark BB Templates!</title>\n</head>\n\n");
+            buffer.append("\n\n<html>\n<head>\n    <script src=\"/js/site.js\"></script>\n    <link rel=\"stylesheet\" type=\"text/css\"  href=\"/css/site.css\"/>\n    <title>Hello Spark BB Templates!</title>\n</head>\n\n");
     }
     @Override
     public void footer(Appendable buffer) throws IOException {
-            buffer.append("\n\n</html>");
+            buffer.append("\n\n</html>");
     }
 }

@@ -1,6 +1,6 @@
 package demo;
 
-import bb.hgen.demo.views.*;
+import demo.views.*;
 import bb.sparkjava.BBSparkTemplate;
 import spark.Request;
 import spark.Response;
