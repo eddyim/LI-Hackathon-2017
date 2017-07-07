@@ -22,16 +22,12 @@ public class DemoServer {
         Message.addMessage("Hello Harika");
         Message.addMessage("Hello Interchan");
 
-        get("/", (req, resp) -> {
-            List<Message> allMessages = Message.getAllMessages();
-            return Index.render(allMessages);
-        });
+        get("/", (req, resp) -> Index.render(Message.getAllMessages()));
 
         post("/", (req, resp) -> {
-            String message = req.body();
-            Message.addMessage(message.substring(8));
-            List<Message> allMessages = Message.getAllMessages();
-            return Index.render(allMessages);
+            String message = req.queryParams("message");
+            Message.addMessage(message);
+            return Index.render(Message.getAllMessages());
         });
 
     }
