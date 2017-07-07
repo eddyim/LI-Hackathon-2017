@@ -1,5 +1,8 @@
+<%@ import java.util.* %>
+<%@ import demo.model.* %>
 <%@ extends bb.sparkjava.BBSparkTemplate %>
 <%@ layout Layout %>
+<%@ params(List<Message> messages) %>
 
 <div id="outer-frame">
     <div id="who">
@@ -21,7 +24,7 @@
     </div>
 
     <div id="chat-box">
-        <form>
+        <form action="/" method="post">
         <textarea name="message">
         </textarea>
             <button>Submit</button>
