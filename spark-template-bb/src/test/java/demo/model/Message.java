@@ -5,14 +5,23 @@ import java.util.List;
 
 public class Message {
 
+    private static String _user;
     private String _message;
 
     public String getMessage() {
         return _message;
     }
 
-    public void setMessage(String message) {
-        _message = message;
+    public static String getUser() {
+        return _user;
+    }
+
+    public static void setUser(String user) {
+        _user = user;
+    }
+
+    public void setMessage(String _message) {
+        _message = _message;
     }
 
     private Message(String msg) {
