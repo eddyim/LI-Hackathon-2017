@@ -72,7 +72,7 @@ public class EFileScanner {
         File[] files = directory.listFiles();
          for (File file: files) {
             if (file.isDirectory()) {
-                scanDirectory(file, "/" + file.getName(), validFiles);
+                scanDirectory(file, relativePath + "/" + file.getName(), validFiles);
             }
             else if (file.getName().matches(".*\\.bb\\..*")) {
                 validFiles.put(file, relativePath);
