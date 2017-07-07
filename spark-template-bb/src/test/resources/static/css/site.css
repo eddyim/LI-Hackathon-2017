@@ -1,2 +1,50 @@
 
 /* CSS goes here */
+
+body {
+  padding:0px;
+  margin:0px;
+}
+
+#outer-frame {
+    height:100%;
+    width:100%;
+    border: 1px solid black;
+    margin: 0px;
+    padding: 0px;
+}
+
+#who {
+  position: absolute;
+  top:0;
+  left:0;
+  bottom:0;
+  width:300px;
+  background-color: yellow;
+}
+
+#top-bar {
+  position: absolute;
+  top:0;
+  left:300px;
+  right:0;
+  height:80px;
+  background-color: pink;
+}
+
+#messages {
+  position: absolute;
+  top:80px;
+  left:300px;
+  right:0;
+  bottom:100px;
+}
+
+#chat-box {
+  position: absolute;
+  left:300px;
+  right:0;
+  height:100px;
+  bottom:0px;
+  background-color: green;
+}
