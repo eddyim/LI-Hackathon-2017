@@ -33,7 +33,7 @@ public class HFileScanner {
             throw new RuntimeException(bbFile.toString() + "is not an supported file type");
         }
         //@TODO: \bb\hgen is temporary
-        String relativePath = "bb\\hgen" + withoutFileType.substring(inputDir.length(), withoutFileType.length() - 1);
+        String relativePath = withoutFileType.substring(inputDir.length(), withoutFileType.length() - 1);
         String javaWholePath = outputDir + "\\" + relativePath + "\\" + fileName;
         return javaWholePath;
     }
