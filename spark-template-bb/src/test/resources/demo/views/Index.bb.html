@@ -14,13 +14,20 @@
     </div>
 
     <div id="top-bar">
+        <div id="title">
         Welcome to internchan
+        </div>
     </div>
 
     <div id="messages">
-        <div>
+        <div class="message">
             Demo Message
         </div>
+        <% for (Message m: messages) { %>
+        <div class="message">
+            ${m.getMessage()}
+        </div>
+        <% } %>
     </div>
 
     <div id="chat-box">
