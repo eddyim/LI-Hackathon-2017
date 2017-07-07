@@ -28,9 +28,8 @@ public class DemoServer {
         });
 
         post("/", (req, resp) -> {
-            //TODO add the message to the list
             String message = req.body();
-            Message.addMessage(message);
+            Message.addMessage(message.substring(8));
             List<Message> allMessages = Message.getAllMessages();
             return Index.render(allMessages);
         });
