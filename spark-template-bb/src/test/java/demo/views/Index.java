@@ -18,7 +18,7 @@ Layout.asLayout().header(buffer);            buffer.append("\n");
             buffer.append("\n");
             buffer.append("\n\n<div id=\"outer-frame\">\n    <div id=\"who\">\n        <ul>\n            <li>Harika</li>\n            <li>Ed</li>\n            <li>Carson</li>\n        </ul>\n    </div>\n\n    <div id=\"top-bar\">\n        <div id=\"title\">\n        Welcome to internchan, ");
             buffer.append(toS(user));
-            buffer.append("\n        </div>\n    </div>\n\n    <div id=\"messages\"ic-src=\"/messages\" ic-poll=\"1s\">\n        ");
+            buffer.append("\n        </div>\n    </div>\n\n    <div id=\"messages\" ic-src=\"/messages\" ic-poll=\"1s\">\n        ");
             for (Message m: messages) {
             buffer.append("\n        <div class=\"message\">\n            <span style=\"font-weight: bold\">");
             buffer.append(toS(m.getSender()));
@@ -26,7 +26,7 @@ Layout.asLayout().header(buffer);            buffer.append("\n");
             buffer.append(toS(m.getMessage()));
             buffer.append("\n        </div>\n        ");
             }
-            buffer.append("\n    </div>\n\n    <div id=\"chat-box\">\n        <form action=\"/\" method=\"post\" autocomplete=\"off\">\n        <input type=\"text\" name=\"message\" size=\"100\" autofocus=\"autofocus\">\n            <button>Submit</button>\n        </form>\n    </div>\n</div>");
+            buffer.append("\n    </div>\n\n    <div id=\"chat-box\">\n        <form action=\"/\" method=\"ic-post-to\" autocomplete=\"off\">\n        <textarea id=\"input-box\" type=\"text\" name=\"message\" rows =\"3\" autofocus=\"autofocus\"></textarea>\n            <button>Submit</button>\n        </form>\n    </div>\n</div>");
 Layout.asLayout().footer(buffer);} catch (Exception e) {
             throw new RuntimeException(e);
         }
