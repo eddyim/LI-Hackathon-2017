@@ -19,24 +19,26 @@
         </div>
     </div>
 
-    <div ir-src="/" ic-on-success="scrollMessagesToBottom()">
-    <div id="message-wrapper" ic-src="/messages" ic-poll="1s" >
+    <div id="messages"
+         ic-src="/messages"
+         ic-poll="1s"
+         ic-on-success="scrollMessagesToBottom()">
         <%@ section messageBox (List<Message> messages) %>
-        <div id="messages">
             <% for (Message m: messages) { %>
             <div class="message">
                 <span style="font-weight: bold">${m.getSender()}: </span>${m.getMessage()}
             </div>
             <% } %>
-        </div>
         <%@ end section %>
-    </div>
     </div>
 
     <div id="chat-box">
-        <form action="/" method="post" autocomplete="off">
-        <textarea id="input-box" type="text" name="message" wrap="hard" rows ="3" cols="90" autofocus="autofocus"></textarea>
-            <button ic-post-to="/">Submit</button>
+        <form ic-post-to="/messages"
+              autocomplete="off">
+          <%@ section inputForm %>
+            <textarea id="input-box" type="text" name="message" wrap="hard" rows ="3" cols="90" autofocus="autofocus"></textarea>
+            <button>Submit</button>
+          <%@ end section %>
         </form>
     </div>
 </div>

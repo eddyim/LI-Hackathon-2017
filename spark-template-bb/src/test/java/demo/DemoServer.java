@@ -31,15 +31,6 @@ public class DemoServer {
             }
         });
 
-        post("/", (req, resp) -> {
-            String message = req.queryParams("message");
-            if (message.length() > 0) {
-                Message.addMessage(req.session().attribute("userName"), message);
-            }
-            resp.redirect("/");
-            return null;
-        });
-
         get("/login", (req, resp) -> Login.render());
 
         post("/login", (req, resp) -> {
@@ -55,6 +46,13 @@ public class DemoServer {
         });
 
         get("/messages", (req, resp) -> Index.messageBox.render(Message.getAllMessages()));
+        post("/messages", (req, resp) -> {
+            String message = req.queryParams("message");
+            if (message != null && message.length() > 0) {
+                Message.addMessage(req.session().attribute("userName"), message);
+            }
+            return Index.inputForm.render();
+        });
 
     }
 }
