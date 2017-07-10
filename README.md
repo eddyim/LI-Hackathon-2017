@@ -169,7 +169,65 @@ at the beginning of the file, imports can be placed anywhere and will not affect
 The `extends` keyword is used to make a template extend a different base class, which can be used to provide
 additional application specific functionality (e.g. Request and Response objects in a web application).
 
-TODO: example
+Here is a practical example of the 'extends' keyword being used:
+```jsp
+package bb.sparkjava;
+
+import bb.runtime.BaseBBTemplate;
+import spark.Request;
+import spark.Response;
+
+import static spark.Spark.*;
+
+public class BBSparkTemplate extends BaseBBTemplate {
+
+    private static ThreadLocal<Request> REQUEST = new ThreadLocal<Request>();
+    private static ThreadLocal<Response> RESPONSE = new ThreadLocal<Response>();
+
+
+    public Response getResponse() {
+        return RESPONSE.get();
+    }
+
+    public Request getRequest() {
+        return REQUEST.get();
+    }
+
+    public static void init() {
+        before((request, response) -> {
+            REQUEST.set(request);
+            RESPONSE.set(response);
+        });
+        afterAfter((request, response) -> {
+            REQUEST.set(null);
+            RESPONSE.set(null);
+        });
+    }
+}
+```
+
+This allows the developer to make other programs easily Spark-ready:
+```jsp
+<%@ import demo.model.* %>
+<%@ extends bb.sparkjava.BBSparkTemplate %>
+<%@ layout Layout %>
+
+<div id="login-background">
+    <div id="login-wrapper">
+        <form action="/login" method="post" autocomplete="off">
+            <input type="text" name="userName">
+            <br>
+            <button>Submit</button>
+        </form>
+    </div>
+</div>
+```
+
+And easily callable:
+```jsp
+    get("/login", (req, resp) -> Login.render());
+```
+
 
 ## `include` ##
 
