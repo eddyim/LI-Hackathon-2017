@@ -18,7 +18,7 @@ Layout.asLayout().header(buffer);            buffer.append("\n");
             buffer.append("\n");
             buffer.append("\n\n<div id=\"outer-frame\">\n    <div id=\"who\">\n        <ul>\n            <li>Harika</li>\n            <li>Ed</li>\n            <li>Carson</li>\n        </ul>\n    </div>\n\n    <div id=\"top-bar\">\n        <div id=\"title\">\n        Welcome to internchan, ");
             buffer.append(toS(user));
-            buffer.append("\n        </div>\n    </div>\n\n    <div id=\"messages\">\n        <div class=\"message\">\n            Demo Message\n        </div>\n        ");
+            buffer.append("\n        </div>\n    </div>\n\n    <div id=\"messages\"ic-src=\"/messages\" ic-poll=\"1s\">\n        ");
             for (Message m: messages) {
             buffer.append("\n        <div class=\"message\">\n            <span style=\"font-weight: bold\">");
             buffer.append(toS(m.getSender()));

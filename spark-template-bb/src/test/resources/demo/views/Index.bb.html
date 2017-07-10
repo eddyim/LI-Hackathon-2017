@@ -19,10 +19,7 @@
         </div>
     </div>
 
-    <div id="messages">
-        <div class="message">
-            Demo Message
-        </div>
+    <div id="messages" ic-src="/messages" ic-poll="1s">
         <% for (Message m: messages) { %>
         <div class="message">
             <span style="font-weight: bold">${m.getSender()}: </span>${m.getMessage()}

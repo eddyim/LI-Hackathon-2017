@@ -27,7 +27,7 @@ public class DemoServer {
                 resp.redirect("/login");
                 return null;
             } else {
-                return Index.render(Message.getAllMessages(), Message.getUser());
+                return Index.render(Message.getAllMessages(), req.session().attribute("userName"));
             }
         });
 
@@ -53,6 +53,8 @@ public class DemoServer {
             }
             return null;
         });
+
+        get("/messages", (req, resp) -> Messages.render(Message.getAllMessages(), req.session().attribute("userName")));
 
     }
 }
