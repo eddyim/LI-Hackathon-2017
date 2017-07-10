@@ -54,7 +54,7 @@ public class DemoServer {
             return null;
         });
 
-        get("/messages", (req, resp) -> Messages.render(Message.getAllMessages(), req.session().attribute("userName")));
+        get("/messages", (req, resp) -> Index.messageBox.render(Message.getAllMessages()));
 
     }
 }

@@ -19,12 +19,18 @@
         </div>
     </div>
 
-    <div id="messages" ic-src="/messages" ic-poll="1s">
-        <% for (Message m: messages) { %>
-        <div class="message">
-            <span style="font-weight: bold">${m.getSender()}: </span>${m.getMessage()}
+    <div ir-src="/" ic-on-success="scrollMessagesToBottom()">
+    <div id="message-wrapper" ic-src="/messages" ic-poll="1s" >
+        <%@ section messageBox (List<Message> messages) %>
+        <div id="messages">
+            <% for (Message m: messages) { %>
+            <div class="message">
+                <span style="font-weight: bold">${m.getSender()}: </span>${m.getMessage()}
+            </div>
+            <% } %>
         </div>
-        <% } %>
+        <%@ end section %>
+    </div>
     </div>
 
     <div id="chat-box">
