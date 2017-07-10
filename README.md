@@ -181,8 +181,10 @@ import static spark.Spark.*;
 
 public class BBSparkTemplate extends BaseBBTemplate {
 
-    private static ThreadLocal<Request> REQUEST = new ThreadLocal<Request>();
-    private static ThreadLocal<Response> RESPONSE = new ThreadLocal<Response>();
+    private static ThreadLocal<Request> REQUEST
+                = new ThreadLocal<Request>();
+    private static ThreadLocal<Response> RESPONSE
+                = new ThreadLocal<Response>();
 
 
     public Response getResponse() {
