@@ -4,6 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>bb</groupId>
+        <artifactId>bb-parent</artifactId>
+        <version>0.1-SNAPSHOT</version>
+    </parent>
+
     <groupId>bb</groupId>
     <artifactId>spark-template-bb</artifactId>
     <version>0.1-SNAPSHOT</version>
@@ -37,11 +43,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.21</version>
-        </dependency>
-        <dependency>
-            <groupId>bb</groupId>
-            <artifactId>bb-templates</artifactId>
-            <version>0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
