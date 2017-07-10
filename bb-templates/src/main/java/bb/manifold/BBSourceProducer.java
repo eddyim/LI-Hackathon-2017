@@ -1,5 +1,6 @@
 package bb.manifold;
 
+import bb.codegen.ETemplateGen;
 import bb.codegen.ITemplateCodeGenerator;
 import manifold.api.fs.IFile;
 import manifold.api.host.ITypeLoader;
@@ -17,6 +18,7 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
     public void init( ITypeLoader typeLoader )
     {
         init(typeLoader, BBModel::new);
+        System.out.println("Initalizinig...");
     }
 
     @Override
@@ -26,11 +28,12 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
 
     @Override
     public boolean handlesFileExtension(String fileExtension) {
-        return false;
+        return true;
     }
 
     @Override
     public boolean handlesFile(IFile file) {
+        System.out.println(file.getBaseName());
         return file.getBaseName().endsWith(".bb");
     }
 
@@ -47,11 +50,6 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
     }
 
     private ITemplateCodeGenerator getGenerator() {
-        return new ITemplateCodeGenerator() {
-            @Override
-            public String generateCode(String fullyQualifiedName, String source) {
-                return "";
-            }
-        };
+        return new ETemplateGen();
     }
 }
