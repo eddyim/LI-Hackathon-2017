@@ -326,11 +326,10 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                 classStatement = classStatement + " implements ILayout";
             }
             classStatement = classStatement + " {\n";
-            if (!isSection) {
-                classStatement = "public " + classStatement;
-            } else {
+            if (isSection) {
                 classStatement = "static " + classStatement;
             }
+            classStatement = "public " + classStatement;
             intro.append(classStatement).append("\n");
             intro.append("private static ").append(name).append(" INSTANCE = new ")
                     .append(name).append("();\n").append(additionalClasses);
