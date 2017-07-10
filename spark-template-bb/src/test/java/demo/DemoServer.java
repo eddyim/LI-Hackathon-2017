@@ -18,9 +18,9 @@ public class DemoServer {
         BBSparkTemplate.init();
 
         //Demo messages
-        Message.addMessage("Hello Ed");
-        Message.addMessage("Hello Harika");
-        Message.addMessage("Hello Interchan");
+        Message.addMessage("Server", "Hello Ed");
+        Message.addMessage("Server","Hello Harika");
+        Message.addMessage("Server","Hello Interchan");
 
         get("/", (req, resp) -> {
             if (req.session().attribute("userName") == null) {
@@ -34,7 +34,7 @@ public class DemoServer {
         post("/", (req, resp) -> {
             String message = req.queryParams("message");
             if (message.length() > 0) {
-                Message.addMessage(message);
+                Message.addMessage(req.session().attribute("userName"), message);
             }
             resp.redirect("/");
             return null;
