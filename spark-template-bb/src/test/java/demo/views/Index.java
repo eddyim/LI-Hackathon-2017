@@ -26,7 +26,7 @@ Layout.asLayout().header(buffer);            buffer.append("\n");
             buffer.append(toS(m.getMessage()));
             buffer.append("\n        </div>\n        ");
             }
-            buffer.append("\n    </div>\n\n    <div id=\"chat-box\">\n        <form action=\"/\" method=\"post\" autocomplete=\"off\">\n        <textarea id=\"input-box\" type=\"text\" name=\"message\" wrap=\"hard\" rows =\"3\" cols=\"90\" autofocus=\"autofocus\"></textarea>\n            <button>Submit</button>\n        </form>\n    </div>\n</div>");
+            buffer.append("\n    </div>\n\n    <div id=\"chat-box\">\n        <form action=\"/\" method=\"post\" autocomplete=\"off\">\n        <textarea id=\"input-box\" type=\"text\" name=\"message\" wrap=\"hard\" rows =\"3\" cols=\"90\" autofocus=\"autofocus\"></textarea>\n            <button ic-post-to=\"/\">Submit</button>\n        </form>\n    </div>\n</div>");
 Layout.asLayout().footer(buffer);} catch (Exception e) {
             throw new RuntimeException(e);
         }
