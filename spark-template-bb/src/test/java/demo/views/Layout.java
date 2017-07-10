@@ -15,7 +15,7 @@ private static header1 INSTANCE = new header1();
 
      public static void renderInto(Appendable buffer) {INSTANCE.renderImpl(buffer);}    public void renderImpl(Appendable buffer) {
         try {
-            buffer.append("\n\n<html>\n<head>\n    <script src=\"/js/site.js\"></script>\n    <link rel=\"stylesheet\" type=\"text/css\"  href=\"/css/site.css\"/>\n    <link href=\"https://fonts.googleapis.com/css?family=PT+Sans\" rel=\"stylesheet\">\n    <title>Hello Spark BB Templates!</title>\n</head>\n\n");
+            buffer.append("\n\n<html>\n<head>\n    <script src=\"/js/site.js\"></script>\n    <link rel=\"stylesheet\" type=\"text/css\"  href=\"/css/site.css\"/>\n    <link href=\"https://fonts.googleapis.com/css?family=PT+Sans\" rel=\"stylesheet\">\n    <script src=\"https://code.jquery.com/jquery-3.2.1.min.js\"></script>\n    <script src=\"https://intercoolerreleases-leaddynocom.netdna-ssl.com/intercooler-1.1.2.min.js\"></script>\n    <title>Hello Spark BB Templates!</title>\n</head>\n\n");
 } catch (Exception e) {
             throw new RuntimeException(e);
         }
