@@ -25,7 +25,7 @@
         </div>
         <% for (Message m: messages) { %>
         <div class="message">
-            ${m.getMessage()}
+            <span style="font-weight: bold">${m.getSender()}: </span>${m.getMessage()}
         </div>
         <% } %>
     </div>

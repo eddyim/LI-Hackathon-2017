@@ -7,6 +7,7 @@ public class Message {
 
     private static String _user;
     private String _message;
+    private String _sender;
 
     public String getMessage() {
         return _message;
@@ -20,11 +21,16 @@ public class Message {
         _user = user;
     }
 
+    public String getSender() { return _sender;}
+
+    public void setSender(String _sender) {this._sender = _sender;}
+
     public void setMessage(String _message) {
-        _message = _message;
+        this._message = _message;
     }
 
-    private Message(String msg) {
+    private Message(String snd, String msg) {
+        _sender = snd;
         _message = msg;
     }
 
@@ -35,7 +41,8 @@ public class Message {
     }
 
     public static void addMessage(String msg) {
-        MESSAGES.add(new Message(msg));
+        MESSAGES.add(new Message("", msg));
     }
 
+    public static void addMessage(String snd, String msg) { MESSAGES.add(new Message(snd, msg));}
 }
