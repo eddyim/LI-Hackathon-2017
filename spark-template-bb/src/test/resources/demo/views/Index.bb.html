@@ -20,9 +20,10 @@
     </div>
 
     <div id="messages"
+         class="sticky-to-bottom stuck"
          ic-src="/messages"
          ic-poll="1s"
-         ic-on-success="scrollMessagesToBottom()">
+         ic-on-success="maybeStickToBottom()">
         <%@ section messageBox (List<Message> messages) %>
             <% for (Message m: messages) { %>
             <div class="message">
@@ -34,6 +35,7 @@
 
     <div id="chat-box">
         <form ic-post-to="/messages"
+              ic-on-success="stickMessages()"
               autocomplete="off">
           <%@ section inputForm %>
             <textarea id="input-box" type="text" name="message" wrap="hard" rows ="3" cols="90" autofocus="autofocus"></textarea>
