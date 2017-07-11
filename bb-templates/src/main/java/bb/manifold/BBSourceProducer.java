@@ -31,7 +31,7 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
 
     @Override
     protected boolean isInnerType(String topLevelFqn, String relativeInner) {
-        return false;
+        return true;
     }
 
     @Override
