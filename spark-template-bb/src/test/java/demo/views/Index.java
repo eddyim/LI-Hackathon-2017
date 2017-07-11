@@ -52,13 +52,20 @@ private static inputForm INSTANCE = new inputForm();
         return sb.toString();
     }
 
-     public static void renderInto(Appendable buffer,List<Message> messages, String user) {INSTANCE.renderImpl(buffer,messages,user);}    public void renderImpl(Appendable buffer,List<Message> messages, String user) {
+     public static void renderInto(Appendable buffer,List<Message> messages, String user) {
+        INSTANCE.renderImpl(buffer,messages,user);}
+
+     public void renderImpl(Appendable buffer,List<Message> messages, String user) {
         try {
-Layout.asLayout().header(buffer);            buffer.append("\n");
+            Layout.asLayout().header(buffer);
             buffer.append("\n");
             buffer.append("\n");
             buffer.append("\n");
-            buffer.append("\n\n<div id=\"outer-frame\">\n    <div id=\"who\">\n        <ul>\n            <li>Harika</li>\n            <li>Ed</li>\n            <li>Carson</li>\n        </ul>\n    </div>\n\n    <div id=\"top-bar\">\n        <div id=\"title\">\n        Welcome to internchan, ");
+            buffer.append("\n");
+            buffer.append("\n\n<div id=\"outer-frame\">\n    <div id=\"who\">\n        <ul>" +
+                    "<li>Harika</li>\n            <li>Ed</li>\n            <li>Carson</li>" +
+                    "</ul>\n    </div>\n\n    <div id=\"top-bar\">\n        <div id=\"title\">" +
+                    "Welcome to internchan, ");
             buffer.append(toS(user));
             buffer.append("\n        </div>\n    </div>\n\n    <div id=\"messages\"\n         class=\"sticky-to-bottom stuck\"\n         ic-src=\"/messages\"\n         ic-poll=\"1s\"\n         ic-on-success=\"maybeStickToBottom()\">\n        ");
             messageBox .renderInto(buffer, messages);
@@ -70,3 +77,4 @@ Layout.asLayout().footer(buffer);} catch (Exception e) {
         }
     }
 }
+

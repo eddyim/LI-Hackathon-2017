@@ -40,13 +40,14 @@ public class HTemplateGen implements ITemplateCodeGenerator{
             fillClassInfo(dirIterator);
         }
 
-        ClassInfo(ClassInfo outerClass, Iterator<Directive> dirIterator, String name, String params, String[][] paramList, int startTokenPos, int depth) {
+        ClassInfo(ClassInfo outerClass, Iterator<Directive> dirIterator, String name, String params, String[][] paramList, int startTokenPos, int depth, String superClass) {
             this.outerClass = outerClass;
             this.name = name;
             this.params = params;
             this.paramsList = paramList;
             this.startTokenPos = startTokenPos;
             this.depth = depth;
+            this.superClass = superClass;
 
             fillClassInfo(dirIterator);
         }
@@ -63,11 +64,16 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                     case INCLUDE:
                         break;
                     case EXTENDS:
-                        if (superClass.equals(BASE_CLASS_NAME)) {
-                            superClass = dir.className;
+                        if (depth == 0) {
+                            if (superClass.equals(BASE_CLASS_NAME)) {
+                                superClass = dir.className;
+                            } else {
+                                throw new RuntimeException("Invalid Extends Directive on line " + dir.token.getLine() + "class cannot extend 2 classes.");
+                            }
                         } else {
-                            throw new RuntimeException("Invalid Extends Directive on line " + dir.token.getLine() + "class cannot extend 2 classes.");
+                            throw new RuntimeException("Invalid Extends Directive inside a section on line " + dir.token.getLine() + ".");
                         }
+
                         break;
                     case PARAMS:
                         if (depth == 0) {
@@ -82,7 +88,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                         }
                         break;
                     case SECTION:
-                        addNestedClass(new ClassInfo(this, dirIterator, dir.className, dir.params, dir.paramsList, dir.tokenPos + 1, depth + 1));
+                        addNestedClass(new ClassInfo(this, dirIterator, dir.className, dir.params, dir.paramsList, dir.tokenPos + 1, depth + 1, superClass));
                         break;
                     case END_SECTION:
                         if (endTokenPos == null) {
