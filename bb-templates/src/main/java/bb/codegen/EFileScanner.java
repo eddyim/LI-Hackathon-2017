@@ -6,11 +6,11 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class EFileScanner {
-    private static final String additionalDirectory = "";
+    private static final String additionalDirectory = ""; //"/bb/egen";
 
     public static void main(String[] args) {
         String inputDir = args[0];
-        String outputDir = args[1];
+        String outputDir = args[1] + additionalDirectory;
         generateFiles(inputDir, outputDir);
     }
 

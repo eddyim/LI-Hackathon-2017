@@ -45,13 +45,13 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             importStatements = new StringBuilder();
         }
 
-        String buildSection(StringBuilder otherImports) {
+        String buildSection(StringBuilder otherImports, StringBuilder extendsStatement) {
             if (!isSection) {
                 throw new RuntimeException("Cannot build section");
             }
             StringBuilder fileContents = new StringBuilder();
             StringBuilder renderImplContent = new StringBuilder();
-            fileContents.append(getIntro(this.name, "", 0));
+            fileContents.append(getIntro(this.name, "", extendsStatement, 0));
             handleTokens(renderImplContent);
             fileContents.append(getRenderMethod());
             fileContents.append(getRenderIntoMethod());
@@ -61,13 +61,13 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             return fileContents.toString();
         }
 
-        String buildSection(StringBuilder otherImports, int numLayouts) {
+        String buildSection(StringBuilder otherImports, StringBuilder extendsStatement, int numLayouts) {
             if (!isSection) {
                 throw new RuntimeException("Cannot build section");
             }
             StringBuilder fileContents = new StringBuilder();
             StringBuilder renderImplContent = new StringBuilder();
-            fileContents.append(getIntro(this.name, "", numLayouts));
+            fileContents.append(getIntro(this.name, "", extendsStatement, numLayouts));
             handleTokens(renderImplContent);
             fileContents.append(getRenderMethod());
             fileContents.append(getRenderIntoMethod());
@@ -91,9 +91,13 @@ public class ETemplateGen implements ITemplateCodeGenerator {
 
         private Map<String, String> parseSectionDeclaration(String section) {
             Map<String, String> returnValues = new HashMap<>();
-            if(section.contains("(")) {
-                returnValues.put("params", inferArgumentTypes(section.substring(section.indexOf('(') + 1, section.indexOf(')'))));
-                returnValues.put("name", section.substring(0, section.indexOf('(')).replaceAll("\\{", ""));
+            if(section.contains("("))  {
+                if (section.charAt(section.indexOf("(") + 1) != ')') {
+                    returnValues.put("params", inferArgumentTypes(section.substring(section.indexOf('(') + 1, section.indexOf(')'))));
+                    returnValues.put("name", section.substring(0, section.indexOf('(')).replaceAll("\\{", ""));
+                } else {
+                    returnValues.put("name", section.substring(0, section.indexOf('(')));
+                }
             } else {
                 returnValues.put("name", section.replaceAll("\\{", ""));
             }
@@ -157,17 +161,29 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                     endSectionCount += 1;
                 } else if(currentToken.getType() == DIRECTIVE && getDirectiveType(currentToken) == DirectiveType.END_SECTION) {
                     endSectionCount -= 1;
+                } else if (currentToken.getType() == DIRECTIVE && getDirectiveType(currentToken) == DirectiveType.EXTENDS) {
+                    throw new RuntimeException("Can't have extends within a section");
                 }
                 sectionTokens.add(currentToken);
             }
             sectionTokens.remove(sectionTokens.size()-1);
+            StringBuilder extendsStatement = new StringBuilder();
+            for (int i = 0; i < tokens.size(); i += 1) {
+                if (tokens.get(i).getType() == DIRECTIVE && getDirectiveType(tokens.get(i)) == DirectiveType.EXTENDS) {
+                    if (extendsStatement.length() > 0) {
+                        throw new RuntimeException("Can't extend more than one class");
+                    } else {
+                        extendsStatement.append(tokens.get(i).getContent());
+                    }
+                }
+            }
             if (parsedDeclaration.containsKey("params")) {
                 FileGenerator currentSection = new FileGenerator(sectionTokens, this.pastStatements, parsedDeclaration.get("name"), parsedDeclaration.get("params"));
-                additionalClasses.append(currentSection.buildSection(importStatement));
+                additionalClasses.append(currentSection.buildSection(importStatement, extendsStatement));
 
             } else {
                 FileGenerator currentSection = new FileGenerator(sectionTokens, this.pastStatements, parsedDeclaration.get("name"), "");
-                additionalClasses.append(currentSection.buildSection(importStatement));
+                additionalClasses.append(currentSection.buildSection(importStatement, extendsStatement));
             }
         }
 
@@ -246,7 +262,7 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             for(int i = 0; i < splitName.length - 1; i += 1) {
                 packageStatement = packageStatement + splitName[i] + ".";
             }
-            return getIntro(splitName[splitName.length - 1], "package " + packageStatement.substring(0, packageStatement.length() - 1) + ";", 0);
+            return getIntro(splitName[splitName.length - 1], "package " + packageStatement.substring(0, packageStatement.length() - 1) + ";", null, 0);
         }
 
         //TODO: Handle various special cases for layouts
@@ -254,20 +270,40 @@ public class ETemplateGen implements ITemplateCodeGenerator {
         private void handleLayoutCreation(Token t, StringBuilder additionalClasses, StringBuilder importStatements, int num) {
             List<Token> header = new ArrayList<>();
             List<Token> footer = new ArrayList<>();
+            StringBuilder extendsStatement = new StringBuilder();
             for(int i = 0; i < index; i += 1) {
-                header.add(tokens.get(i));
+                if (tokens.get(i).getType() == DIRECTIVE && getDirectiveType(tokens.get(i)) == DirectiveType.EXTENDS) {
+                    if (extendsStatement.length() > 0) {
+                        throw new RuntimeException("Can't extend more than one class");
+                    } else {
+                        extendsStatement.append(tokens.get(i).getContent());
+                    }
+                }
+                else {
+                    header.add(tokens.get(i));
+                }
             }
             for(int i = index + 1; i < tokens.size(); i += 1) {
-                footer.add(tokens.get(i));
+                if (tokens.get(i).getType() == DIRECTIVE && getDirectiveType(tokens.get(i)) == DirectiveType.EXTENDS) {
+                    if (extendsStatement.length() > 0) {
+                        throw new RuntimeException("Can't extend more than one class");
+                    } else {
+                        extendsStatement.append(tokens.get(i).getContent());
+                    }
+                } else {
+                    footer.add(tokens.get(i));
+                }
             }
             FileGenerator headerContent = new FileGenerator(header, new ArrayList<String>(), "header" + num, "");
             FileGenerator footerContent = new FileGenerator(footer, new ArrayList<String>(), "footer" + num, "");
-            additionalClasses.append(headerContent.buildSection(importStatements, num));
-            additionalClasses.append(footerContent.buildSection(importStatements, num));
+            additionalClasses.append(headerContent.buildSection(importStatements, extendsStatement, num));
+            additionalClasses.append(footerContent.buildSection(importStatements, extendsStatement, num));
         }
 
-        private String getIntro(String name, String packageStatement, int numLayouts) {
-            StringBuilder extendsKeyword = new StringBuilder();
+        private String getIntro(String name, String packageStatement, StringBuilder extendsKeyword, int numLayouts) {
+            if (extendsKeyword == null) {
+                extendsKeyword = new StringBuilder();
+            }
             StringBuilder additionalClasses = new StringBuilder();
             StringBuilder intro = new StringBuilder();
             boolean layoutCreated = false;
