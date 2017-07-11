@@ -355,7 +355,7 @@ public class ETemplateGen implements ITemplateCodeGenerator {
                 intro.append(packageStatement).append("\n");
             }
             if (!isSection) {
-                intro.append(importStatements);
+                intro.append("\n").append(importStatements).append("\n");
             }
             String classStatement = "class " + name + " " + extendsKeyword;
             if (layoutCreated) {
@@ -493,12 +493,21 @@ public class ETemplateGen implements ITemplateCodeGenerator {
 
         private void handleExpression(Token t, StringBuilder renderInto) {
             String content = t.getContent();
+            String conditionalExpressionSyntax = "(.+) (if) (.+)";
             content = content.replaceAll("\r", "");
             content = content.replaceAll("\n", "\\\\n");
-            renderInto.append(bufferCallBeginning);
-            renderInto.append("toS(");
-            renderInto.append(content);
-            renderInto.append("));\n");
+            if (content.matches(conditionalExpressionSyntax)) {
+               Matcher conditionalMatcher = Pattern.compile(conditionalExpressionSyntax).matcher(content);
+               conditionalMatcher.find();
+               String toEvaulate = conditionalMatcher.group(1);
+               String conditional = conditionalMatcher.group(3);
+               renderInto.append("if (" + conditional + ") { \n     ").append(bufferCallBeginning).append("toS(").append(toEvaulate).append("));\n     }\n");
+            } else {
+                renderInto.append(bufferCallBeginning);
+                renderInto.append("toS(");
+                renderInto.append(content);
+                renderInto.append("));\n");
+            }
         }
     }
 
