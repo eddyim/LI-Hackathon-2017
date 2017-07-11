@@ -8,7 +8,11 @@ public class BootstrapTest {
 
     @Test
     public void bootstrap() {
-        assertEquals(true, demo.Sample1.render());
+        assertEquals("<html>\n" +
+                "<body>\n" +
+                "<h1>Hello BB Templates!</h1>\n" +
+                "</body>\n" +
+                "</html>", demo.Sample1.render());
     }
 
 }

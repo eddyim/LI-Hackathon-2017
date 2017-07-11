@@ -22,6 +22,14 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
     }
 
     @Override
+    protected String aliasFqn(String fqn, IFile file) {
+        if( fqn.endsWith( "_bb" ) ) {
+            fqn = fqn.substring( 0, fqn.length()-3 );
+        }
+        return fqn;
+    }
+
+    @Override
     protected boolean isInnerType(String topLevelFqn, String relativeInner) {
         return false;
     }
