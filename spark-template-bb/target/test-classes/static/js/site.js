@@ -1,2 +1,0 @@
-
-/* javascript goes here */
