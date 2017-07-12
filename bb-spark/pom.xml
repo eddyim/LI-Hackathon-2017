@@ -10,21 +10,8 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>bb</groupId>
-    <artifactId>spark-template-bb</artifactId>
+    <artifactId>bb-spark</artifactId>
     <version>0.1-SNAPSHOT</version>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <name>BB Templates :: Spark Java Support</name>
 

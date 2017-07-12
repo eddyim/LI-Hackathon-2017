@@ -17,11 +17,6 @@ public class DemoServer {
 
         BBSparkTemplate.init();
 
-        //Demo messages
-        Message.addMessage("Server", "Hello Ed");
-        Message.addMessage("Server","Hello Harika");
-        Message.addMessage("Server","Hello Interchan");
-
         get("/", (req, resp) -> {
             if (req.session().attribute("userName") == null) {
                 resp.redirect("/login");
@@ -54,5 +49,6 @@ public class DemoServer {
             return Index.inputForm.render();
         });
 
+        get("/who", (req, resp) -> Index.who.render());
     }
 }

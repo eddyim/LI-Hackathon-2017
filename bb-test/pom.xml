@@ -10,18 +10,15 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>bb-templates</artifactId>
+    <artifactId>bb-test</artifactId>
     <version>0.1-SNAPSHOT</version>
-    <name>BB Templates :: Templates</name>
+    <name>BB Templates :: Tests</name>
 
     <dependencies>
         <dependency>
-            <groupId>org.manifold-systems</groupId>
-            <artifactId>manifold</artifactId>
+            <groupId>bb</groupId>
+            <artifactId>bb-templates</artifactId>
             <version>0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/../lib/manifold-0.1-SNAPSHOT.jar</systemPath>
         </dependency>
     </dependencies>
-
 </project>
