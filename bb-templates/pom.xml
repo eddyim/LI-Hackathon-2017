@@ -14,4 +14,14 @@
     <version>0.1-SNAPSHOT</version>
     <name>BB Templates :: Templates</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.manifold-systems</groupId>
+            <artifactId>manifold</artifactId>
+            <version>0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../lib/manifold-0.1-SNAPSHOT.jar</systemPath>
+        </dependency>
+    </dependencies>
+
 </project>

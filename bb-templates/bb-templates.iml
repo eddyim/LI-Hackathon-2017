@@ -11,11 +11,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.manifold-systems:manifold:0.1-SNAPSHOT" level="project" />
     <orderEntry type="module-library">
-      <library name="Maven: com.sun:tools:1.8.0">
+      <library name="Maven: org.manifold-systems:manifold:0.1-SNAPSHOT">
         <CLASSES>
-          <root url="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home/lib/tools.jar!/" />
+          <root url="jar://$MODULE_DIR$/../lib/manifold-0.1-SNAPSHOT.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
