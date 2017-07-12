@@ -13,8 +13,8 @@
 
     <modules>
         <module>bb-templates</module>
-        <module>spark-template-bb</module>
-        <module>bb-manifold-test</module>
+        <module>bb-spark</module>
+        <module>bb-test</module>
     </modules>
 
     <build>
