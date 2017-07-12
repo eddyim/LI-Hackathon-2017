@@ -395,15 +395,20 @@ public class HTemplateGen implements ITemplateCodeGenerator{
         }
     }
 
-    private static void makeFuncContent(StringBuilder sb, ClassInfo classInfo, List<Token> tokens, Map<Integer, Directive> dirMap, int startPos, int endPos, List<ClassInfo> nestedClasses) {
 
+
+    private static boolean isCondExpr(Token token) {
+        return false;
+    }
+
+    private static void makeFuncContent(StringBuilder sb, ClassInfo classInfo, List<Token> tokens, Map<Integer, Directive> dirMap, int startPos, int endPos, List<ClassInfo> nestedClasses) {
 
         outerLoop:
         for (int i = startPos; i <= endPos; i++) {
             Token token = tokens.get(i);
             switch (token.getType()) {
                 case STRING_CONTENT:
-                    sb.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r\n", "\\\\n") + "\");\n");
+                    sb.append("            buffer.append(\"" + token.getContent().replaceAll("\"", "\\\\\"").replaceAll("\r", "").replaceAll("\n", "\\\\n") + "\");\n");
                     break;
                 case STATEMENT:
                     sb.append("            " + token.getContent() + "\n");
