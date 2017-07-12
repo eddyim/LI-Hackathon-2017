@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class EFileScanner {
-    private static final String additionalDirectory = "/bb/egen";
+    private static final String additionalDirectory = ""; //"/bb/egen";
 
     public static void main(String[] args) {
         String inputDir = args[0];
