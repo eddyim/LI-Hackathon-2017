@@ -1,0 +1,36 @@
+<%@ import java.util.* %>
+<%@ import demo.model.* %>
+<%@ extends bb.sparkjava.BBSparkTemplate %>
+<%@ layout Layout %>
+<%@ params(List<Message> messages, String user) %>
+
+<div id="outer-frame">
+    <div id="who">
+        <ul>
+            <li>Harika</li>
+            <li>Ed</li>
+            <li>Carson</li>
+        </ul>
+    </div>
+
+    <div id="top-bar">
+        <div id="title">
+        Welcome to internchan, ${user}
+        </div>
+    </div>
+
+    <div id="messages" ic-src="/messages" ic-poll="1s">
+        <% for (Message m: messages) { %>
+        <div class="message">
+            <span style="font-weight: bold">${m.getSender()}: </span>${m.getMessage()}
+        </div>
+        <% } %>
+    </div>
+
+    <div id="chat-box">
+        <form action="/" method="post" autocomplete="off">
+        <textarea id="input-box" type="text" name="message" wrap="hard" rows ="3" cols="90" autofocus="autofocus"></textarea>
+            <button ic-post-to="/">Submit</button>
+        </form>
+    </div>
+</div>
