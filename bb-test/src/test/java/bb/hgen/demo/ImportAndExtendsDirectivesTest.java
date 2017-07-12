@@ -1,8 +1,7 @@
 package bb.hgen.demo;
 
 import java.io.IOException;
-
-import java.util.*;
+import java.util.Date;
 
 public class ImportAndExtendsDirectivesTest extends bb.runtime.BaseBBTemplate {
 

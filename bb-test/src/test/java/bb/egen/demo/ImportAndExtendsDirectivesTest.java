@@ -1,5 +1,7 @@
 package bb.egen.demo;
-import java.util.*;
+
+import java.util.Date;
+
 public class ImportAndExtendsDirectivesTest extends bb.runtime.BaseBBTemplate {
 
 private static ImportAndExtendsDirectivesTest INSTANCE = new ImportAndExtendsDirectivesTest();

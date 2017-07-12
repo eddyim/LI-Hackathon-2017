@@ -1,5 +1,7 @@
 package bb.egen.demo;
-import java.util.*;
+
+import java.util.HashSet;
+
 public class NestedImportTest extends bb.runtime.BaseBBTemplate {
 
 private static NestedImportTest INSTANCE = new NestedImportTest();

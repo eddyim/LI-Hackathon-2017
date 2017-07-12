@@ -1,6 +1,8 @@
 package bb.egen.demo;
-import java.io.IOException;
+
 import bb.runtime.ILayout;
+
+import java.io.IOException;
 
 public class LayoutExample extends bb.runtime.BaseBBTemplate implements ILayout {
 

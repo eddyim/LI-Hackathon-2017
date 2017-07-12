@@ -1,8 +1,7 @@
 package bb.hgen.demo;
 
 import java.io.IOException;
-
-import java.util.*;
+import java.util.HashSet;
 
 public class NestedImportTest extends bb.runtime.BaseBBTemplate {
 

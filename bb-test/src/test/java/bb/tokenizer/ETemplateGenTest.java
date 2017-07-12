@@ -1,9 +1,5 @@
 package bb.tokenizer;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-
 /**
  * Created by eim on 6/20/2017.
  */

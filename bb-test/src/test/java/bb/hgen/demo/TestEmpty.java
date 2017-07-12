@@ -1,11 +1,9 @@
 package bb.hgen.demo;
 
-import java.io.IOException;
 
+public class TestEmpty extends bb.runtime.BaseBBTemplate {
 
-public class IncludeNestedSectionTest extends bb.runtime.BaseBBTemplate {
-
-private static IncludeNestedSectionTest INSTANCE = new IncludeNestedSectionTest();
+private static TestEmpty INSTANCE = new TestEmpty();
 
 
     public static String render() {
@@ -19,7 +17,6 @@ private static IncludeNestedSectionTest INSTANCE = new IncludeNestedSectionTest(
     }
 
     public void renderImpl(Appendable buffer) {
-            NestedImportTest.mySection.renderInto(buffer);
     }
 
 }

@@ -1,7 +1,6 @@
 package bb.hgen.demo;
 
 import java.io.IOException;
-
 import java.util.TreeSet;
 
 public class ImportSingleTest extends bb.runtime.BaseBBTemplate {

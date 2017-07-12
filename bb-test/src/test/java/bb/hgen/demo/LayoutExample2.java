@@ -2,8 +2,6 @@ package bb.hgen.demo;
 
 import java.io.IOException;
 
-import java.util.*;
-
 public class LayoutExample2 extends bb.runtime.BaseBBTemplate {
 
 private static LayoutExample2 INSTANCE = new LayoutExample2();

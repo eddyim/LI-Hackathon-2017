@@ -1,5 +1,6 @@
 package bb.egen.demo;
 import java.util.TreeSet;
+
 public class ImportSingleTest extends bb.runtime.BaseBBTemplate {
 
 private static ImportSingleTest INSTANCE = new ImportSingleTest();

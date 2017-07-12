@@ -1,7 +1,9 @@
 package bb.egen.demo;
-import java.util.LinkedList;
+
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.TreeSet;
+
 public class ImportMultiple extends bb.runtime.BaseBBTemplate {
 
 private static ImportMultiple INSTANCE = new ImportMultiple();
