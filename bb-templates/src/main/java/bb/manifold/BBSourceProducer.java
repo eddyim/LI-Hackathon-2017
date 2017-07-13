@@ -18,7 +18,6 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
     public void init( ITypeLoader typeLoader )
     {
         init(typeLoader, BBModel::new);
-        System.out.println("Initalizinig...");
     }
 
     @Override
@@ -41,8 +40,7 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
 
     @Override
     public boolean handlesFile(IFile file) {
-        System.out.println(file.getBaseName());
-        return file.getBaseName().endsWith(".bb");
+        return file.getBaseName().endsWith(".bb") || file.getExtension().equals("bb");
     }
 
     @Override
