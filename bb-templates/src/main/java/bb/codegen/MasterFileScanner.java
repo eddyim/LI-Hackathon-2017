@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-public class EFileScanner {
-    private static final String additionalDirectory = ""; //"/bb/egen";
+/**
+ * Created by hkalidhindi on 7/13/2017.
+ */
+public class MasterFileScanner {
+    private static final String additionalDirectory = "/bb/mgen";
 
     public static void main(String[] args) {
         String inputDir = args[0];
@@ -18,7 +21,7 @@ public class EFileScanner {
         Map<File, String> files = new HashMap<>();
         File startDirectory = new File(inputPath);
         scanDirectory(startDirectory, "", files);
-        ETemplateGen generator = new ETemplateGen();
+        MasterTemplateGen generator = new MasterTemplateGen();
         for (File f: files.keySet()) {
             String relPath = files.get(f);
             try {
@@ -73,7 +76,7 @@ public class EFileScanner {
      */
     private static void scanDirectory(File directory, String relativePath, Map<File, String> validFiles) {
         File[] files = directory.listFiles();
-         for (File file: files) {
+        for (File file: files) {
             if (file.isDirectory()) {
                 scanDirectory(file, relativePath + "/" + file.getName(), validFiles);
             }
@@ -95,5 +98,4 @@ public class EFileScanner {
             throw new RuntimeException(e);
         }
     }
-
 }
