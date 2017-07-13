@@ -14,7 +14,6 @@ public class HTemplateGen implements ITemplateCodeGenerator{
     private static final String LAYOUT_INTERFACE = "bb.runtime.ILayout";
 
     static class ClassInfo {
-        ClassInfo outerClass;
         Map<Integer, ClassInfo> nestedClasses = new HashMap<>();
         String params = null;
         String[][] paramsList = null;
@@ -31,7 +30,6 @@ public class HTemplateGen implements ITemplateCodeGenerator{
         //only for the outermost class
         ClassInfo(Iterator<Directive> dirIterator, String name, Integer endTokenPos, boolean outermost) {
             assert(outermost);
-            this.outerClass = null;
             this.name = name;
             this.startTokenPos = 0;
             this.endTokenPos = endTokenPos;
@@ -40,8 +38,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
             fillClassInfo(dirIterator);
         }
 
-        ClassInfo(ClassInfo outerClass, Iterator<Directive> dirIterator, String name, String params, String[][] paramList, int startTokenPos, int depth, String superClass) {
-            this.outerClass = outerClass;
+        ClassInfo(Iterator<Directive> dirIterator, String name, String params, String[][] paramList, int startTokenPos, int depth, String superClass) {
             this.name = name;
             this.params = params;
             this.paramsList = paramList;
@@ -88,7 +85,7 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                         }
                         break;
                     case SECTION:
-                        addNestedClass(new ClassInfo(this, dirIterator, dir.className, dir.params, dir.paramsList, dir.tokenPos + 1, depth + 1, superClass));
+                        addNestedClass(new ClassInfo(dirIterator, dir.className, dir.params, dir.paramsList, dir.tokenPos + 1, depth + 1, superClass));
                         break;
                     case END_SECTION:
                         if (endTokenPos == null) {
@@ -423,9 +420,6 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                     if (dir.dirType == SECTION) {
                         ClassInfo classToSkipOver = classInfo.nestedClasses.get(i + 1);
                         nestedClasses.add(classToSkipOver);
-                        if (classToSkipOver == null) {
-                            assert(classToSkipOver.depth == 0);
-                        }
                         if (classToSkipOver.endTokenPos == null) {
                             assert(classToSkipOver.depth == 0);
                         }
@@ -466,18 +460,22 @@ public class HTemplateGen implements ITemplateCodeGenerator{
             sb.append("    try {\n");
         }
 
+
+        if (classInfo.hasLayout) {
+            sb.append("            " + classInfo.layoutDir.className + ".asLayout().header(buffer);\n");
+        }
+
         if (classInfo.isLayout) {
             sb.append("            INSTANCE.header(buffer);\n" +
                     "            INSTANCE.footer(buffer);\n");
         } else {
-            if (classInfo.hasLayout == true) {
-                sb.append("            " + classInfo.layoutDir.className + ".asLayout().header(buffer);\n");
-            }
             makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.endTokenPos, nestedClasses);
-            if (classInfo.hasLayout == true) {
-                sb.append("            " + classInfo.layoutDir.className + ".asLayout().footer(buffer);\n");
-            }
         }
+
+        if (classInfo.hasLayout) {
+            sb.append("            " + classInfo.layoutDir.className + ".asLayout().footer(buffer);\n");
+        }
+
 
         if (willAppend) {
             sb.append("        } catch (IOException e) {\n" +
@@ -494,18 +492,12 @@ public class HTemplateGen implements ITemplateCodeGenerator{
                     "    }\n\n");
             sb.append("    @Override\n" +
                     "    public void header(Appendable buffer) throws IOException {\n");
-            if (classInfo.hasLayout == true) {
-                sb.append("            " + classInfo.layoutDir.className + ".asLayout().header(buffer);\n");
-            }
             makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.startTokenPos, classInfo.contentPos, nestedClasses);
             sb.append("    }\n");
 
             sb.append("    @Override\n" +
                     "    public void footer(Appendable buffer) throws IOException {\n");
             makeFuncContent(sb, classInfo, tokens, dirMap, classInfo.contentPos, classInfo.endTokenPos, nestedClasses);
-            if (classInfo.hasLayout == true) {
-                sb.append("            " + classInfo.layoutDir.className + ".asLayout().footer(buffer);\n");
-            }
             sb.append("    }\n");
         }
 

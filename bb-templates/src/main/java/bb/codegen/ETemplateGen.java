@@ -124,6 +124,8 @@ public class ETemplateGen implements ITemplateCodeGenerator {
             return completedString.toString();
         }
 
+        //To make it just return the type of the argument,
+        //Split toReturn by " " and return 0th index
         private String inferSingleArgumentType(String arg) {
             String pattern = "([a-zA-Z_$][a-zA-Z_$0-9]* " + //First Group: Matches Type arg format
                     arg + ")|(\".*[a-zA-Z_$][a-zA-Z_$0-9]* " + //Second & Third Group: Deals with matching within strings
