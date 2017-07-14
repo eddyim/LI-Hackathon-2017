@@ -10,13 +10,11 @@ import static bb.tokenizer.Token.TokenType.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-abstract public class BBTokenizerTest {
-
-    protected abstract ITokenizer createTokenizer();
+public class BBTokenizerTest {
 
     @Test
     public void bootStrapTest() {
-        ITokenizer  tokenizer = createTokenizer();
+        BBTokenizer  tokenizer = new BBTokenizer();
         assertEquals(Collections.emptyList(), tokenizer.tokenize(""));
 
         asssertTokenTypesAre(tokenizer.tokenize("<html></html>"), STRING_CONTENT);
@@ -31,7 +29,7 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void contentTest() {
-        ITokenizer  tokenizer = createTokenizer();
+        BBTokenizer  tokenizer = new BBTokenizer();
         assertEquals(Collections.emptyList(), tokenizer.tokenize(""));
 
         assertEquals("<html></html>", tokenizer.tokenize("<html></html>").get(0).getContent());
@@ -46,7 +44,7 @@ abstract public class BBTokenizerTest {
     @Test
 
     public void lineColPosTest() {
-        ITokenizer  tokenizer = createTokenizer();
+        BBTokenizer  tokenizer = new BBTokenizer();
         assertEquals(Collections.emptyList(), tokenizer.tokenize(""));
 
         assertLineColPosAre(tokenizer.tokenize("<html></html>"),1, 1, 0);
@@ -79,7 +77,7 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void statementErrorTest() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         boolean caught = false;
         try {
             tokenizer.tokenize("<% foo");
@@ -116,7 +114,7 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void expressionErrorTest() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         boolean caught = false;
         try {
             tokenizer.tokenize("${ foo");
@@ -153,7 +151,7 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void testQuotedExpressions() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         List<Token> doubleQuotedExpression = tokenizer.tokenize("<html>${\"}\"}</html>");
         List<Token> singleQuotedExpression = tokenizer.tokenize("<html>${\'}\'}</html>");
         asssertTokenTypesAre(doubleQuotedExpression, STRING_CONTENT, TokenType.EXPRESSION, STRING_CONTENT);
@@ -164,7 +162,7 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void testNestedQuotedExpressions() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         List<Token> nestedSingleExpression = tokenizer.tokenize("<html>${\"'hello }'\"}</html>");
         List<Token> nestedDoubleExpression = tokenizer.tokenize("<html>${'\"hello }\"'}</html>");
         assertEquals("\"'hello }'\"", nestedSingleExpression.get(1).getContent());
@@ -174,7 +172,7 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void testQuotedStatement() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         List<Token> doubleQuotedStatement = tokenizer.tokenize("<% \"%>\" %>");
         List<Token> singleQuotedStatement = tokenizer.tokenize("<% '%>' %>");
         assertEquals("\"%>\"", doubleQuotedStatement.get(0).getContent());
@@ -184,7 +182,7 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void testNestedQuotedStatement() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         List<Token> nestedSingleStatement = tokenizer.tokenize("<%\"'hello }'\"%>");
         List<Token> nestedDoubleStatement = tokenizer.tokenize("<%'\"hello }\"'%>");
         assertEquals("\"'hello }'\"", nestedSingleStatement.get(0).getContent());
@@ -197,7 +195,7 @@ abstract public class BBTokenizerTest {
      */
     @Test
     public void testEscape() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         tokenizer.tokenize("<%\"\\\"%>\"%>");
         tokenizer.tokenize("${\"\\\"}\"}");
         tokenizer.tokenize("<%@\"\\\"%>\"%>");
@@ -206,7 +204,7 @@ abstract public class BBTokenizerTest {
     /** Tests that ending files with various types of tokens doesn't create errors */
     @Test
     public void endFileTest() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         tokenizer.tokenize("HELLO");
         tokenizer.tokenize("${ else }");
         tokenizer.tokenize("<% foo bar %>");
@@ -215,7 +213,7 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void longerTest() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         List<Token> tokens = tokenizer.tokenize("<html>\n" +
                 "   <head><title>Hello World</title></head>\n" +
                 "   \n" +
@@ -231,14 +229,14 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void testDirectiveBasic() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         asssertTokenTypesAre(tokenizer.tokenize("<html><%@ directives, yo%></html>"),
                 STRING_CONTENT, DIRECTIVE, STRING_CONTENT);
     }
 
     @Test
     public void directiveErrorTest() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         boolean caught = false;
         try {
             tokenizer.tokenize("<%@ foo");
@@ -275,7 +273,7 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void emptyTest() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         List<Token> tokens = tokenizer.tokenize("${}<%%><%@%>");
         List<Token> tokensWhiteSpace = tokenizer.tokenize("${  }<%  %><%@    %>");
 
@@ -288,14 +286,14 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void nullTest() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         List<Token> tokens = tokenizer.tokenize(null);
         assertEquals(0, tokens.size());
     }
 
     @Test
     public void blankStringTest() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         List<Token> tokens = tokenizer.tokenize("       ");
         assertEquals("       ", tokens.get(0).getContent());
         assertEquals(STRING_CONTENT, tokens.get(0).getType());
@@ -303,7 +301,7 @@ abstract public class BBTokenizerTest {
 
     @Test
     public void commentTest() {
-        ITokenizer tokenizer = createTokenizer();
+        BBTokenizer tokenizer = new BBTokenizer();
         List<Token> tokens = tokenizer.tokenize("<%-- This is a comment test. --%>");
         assertEquals("This is a comment test.", tokens.get(0).getContent());
         assertEquals(COMMENT, tokens.get(0).getType());

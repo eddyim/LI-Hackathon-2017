@@ -1,6 +1,5 @@
 package bb.manifold;
 
-import bb.codegen.ITemplateCodeGenerator;
 import bb.codegen.BBTemplateGen;
 import manifold.api.fs.IFile;
 import manifold.api.host.ITypeLoader;
@@ -21,10 +20,7 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
 
     @Override
     protected String aliasFqn(String fqn, IFile file) {
-        if( fqn.endsWith( "_bb" ) ) {
-            fqn = fqn.substring( 0, fqn.length()-3 );
-        }
-        return fqn;
+        return fqn.endsWith( "_bb" ) ? fqn.substring( 0, fqn.length()-3 ) : fqn;
     }
 
     @Override
@@ -47,14 +43,11 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
         IFile file = model.getFile();
         try {
             String templateSource = StreamUtil.getContent(new InputStreamReader(file.openInputStream()));
-            ITemplateCodeGenerator generator = getGenerator();
+            BBTemplateGen generator = new BBTemplateGen();
             return generator.generateCode(topLevelFqn, templateSource);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private ITemplateCodeGenerator getGenerator() {
-        return new BBTemplateGen();
-    }
 }

@@ -10,14 +10,9 @@ import java.util.regex.Pattern;
 import static bb.codegen.BBTemplateGen.Directive.DirType.*;
 import static bb.tokenizer.Token.TokenType.*;
 
-/**
- * Created by hkalidhindi on 7/12/2017.
- */
-public class BBTemplateGen implements ITemplateCodeGenerator {
+public class BBTemplateGen {
     private final String BASE_CLASS_NAME = "bb.runtime.BaseBBTemplate";
     private final String LAYOUT_INTERFACE = "bb.runtime.ILayout";
-
-
 
     class ClassInfo {
         Map<Integer, ClassInfo> nestedClasses = new HashMap<>();
@@ -597,7 +592,6 @@ public class BBTemplateGen implements ITemplateCodeGenerator {
 
     }
 
-    @Override
     public String generateCode(String fullyQualifiedName, String source) {
         FileGenerator generator = new FileGenerator(fullyQualifiedName, source);
         return generator.getFileContents();
