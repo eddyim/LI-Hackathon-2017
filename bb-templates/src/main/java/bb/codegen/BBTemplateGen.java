@@ -151,7 +151,7 @@ public class BBTemplateGen {
 
         Directive.DirType dirType;
 
-        //import "[class_name]"
+        //imports "[class_name]"
         //extends "[class_name]"
         //params ([paramType paramName], [paramType paramName],...)                  <---nothing stored for params or end section
         //include "[templateName]"([paramVal], [paramVal],...)
