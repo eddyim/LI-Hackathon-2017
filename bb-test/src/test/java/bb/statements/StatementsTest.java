@@ -25,4 +25,15 @@ public class StatementsTest {
         assertEquals("bbbbbbbbbb", ForStatement.render());
     }
 
+    /**
+     * Like our tests to make sure comments properly ignore all syntax, these tests ensure that
+     * all BB syntax within strings is ignored.
+     */
+    @Test
+    public void stringsWork() {
+        assertEquals("<%= expression syntax %>${ expression syntax }", StringStatement1.render());
+        assertEquals("<%@ directive syntax %><% statement syntax %>", StringStatement2.render());
+        assertEquals("<%-- comment syntax --%>", StringStatement3.render());
+    }
+
 }
