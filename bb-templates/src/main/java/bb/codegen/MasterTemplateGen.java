@@ -21,8 +21,9 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
 
     class ClassInfo {
         Map<Integer, ClassInfo> nestedClasses = new HashMap<>();
-        String params = null;
-        String[][] paramsList = null;
+        ClassInfo outerClass = null;
+        String paramsWithTypes = null;
+        String paramsWithoutTypes = null;
         String name;
         String superClass = BASE_CLASS_NAME;
         int startTokenPos;
@@ -44,10 +45,11 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
             fillClassInfo(dirIterator);
         }
 
-        ClassInfo(Iterator<Directive> dirIterator, String name, String params, String[][] paramList, int startTokenPos, int depth, String superClass) {
+        ClassInfo(ClassInfo outerClass, Iterator<Directive> dirIterator, String name, String paramsWithTypes, String paramWithoutTypes, int startTokenPos, int depth, String superClass) {
+            this.outerClass = outerClass;
             this.name = name;
-            this.params = params;
-            this.paramsList = paramList;
+            this.paramsWithTypes = paramsWithTypes;
+            this.paramsWithoutTypes = paramWithoutTypes;
             this.startTokenPos = startTokenPos;
             this.depth = depth;
             this.superClass = superClass;
@@ -80,9 +82,9 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
                         break;
                     case PARAMS:
                         if (depth == 0) {
-                            if (params == null) {
-                                params = dir.params;
-                                paramsList = dir.paramsList;
+                            if (paramsWithTypes == null) {
+                                paramsWithTypes = dir.paramsWithTypes;
+                                paramsWithoutTypes = dir.paramsWithoutTypes;
                             } else {
                                 throw new RuntimeException("Invalid Params Directive on line " + dir.token.getLine() + "cannot have 2 Params Directives.");
                             }
@@ -91,7 +93,7 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
                         }
                         break;
                     case SECTION:
-                        addNestedClass(new ClassInfo(dirIterator, dir.className, dir.params, dir.paramsList, dir.tokenPos + 1, depth + 1, superClass));
+                        addNestedClass(new ClassInfo(this, dirIterator, dir.className, dir.paramsWithTypes, dir.paramsWithoutTypes, dir.tokenPos + 1, depth + 1, superClass));
                         break;
                     case END_SECTION:
                         if (endTokenPos == null) {
@@ -146,9 +148,9 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
         enum DirType {
             IMPORT,     //className
             EXTENDS,    //className
-            PARAMS,     //           params, paramsList
-            INCLUDE,    //className, params
-            SECTION,    //className, params, paramsList
+            PARAMS,     //           paramsWithTypes, paramsWithoutTypes
+            INCLUDE,    //className, paramsWithTypes
+            SECTION,    //className, paramsWithTypes, paramsWithoutTypes
             END_SECTION,//
             CONTENT,    //
             LAYOUT      //className
@@ -165,10 +167,10 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
         String className;
 
         //iff section, params, and include (empty string if params not given for include)
-        String params;
+        String paramsWithTypes;
 
         //iff section and params only (include doesn't need it broken down bc types aren't given)
-        String[][] paramsList;
+        String paramsWithoutTypes;
 
         Directive(int tokenPos, Token token, List<Token> tokens) {
             assert (token.getType() == DIRECTIVE);
@@ -213,8 +215,9 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
                     break;
                 case PARAMS:
                     String content = token.getContent().substring(6);
-                    params = content.trim().substring(1, content.length() - 1);
-                    paramsList = splitParamsList(params);
+                    paramsWithTypes = content.trim().substring(1, content.length() - 1);
+                    String[][] paramsList = splitParamsList(paramsWithTypes);
+                    paramsWithoutTypes = makeParamsStringWithoutTypes(paramsList);
                     break;
                 case INCLUDE:
                     String[] parts = token.getContent().substring(8).trim().split("\\(", 2);
@@ -222,7 +225,7 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
                     if (parts.length == 2) {
                         String temp = parts[1].substring(0, parts[1].length() - 1).trim();
                         if (temp.length() > 0) {
-                            params = temp;
+                            paramsWithTypes = temp;
                         }
                     }
                     break;
@@ -230,10 +233,11 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
                     String[] temp = token.getContent().substring(7).trim().split("\\(", 2);
                     className = temp[0];
                     if (temp.length == 2 && !temp[1].equals(")")) {
-                        params = temp[1].substring(0, temp[1].length() - 1).trim();
-                        paramsList = splitParamsList(params);
+                        paramsWithTypes = temp[1].substring(0, temp[1].length() - 1).trim();
+                        paramsList = splitParamsList(paramsWithTypes);
                         findParamTypes(paramsList, tokenPos, tokens);
-                        params = makeParamsString(paramsList);
+                        paramsWithTypes = makeParamsStringWithTypes(paramsList);
+                        paramsWithoutTypes = makeParamsStringWithoutTypes(paramsList);
                     }
                     break;
                 case END_SECTION:
@@ -263,10 +267,18 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
 
         //given a list of 2 element String lists (0th elem is type and 1st elem is value), returns the string form
         //ex. [[String, str],[int,5]] returns "String str, int 5"
-        private String makeParamsString(String[][] paramsList) {
+        private String makeParamsStringWithTypes(String[][] paramsList) {
             String params = "" + paramsList[0][0] + " " + paramsList[0][1];
             for (int i = 1; i < paramsList.length; i++) {
                 params += ", " + paramsList[i][0] + " " + paramsList[i][1];
+            }
+            return params;
+        }
+
+        private String makeParamsStringWithoutTypes(String[][] paramsList) {
+            String params = "" + paramsList[0][1];
+            for (int i = 1; i < paramsList.length; i++) {
+                params += ", " + paramsList[i][1];
             }
             return params;
         }
@@ -375,10 +387,10 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
         }
 
         private void addRenderImpl() {
-            if (currClass.paramsList == null) {
+            if (currClass.paramsWithTypes == null) {
                 sb.append("    public void renderImpl(Appendable buffer) {\n");
             } else {
-                sb.append("    public void renderImpl(Appendable buffer, ").reAppend(currClass.params).reAppend(") {\n");
+                sb.append("    public void renderImpl(Appendable buffer, ").reAppend(currClass.paramsWithTypes).reAppend(") {\n");
             }
             boolean needsToCatchIO = currClass.isLayout || currClass.hasLayout;
             if (!needsToCatchIO) {
@@ -414,7 +426,7 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
         }
 
         private void addRender() {
-            if (currClass.paramsList == null) {
+            if (currClass.paramsWithTypes == null) {
                 sb.append("\n")
                         .append("    public static String render() {\n")
                         .append("        StringBuilder sb = new StringBuilder();\n")
@@ -423,13 +435,9 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
                         .append("    }\n\n");
             } else {
                 sb.append("\n")
-                        .append("    public static String render(").reAppend(currClass.params + ") {\n")
+                        .append("    public static String render(").reAppend(currClass.paramsWithTypes + ") {\n")
                         .append("        StringBuilder sb = new StringBuilder();\n")
-                        .append("        renderInto(sb");
-                for (String[] p : currClass.paramsList) {
-                    sb.reAppend(", ").reAppend(p[1]);
-                }
-                sb.reAppend(");\n")
+                        .append("        renderInto(sb, ").reAppend(currClass.paramsWithoutTypes).reAppend(");\n")
                         .append("        return sb.toString();\n")
                         .append("    }\n\n");
             }
@@ -452,17 +460,13 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
         }
 
         private void addRenderInto() {
-            if (currClass.paramsList == null) {
+            if (currClass.paramsWithoutTypes == null) {
                 sb.append("    public static void renderInto(Appendable buffer) {\n")
                         .append("        INSTANCE.renderImpl(buffer);\n")
                         .append("    }\n\n");
             } else {
-                sb.append("    public static void renderInto(Appendable buffer, ").reAppend(currClass.params).reAppend(") {\n")
-                        .append("        INSTANCE.renderImpl(buffer");
-                for (String[] param: currClass.paramsList) {
-                    sb.reAppend(", ").reAppend(param[1]);
-                }
-                sb.reAppend(");\n")
+                sb.append("    public static void renderInto(Appendable buffer, ").reAppend(currClass.paramsWithTypes).reAppend(") {\n")
+                        .append("        INSTANCE.renderImpl(buffer, ").reAppend(currClass.paramsWithoutTypes).reAppend(");\n")
                         .append("    }\n\n");
             }
 
@@ -484,6 +488,8 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
 
             //close class
             sb.append("}\n");
+
+            currClass = currClass.outerClass;
         }
 
         private void addHeaderAndFooter() {
@@ -569,8 +575,8 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
 
         private void addInclude(Directive dir) {
             assert(dir.dirType == INCLUDE);
-            if (dir.params != null) {
-                sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer, ").reAppend(dir.params).reAppend(");\n");
+            if (dir.paramsWithTypes != null) {
+                sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer, ").reAppend(dir.paramsWithTypes).reAppend(");\n");
             } else {
                 sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer);\n");
             }
