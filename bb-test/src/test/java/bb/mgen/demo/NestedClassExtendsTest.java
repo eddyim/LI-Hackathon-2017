@@ -49,4 +49,4 @@ public class NestedClassExtendsTest extends bb.runtime.TestExtendsTemplate {
         }
 
     }
-    }
+}

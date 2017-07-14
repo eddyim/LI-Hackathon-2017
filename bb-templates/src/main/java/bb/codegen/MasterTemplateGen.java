@@ -537,7 +537,6 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
         }
 
         private void makeFuncContent(int startPos, int endPos) {
-
             outerLoop:
             for (int i = startPos; i <= endPos; i++) {
                 Token token = tokens.get(i);

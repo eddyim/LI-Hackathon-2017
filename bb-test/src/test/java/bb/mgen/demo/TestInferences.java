@@ -111,4 +111,4 @@ public class TestInferences extends bb.runtime.BaseBBTemplate {
         }
 
     }
-    }
+}

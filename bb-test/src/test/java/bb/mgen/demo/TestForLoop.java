@@ -33,4 +33,8 @@ public class TestForLoop extends bb.runtime.BaseBBTemplate {
         }
     }
 
+    public static void main(String[] args) {
+        System.out.println(render());
+    }
+
 }

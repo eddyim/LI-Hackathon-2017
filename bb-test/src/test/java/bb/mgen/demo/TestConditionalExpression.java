@@ -21,7 +21,6 @@ public class TestConditionalExpression extends bb.runtime.BaseBBTemplate {
         try {
             boolean x = true;
             buffer.append("\n<p>");
-            buffer.append(toS("hello" if x));
             buffer.append("</p>\n<h1>The word hello should have rendered above</h1>");
         } catch (IOException e) {
             throw new RuntimeException(e);
