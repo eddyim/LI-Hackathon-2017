@@ -1,326 +1,222 @@
 package bb.tokenizer;
 
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
+import java.util.ArrayList;
+import java.util.NoSuchElementException;
+import bb.tokenizer.Token.TokenType;
 
-public class BBTokenizer {
-    class Location {
-        int line;
-        int col;
-        int pos;
+import static bb.tokenizer.Token.TokenType.*;
 
-        Location() {
+public class BBTokenizer   {
+    static class TokenBuilder implements Iterator<Token> {
+        String tokenString;
+        int line, col;
+        int index;
+
+        TokenBuilder(String str) {
+            this.tokenString = str;
             line = 1;
             col = 1;
-            pos = 0;
+            index = 0;
         }
 
-        Location(int line, int col, int pos) {
-            this.line = line;
-            this.col = col;
-            this.pos = pos;
-        }
-    }
-
-    class State {
-
-        String str;
-        Location curr = new Location();
-        Location endOfLastSEorD = new Location(1, 0, -1);
-        int lastLineLen;
-
-        State(String str) {
-            this.str = str;
+        private Character peekBehind() {
+            return peekBehind(1);
         }
 
-        int getPos() {
-            return curr.pos;
-        }
-
-        char getCurr() {
-            return str.charAt(curr.pos);
-        }
-        char getNext() {
-            return str.charAt(curr.pos + 1);
-        }
-        char getNextNext() {
-            return str.charAt(curr.pos + 2);
-        }
-        char getNextNextNext() {
-            return str.charAt(curr.pos + 3);
-        }
-        char getPrev() {
-            return str.charAt(curr.pos - 1);
-        }
-
-        int getPosLastSEorD() {
-            return endOfLastSEorD.pos;
-        }
-        int getColLastSEorD() {
-            return endOfLastSEorD.col;
-        }
-        int getLineLastSEorD() {
-            return endOfLastSEorD.line;
-        }
-
-        boolean hasCurr() {
-            return (curr.pos < str.length());
-        }
-        boolean hasNext() {
-            return (curr.pos + 1 < str.length());
-        }
-        boolean hasNextNext() {
-            return (curr.pos + 2 < str.length());
-        }
-        boolean hasNextNextNext() {
-            return (curr.pos + 3 < str.length());
-        }
-
-        void advance() {
-            curr.pos++;
-            curr.col++;
-        }
-        void retreat() {
-            curr.pos--;
-            curr.col--;
-            if (curr.col == 0) {
-                curr.col = lastLineLen;
-                curr.line--;
+        private Character peekBehind(int distance) {
+            if (index - distance < 0) {
+                return null;
             }
+            return tokenString.charAt(index - distance);
         }
 
-        void adjustLoc() {
-            if (this.hasCurr() && Character.isWhitespace(this.getCurr())) {
-                if (this.getCurr() == '\n') {
-                    lastLineLen = curr.col + 1;
-                    curr.line++;
-                    curr.col = 0;
+        private Character peekForward() {
+            return peekForward(1);
+        }
+
+        private Character peekForward(int distance) {
+            if (index + distance < tokenString.length()) {
+                return tokenString.charAt(index + distance);
+            }
+            return null;
+        }
+
+        public boolean hasNext() {
+            if (tokenString == null) {
+                return false;
+            }
+            return index < tokenString.length();
+        }
+
+        public Token next() {
+            if (index >= tokenString.length()) {
+                throw new NoSuchElementException();
+            }
+            TokenType nextType = getNextTokenType();
+            int pos = this.index;
+            int col = this.col;
+            int line = this.line;
+            Token toReturn;
+            if (nextType == STRING_CONTENT) {
+                toReturn = next(nextType, false, line, col, pos,"<%", "${");
+            } else if (nextType == STATEMENT) {
+                advancePosition(2);
+                toReturn = next(nextType, true, line, col, pos,"%>");
+                advancePosition(2);
+            } else if (nextType == EXPRESSION) {
+                if (isModernExpressionSyntax()) {
+                    advancePosition(2);
+                    toReturn = next(nextType, true, line, col, pos, "}");
+                    advancePosition();
+                } else {
+                    advancePosition(3);
+                    toReturn = next(nextType, true, line, col, pos, "%>");
+                    advancePosition(2);
                 }
-                while (this.hasNext()) {
-                    this.advance();
-                }
+
+            } else if (nextType == DIRECTIVE) {
+                advancePosition(3);
+                toReturn = next(nextType, true, line, col, pos,"%>");
+                advancePosition(2);
+            } else if (nextType == COMMENT) {
+                advancePosition(4);
+                toReturn = next(nextType, false, line, col, pos,"--%>");
+                advancePosition(4);
+            } else {
+                throw new RuntimeException("Error at line " + line + "and column " + col);
             }
-        }
-        Location copyCurrLoc() {
-            return new Location(curr.line, curr.col, curr.pos);
+            return toReturn;
         }
 
-        void passQuotes() {
-            Stack<Character> quotes = new Stack<Character>();
+        public void remove() {
+            throw new UnsupportedOperationException("remove");
+        }
 
-            if (this.getCurr() == '"') {
-                quotes.push('"');
-            } else if (this.getCurr() == '\''){
-                quotes.push('\'');
+
+        private Token next(TokenType type, boolean quoteSensitive, int line, int col, int pos, String... terminateConditions) {
+            int contentStartPos = index;
+            int length = tokenString.length();
+            List<Character> termStart = new ArrayList<Character>();
+            for (String s: terminateConditions) {
+                termStart.add(s.charAt(0));
             }
-            advance();
-
-            while (!quotes.empty() && hasNext()) {
-                adjustLoc();
-                if (this.getCurr() == '"' && this.getPrev() != '\\') {
-                    if (quotes.peek() == '"') {
-                        quotes.pop();
-                    } else {
-                        quotes.push('"');
+            int quoteState = 0;
+            while (index < length) {
+                char current = tokenString.charAt(index);
+                if (current == '"' && quoteSensitive) {
+                    if (quoteState == 1 && peekBehind() != '\\') {
+                        quoteState = 0;
+                    } else if (quoteState == 0) {
+                        quoteState = 1;
                     }
-                } else if (this.getCurr() == '\''){
-                    if (quotes.peek() == '\'') {
-                        quotes.pop();
-                    } else {
-                        quotes.push('\'');
+                } else if (current == '\'' && quoteSensitive) {
+                    if (quoteState == 2 && peekBehind() != '\\') {
+                        quoteState = 0;
+                    } else if (quoteState == 0) {
+                        quoteState = 2;
+                    }
+                } else if (quoteState == 0) {
+                    if (termStart.contains(current)) {
+                        if (checkIfTerminates(terminateConditions)) {
+                            String currentTokenString = tokenString.substring(contentStartPos, index);
+                            if (type != STRING_CONTENT) {
+                                currentTokenString = currentTokenString.trim();
+                            }
+                            return new Token(type, currentTokenString, line, col, pos);
+                        }
+                    }
+                    if (type != COMMENT) {
+                        checkIllegalOpenings();
                     }
                 }
-                advance();
+                advancePosition();
+            }
+            if (type == STRING_CONTENT) {
+                return new Token(type, tokenString.substring(contentStartPos), line, col, pos);
+            }
+            throw new RuntimeException("Error: " + type + " beginning at col " + col + " and line " + line + "is not closed");
+        }
+
+        private boolean isModernExpressionSyntax() {
+            if (tokenString.charAt(index) == '$') {
+                return true;
+            }
+            return false;
+        }
+
+        private boolean checkIfTerminates(String[] terminateConditions) {
+            for (String cond: terminateConditions) {
+                boolean terminates = true;
+                for (int i = 0; i < cond.length(); i += 1) {
+                    Character c = peekForward(i);
+                    if (c == null || cond.charAt(i) != c) {
+                        terminates = false;
+                    }
+                }
+                if (terminates) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void checkIllegalOpenings() {
+            if (tokenString.charAt(index) == '<' && peekForward() == '%') {
+                throw new RuntimeException("Attempted to open new statement within statement");
+            }
+            if (tokenString.charAt(index) == '$' && peekForward() == '{') {
+                throw new RuntimeException("Attempted to open new expression within statement");
             }
         }
 
-        boolean tokenOpenerPresent() {
-            return (hasNext() && ((getCurr() == '<' && getNext() == '%') ||
-                    (getCurr() == '$' && getNext() == '{')));
+        /** Returns the correct token type to be parsed. */
+        private TokenType getNextTokenType() {
+            Character next = peekForward();
+            if (tokenString.charAt(index) == '<' && next == '%') {
+                if (peekForward(2) != null && peekForward(2) == '@') {
+                    return DIRECTIVE;
+                }
+                if (peekForward(2) != null && peekForward(2) == '=') {
+                    return EXPRESSION;
+                }
+                if (peekForward(2) != null && peekForward(2) == '-' && peekForward(3) != null && peekForward(3) == '-') {
+                    return COMMENT;
+                }
+                return STATEMENT;
+            } else if (tokenString.charAt(index) == '$' && next == '{') {
+                return EXPRESSION;
+            } else {
+                return STRING_CONTENT;
+            }
+        }
+
+        private void advancePosition() {
+            char current = tokenString.charAt(index);
+            if (current == 10) {
+                this.line += 1;
+                this.col = 0;
+            }
+            this.col += 1;
+            index += 1;
+        }
+
+        private void advancePosition(int i) {
+            for (int x = 0; x < i; x += 1) {
+                advancePosition();
+            }
         }
 
     }
-
 
     public List<Token> tokenize(String str) {
-        List<Token> result = new ArrayList<Token>();
-        if (str == null) {
-            return result;
+        ArrayList<Token> tokens = new ArrayList<Token>();
+        TokenBuilder builder = new TokenBuilder(str);
+        while (builder.hasNext()) {
+            tokens.add(builder.next());
         }
-        State state = new State(str);
-
-        while (state.hasCurr()) {
-            state.adjustLoc();
-            if (state.getCurr() == '<') {
-                if (state.hasNext() && state.getNext() == '%') { //is a statement or directive
-                    //@TODO: if there is no nextnext it is a(n incomplete) statement
-                    if (state.hasNextNext() && state.getNextNext() == '@') {
-                        result.add(getDirectiveToken(state));
-                    } else if (state.hasNextNext() && state.getNextNext() == '=') {
-                        result.add(getExprToken(state, 1));
-                    } else if (state.hasNextNext() && state.getNextNext() == '-' && state.hasNextNextNext() && state.getNextNextNext() == '-') {
-                        result.add(getCommentToken(state));
-                    } else {
-                        result.add(getStatementToken(state));
-                    }
-                } else {
-                    result.add(getStringContentToken(state));
-                }
-            } else if (state.getCurr() == '$') {
-                if (state.hasNext() && state.getNext() == '{') {  //is an expression
-                    result.add(getExprToken(state, 0));
-                } else {
-                    result.add(getStringContentToken(state));
-                }
-            } else {  //is a string statement
-                result.add(getStringContentToken(state));
-            }
-        }
-        return result;
+        return tokens;
     }
 
-
-    private Token getStringContentToken(State state) {
-        while (state.hasCurr()) {
-            state.adjustLoc();
-            if (state.tokenOpenerPresent()) {
-                break;
-            }
-            state.advance();
-        }
-        return new Token(Token.TokenType.STRING_CONTENT, state.str.substring(state.getPosLastSEorD() + 1, state.getPos()),
-                state.getLineLastSEorD(), state.getColLastSEorD() + 1, state.getPosLastSEorD() + 1);
-    }
-
-    //start with the pos st the < in <%@, end with it at the > in the %>
-    private Token getDirectiveToken(State state) {
-        final int FRONT_LEN = 3;
-        final int END_LEN = 2;
-        return makeToken(Token.TokenType.DIRECTIVE, FRONT_LEN, END_LEN, state);
-    }
-    //start with the pos st the < in <%, end with it at the > in the %>
-    private Token getStatementToken(State state) {
-        final int FRONT_LEN = 2;
-        final int END_LEN = 2;
-        return makeToken(Token.TokenType.STATEMENT, FRONT_LEN, END_LEN, state);
-    }
-    //start with the pos at $ from the ${, end with it at the }
-    private Token getExprToken(State state, int additionalLen) {
-        final int FRONT_LEN = 2 + additionalLen;
-        final int END_LEN = 1 + additionalLen;
-        return makeToken(Token.TokenType.EXPRESSION, FRONT_LEN, END_LEN, state);
-    }
-
-    //start with the pos st the < in <%--, end with it at the > in the --%>
-    private Token getCommentToken(State state) {
-        final int FRONT_LEN = 4;
-        final int END_LEN = 4;
-        return makeToken(Token.TokenType.COMMENT, FRONT_LEN, END_LEN, state);
-    }
-
-
-    private Token makeToken(Token.TokenType type, int startLen, int endLen, State state) {
-        Location start = state.copyCurrLoc();
-        for (int i = 0; i < startLen; i++) {
-            state.advance();
-        }
-
-        switch (type) {
-            case DIRECTIVE:
-                advanceDirective(state);
-                break;
-            case STATEMENT:
-                advanceStatement(state);
-                break;
-            case EXPRESSION:
-                advanceExpression(state, startLen);
-                break;
-            case COMMENT:
-                advanceComment(state);
-                break;
-        }
-
-        state.endOfLastSEorD = state.copyCurrLoc();
-        state.advance();
-        return new Token(type, state.str.substring(start.pos + startLen, state.getPos() - endLen).trim(), start.line, start.col, start.pos);
-    }
-
-    private void advanceDirective(State state) {
-        boolean finished = false;
-        while (state.hasCurr()) {
-            state.adjustLoc();
-            if (state.getPrev() == '%' && state.getCurr() == '>') {
-                finished = true;
-                break;
-            } else if (state.tokenOpenerPresent()) {
-                throw new RuntimeException("Cannot start a new token inside a Directive");
-            } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
-                state.passQuotes();
-            } else {
-                state.advance();
-            }
-        } if (!finished) {
-            throw new RuntimeException("File ended before closing Directive");
-        }
-    }
-
-    private void advanceStatement(State state) {
-        boolean finished = false;
-        while (state.hasCurr()) {
-            state.adjustLoc();
-            if (state.getPrev() == '%' && state.getCurr() == '>') {
-                finished = true;
-                break;
-            } else if (state.tokenOpenerPresent()) {
-                throw new RuntimeException("Cannot start a new token inside a Statement");
-            } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
-                state.passQuotes();
-            } else {
-                state.advance();
-            }
-        }
-        if (!finished) {
-            throw new RuntimeException("File ended before closing Statement");
-        }
-    }
-
-    private void advanceExpression(State state, int startLen) {
-        boolean finished = false;
-        while (state.hasCurr()) {
-            state.adjustLoc();
-            if ((startLen == 2 && state.getCurr() == '}')
-                    || (startLen == 3 && state.getPrev() == '%' && state.getCurr() == '>')) {
-                finished = true;
-                break;
-            } else if (state.tokenOpenerPresent()) {
-                throw new RuntimeException("Cannot start a new token inside an Expression");
-            } else if ((state.getCurr() == '"' && state.getPrev() != '\\') || state.getCurr() == '\'') {
-                state.passQuotes();
-            } else {
-                state.advance();
-            }
-        }
-        if (!finished) {
-            throw new RuntimeException("File ended before closing Expression");
-        }
-    }
-
-    private void advanceComment(State state) {
-        boolean finished = false;
-        while (state.hasCurr()) {
-            state.adjustLoc();
-            if (state.getCurr() == '-' && state.hasNextNextNext() && state.getNext() == '-' && state.getNextNext() == '%'  && state.getNextNextNext() == '>') {
-                state.advance();
-                state.advance();
-                state.advance();
-                finished = true;
-                break;
-            } else {
-                state.advance();
-            }
-        } if (!finished) {
-            throw new RuntimeException("File ended before closing Comment");
-        }
-    }
 }
