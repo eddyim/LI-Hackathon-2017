@@ -304,6 +304,17 @@ public class BBTemplateGen {
                     if (toReturn != null) {
                         return toReturn.split(" ")[0];
                     }
+                } else if (currentToken.getType() == DIRECTIVE) {
+                    Directive cur = new Directive(i, currentToken, tokens);
+                    if (cur.dirType == DirType.PARAMS) {
+                        String[][] outerClassParameters = cur.paramsList;
+                        for(int j = 0; j < outerClassParameters.length; j++) {
+                            String parameter = outerClassParameters[j][1];
+                            if (name.equals(parameter)) {
+                                return outerClassParameters[j][0];
+                            }
+                        }
+                    }
                 }
             }
             throw new RuntimeException("Type for argument can not be inferred: " + name);
