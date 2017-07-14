@@ -1,19 +1,19 @@
 package bb.codegen;
 
-import bb.tokenizer.HTokenizer;
+import bb.tokenizer.BBTokenizer;
 import bb.tokenizer.Token;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static bb.codegen.MasterTemplateGen.Directive.DirType.*;
+import static bb.codegen.BBTemplateGen.Directive.DirType.*;
 import static bb.tokenizer.Token.TokenType.*;
 
 /**
  * Created by hkalidhindi on 7/12/2017.
  */
-public class MasterTemplateGen implements ITemplateCodeGenerator {
+public class BBTemplateGen implements ITemplateCodeGenerator {
     private final String BASE_CLASS_NAME = "bb.runtime.BaseBBTemplate";
     private final String LAYOUT_INTERFACE = "bb.runtime.ILayout";
 
@@ -344,7 +344,7 @@ public class MasterTemplateGen implements ITemplateCodeGenerator {
             for (int i = 1; i < parts.length - 1; i++) {
                 packageName += "." + parts[i];
             }
-            HTokenizer tokenizer = new HTokenizer();
+            BBTokenizer tokenizer = new BBTokenizer();
             this.tokens = tokenizer.tokenize(source);
             List<Directive> dirList = getDirectivesList(tokens);
             this.dirMap = getDirectivesMap(dirList);

@@ -10,7 +10,7 @@ import static bb.tokenizer.Token.TokenType.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-abstract public class TokenizerTestBase {
+abstract public class BBTokenizerTest {
 
     protected abstract ITokenizer createTokenizer();
 

@@ -1,11 +1,10 @@
 package bb.manifold;
 
-import bb.codegen.ETemplateGen;
 import bb.codegen.ITemplateCodeGenerator;
+import bb.codegen.BBTemplateGen;
 import manifold.api.fs.IFile;
 import manifold.api.host.ITypeLoader;
 import manifold.api.sourceprod.JavaSourceProducer;
-import manifold.util.JavacDiagnostic;
 import manifold.util.StreamUtil;
 
 import javax.tools.DiagnosticListener;
@@ -56,6 +55,6 @@ public class BBSourceProducer extends JavaSourceProducer<BBModel> {
     }
 
     private ITemplateCodeGenerator getGenerator() {
-        return new ETemplateGen();
+        return new BBTemplateGen();
     }
 }
