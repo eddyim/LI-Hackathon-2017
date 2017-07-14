@@ -143,7 +143,7 @@ public class BBTemplateGen implements ITemplateCodeGenerator {
         int tokenPos;
         Token token;
 
-        enum DirType {
+        protected enum DirType {
             IMPORT,     //className
             EXTENDS,    //className
             PARAMS,     //           params, paramsList
@@ -228,7 +228,7 @@ public class BBTemplateGen implements ITemplateCodeGenerator {
                     break;
                 case SECTION:
                     String[] temp = token.getContent().substring(7).trim().split("\\(", 2);
-                    className = temp[0];
+                    className = temp[0].trim();
                     if (temp.length == 2 && !temp[1].equals(")")) {
                         params = temp[1].substring(0, temp[1].length() - 1).trim();
                         paramsList = splitParamsList(params);
@@ -280,6 +280,14 @@ public class BBTemplateGen implements ITemplateCodeGenerator {
                     params[i][1] = name;
                 }
             }
+        }
+
+        private String makeParamsStringWithoutTypes(String[][] paramsList) {
+            String params = "" + paramsList[0][1];
+            for (int i = 1; i < paramsList.length; i++) {
+                params += ", " + paramsList[i][1];
+            }
+            return params;
         }
 
         private String inferSingleArgumentType(String name, int tokenPos, List<Token> tokens) {
@@ -551,7 +559,8 @@ public class BBTemplateGen implements ITemplateCodeGenerator {
                         Directive dir = dirMap.get(i);
                         if (dir.dirType == SECTION) {
                             ClassInfo classToSkipOver = currClass.nestedClasses.get(i + 1);
-                            i = classToSkipOver.endTokenPos + 1;
+                            i = classToSkipOver.endTokenPos;
+                            addSection(dir);
                         } else if (dir.dirType == END_SECTION) {
                             assert(i == endPos);
                             assert(currClass.depth > 0);
@@ -571,6 +580,16 @@ public class BBTemplateGen implements ITemplateCodeGenerator {
             assert(dir.dirType == INCLUDE);
             if (dir.params != null) {
                 sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer, ").reAppend(dir.params).reAppend(");\n");
+            } else {
+                sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer);\n");
+            }
+        }
+
+        private void addSection(Directive dir) {
+            assert(dir.dirType == SECTION);
+            if (dir.params != null) {
+                String paramsWithoutTypes = dir.makeParamsStringWithoutTypes(dir.paramsList);
+                sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer, ").reAppend(paramsWithoutTypes).reAppend(");\n");
             } else {
                 sb.append("            ").reAppend(dir.className).reAppend(".renderInto(buffer);\n");
             }

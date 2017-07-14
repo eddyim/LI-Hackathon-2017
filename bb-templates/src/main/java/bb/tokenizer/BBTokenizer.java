@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class BBTokenizer implements ITokenizer {
-    private class Location {
+    class Location {
         int line;
         int col;
         int pos;
@@ -23,7 +23,7 @@ public class BBTokenizer implements ITokenizer {
         }
     }
 
-    private class State {
+    class State {
 
         String str;
         Location curr = new Location();
