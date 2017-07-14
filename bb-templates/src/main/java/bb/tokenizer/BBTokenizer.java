@@ -97,7 +97,9 @@ public class BBTokenizer {
                     curr.line++;
                     curr.col = 0;
                 }
-                this.advance();
+                while (this.hasNext()) {
+                    this.advance();
+                }
             }
         }
         Location copyCurrLoc() {
