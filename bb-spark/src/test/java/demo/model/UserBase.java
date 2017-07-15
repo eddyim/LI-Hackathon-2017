@@ -8,7 +8,7 @@ import java.util.*;
 public class UserBase {
     private static final List<User> USER_LIST = new ArrayList<>();
     private static final Map<String, Account> ACCOUNTS = new HashMap<>();
-    static class Account {
+    public static class Account {
         private String _username;
         private String _password;
         private User _user;
@@ -47,9 +47,9 @@ public class UserBase {
 
     private static User addUser(String firstName, String lastName, String team, String experienceLevel,
                                List<String> dietaryRestrictions, List<String> foodPreferences,
-                                List<String> experiencePreferences, List<String> teamPreferences) {
+                                List<String> experiencePreferences, List<String> teamPreferences, String picName) {
         User toAdd = new User(firstName, lastName, team, experienceLevel,
-                dietaryRestrictions, foodPreferences, experiencePreferences, teamPreferences);
+                dietaryRestrictions, foodPreferences, experiencePreferences, teamPreferences, picName);
         USER_LIST.add(toAdd);
         return toAdd;
     }
@@ -57,19 +57,19 @@ public class UserBase {
     public static void addAccount(String username, String password, String firstName, String lastName,
                                   String team, String experienceLevel, List<String> dietaryRestrictions,
                                   List<String> foodPreferences, List<String> experiencePreferences,
-                                  List<String> teamPreferences) {
+                                  List<String> teamPreferences, String picName) {
         if (ACCOUNTS.containsKey(username)) {
             throw new UserRuntimeException("ERROR: Username " + username + "already exists.");
         }
         User currentUser = addUser(firstName, lastName, team, experienceLevel,
-                dietaryRestrictions, foodPreferences, experiencePreferences, teamPreferences);
+                dietaryRestrictions, foodPreferences, experiencePreferences, teamPreferences, picName);
         Account currentAccount = new Account(username, password, currentUser);
         ACCOUNTS.put(username, currentAccount);
     }
 
     public static Account validateLogin(String username, String password) {
         if (!ACCOUNTS.containsKey(username)) {
-            throw new UserRuntimeException("ERROR: Username " + username + "not found.");
+            throw new UserRuntimeException("ERROR: Username " + username + " not found.");
         }
         Account toCheck = ACCOUNTS.get(username);
         if (toCheck.getPassWord().equals(password)) {
@@ -83,24 +83,24 @@ public class UserBase {
                 "Product Development", "Intern", new ArrayList<String>(),
                 new ArrayList<String>(Arrays.asList("Chinese", "Korean", "Mexican", "Italian")),
                 new ArrayList<String>(Arrays.asList("Intern", "Middle Management", "Senior Management")),
-                new ArrayList<String>(Arrays.asList("Product Development", "Sales", "Marketing")));
+                new ArrayList<String>(Arrays.asList("Product Development", "Sales", "Marketing")), "edward.png");
         addUser("Sonia", "Uppal", "Product Development", "Intern",
                 new ArrayList<String>(Arrays.asList("Beef")),
                 new ArrayList<String>(Arrays.asList("Mexican", "Japanese", "Indian", "Thai")),
                 new ArrayList<String>(Arrays.asList("Intern", "Low Management", "Contractor")),
-                new ArrayList<String>(Arrays.asList("Product Development", "Sales", "Human Resources")));
+                new ArrayList<String>(Arrays.asList("Product Development", "Sales", "Human Resources")), "sonia.png");
         addUser("Ardin", "Lo", "Marketing", "Intern", new ArrayList<String>(),
                 new ArrayList<String>(Arrays.asList("Chinese", "Japanese", "Korean", "Thai")),
                 new ArrayList<String>(Arrays.asList("Intern", "Middle Management", "Senior Management")),
-                new ArrayList<String>(Arrays.asList("Marketing")));
+                new ArrayList<String>(Arrays.asList("Marketing")), "ardin.png");
         addUser("Christine", "Deng", "Marketing", "Intern", new ArrayList<String>(),
                 new ArrayList<String>(Arrays.asList("American", "Chinese", "Japanese", "Korean", "Thai")),
                 new ArrayList<String>(Arrays.asList("Intern", "Contractor", "Senior Management")),
-                new ArrayList<String>(Arrays.asList("Product Development", "Sales", "Marketing")));
+                new ArrayList<String>(Arrays.asList("Product Development", "Sales", "Marketing")), "christine.png");
         addUser("Melissa", "Cai", "Finance", "Intern", new ArrayList<String>(),
                 new ArrayList<>(Arrays.asList("American", "Chinese", "Japanese", "Korean")),
                 new ArrayList<String>(Arrays.asList("Intern", "Middle Management", "Senior Management")),
-                new ArrayList<String>(Arrays.asList("Product Development", "Sales", "Marketing")));
+                new ArrayList<String>(Arrays.asList("Product Development", "Sales", "Marketing")), "melissa.png");
     }
 
     public static List<UserPairing> getTopPairings(User user) {

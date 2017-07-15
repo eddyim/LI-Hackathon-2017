@@ -1,0 +1,44 @@
+h2 {
+  margin-left: 180px;
+  font-family: 'PT Sans Narrow', sans-serif;
+}
+
+div {
+  font-family: 'PT Sans Narrow', sans-serif;
+}
+
+form.form-horizontal {
+  padding: 19px 29px 19px;
+  font-family: 'PT Sans Narrow', sans-serif;
+}
+
+body {
+  background-size: 100% auto;
+}
+
+div.container {
+  background-color: white;
+  background-color: rgba(255, 255, 255, 0.9);
+  width: 300px;
+  border-radius: 25px;
+  border: 1px solid #e5e5e5;
+  width: 50%;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+div.control-group {
+  padding-left:
+}
+
+a {
+  font-size: 10px;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'PT Sans Narrow', sans-serif;
+}

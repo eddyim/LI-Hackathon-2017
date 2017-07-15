@@ -10,7 +10,7 @@ import static demo.model.User.Team.*;
 /**
  * Created by edwardim on 7/14/17.
  */
-class User {
+public class User {
     private static final HashMap<String, FoodPreferences> FOOD_PREFERENCES;
     static {
         FOOD_PREFERENCES = new HashMap<>();
@@ -64,6 +64,7 @@ class User {
     }
     private String _firstName;
     private String _lastName;
+    private String _pictureName;
     private Team _team;
     private ExperienceLevel _experienceLevel;
     private List<DietaryRestrictions> _dietaryRestrictions;
@@ -72,7 +73,8 @@ class User {
     private List<Team> _teamPreferences;
     private boolean _accountCreated = false;
 
-    enum DietaryRestrictions {
+
+    public enum DietaryRestrictions {
         BEEF,
         PORK,
         POULTRY,
@@ -87,7 +89,7 @@ class User {
         OTHER
     }
 
-    enum FoodPreferences {
+    public enum FoodPreferences {
         AMERICAN,
         CHINESE,
         FRENCH,
@@ -102,7 +104,7 @@ class User {
         OTHER,
     }
 
-    enum Team {
+    public enum Team {
         FINANCE,
         HUMAN_RESOURCES,
         MARKETING,
@@ -110,7 +112,7 @@ class User {
         SALES,
     }
 
-    enum ExperienceLevel {
+    public enum ExperienceLevel {
         INTERN,
         CONTRACTOR,
         JUNIOR,
@@ -122,7 +124,7 @@ class User {
 
     public User(String firstName, String lastName, String team, String experienceLevel,
                 List<String> dietaryRestrictions, List<String> foodPreferences,
-                List<String> experiencePreferences, List<String> teamPreferences) {
+                List<String> experiencePreferences, List<String> teamPreferences, String picName) {
         _firstName = firstName;
         _lastName = lastName;
         _team = parseTeam(team);
@@ -131,6 +133,7 @@ class User {
         _foodPreferences = parseFoodPreferences(foodPreferences);
         _experiencePreferences = parseExperiencePreferences(experiencePreferences);
         _teamPreferences = parseTeamPreferences(teamPreferences);
+        _pictureName = picName;
     }
 
     private Team parseTeam(String team) {
@@ -244,6 +247,17 @@ class User {
     public boolean accountCreated() { return _accountCreated; }
 
     public void changeAccountStatus() { _accountCreated = !_accountCreated;  }
+
+    public String getPictureName() {
+        return _pictureName;
+    }
+
+    public double getMaxScore() {
+        double maxScore = 0;
+        maxScore += (_foodPreferences.size() * 5);
+        maxScore += 10;
+        return maxScore;
+    }
 
 
 

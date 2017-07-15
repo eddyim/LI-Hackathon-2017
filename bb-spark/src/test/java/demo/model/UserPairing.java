@@ -45,8 +45,20 @@ public class UserPairing implements Comparable<UserPairing> {
         }
     }
 
+    public User getSecond() {
+        return _second;
+    }
+
+    public List<FoodPreferences> getSharedPreference() {
+        return _sharedPreference;
+    }
+
     public double getScore() {
         return _score;
+    }
+
+    public int getPercentage() {
+        return (int) (_score/_first.getMaxScore()*100);
     }
 
     @Override
