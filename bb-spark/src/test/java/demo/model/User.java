@@ -17,6 +17,7 @@ class User {
         FOOD_PREFERENCES.put("American", AMERICAN);
         FOOD_PREFERENCES.put("Chinese", CHINESE);
         FOOD_PREFERENCES.put("French", FRENCH);
+        FOOD_PREFERENCES.put("Indian", INDIAN);
         FOOD_PREFERENCES.put("Italian", ITALIAN);
         FOOD_PREFERENCES.put("Japanese", JAPANESE);
         FOOD_PREFERENCES.put("Korean", KOREAN);
@@ -43,12 +44,32 @@ class User {
         DIETARY_RESTRICTIONS.put("Shellfish", SHELLFISH);
         DIETARY_RESTRICTIONS.put("Other", DietaryRestrictions.OTHER);
     }
+    private static final HashMap<String, ExperienceLevel> EXPERIENCE_LEVELS;
+    static {
+        EXPERIENCE_LEVELS = new HashMap<>();
+        EXPERIENCE_LEVELS.put("Intern", INTERN);
+        EXPERIENCE_LEVELS.put("Contractor", CONTRACTOR);
+        EXPERIENCE_LEVELS.put("Low Management", LOW_MANAGEMENT);
+        EXPERIENCE_LEVELS.put("Middle Management", MIDDLE_MANAGEMENT);
+        EXPERIENCE_LEVELS.put("Senior Management", SENIOR_MANAGEMENT);
+    }
+    private static final HashMap<String, Team> TEAMS;
+    static {
+        TEAMS = new HashMap<>();
+        TEAMS.put("Finance", FINANCE);
+        TEAMS.put("Human Resources", HUMAN_RESOURCES);
+        TEAMS.put("Marketing", MARKETING);
+        TEAMS.put("Product Development", PRODUCT_DEVELOPMENT);
+        TEAMS.put("Sales", SALES);
+    }
     private String _firstName;
     private String _lastName;
     private Team _team;
     private ExperienceLevel _experienceLevel;
     private List<DietaryRestrictions> _dietaryRestrictions;
     private List<FoodPreferences> _foodPreferences;
+    private List<ExperienceLevel> _experiencePreferences;
+    private List<Team> _teamPreferences;
     private boolean _accountCreated = false;
 
     enum DietaryRestrictions {
@@ -70,6 +91,7 @@ class User {
         AMERICAN,
         CHINESE,
         FRENCH,
+        INDIAN,
         ITALIAN,
         JAPANESE,
         KOREAN,
@@ -99,13 +121,16 @@ class User {
     }
 
     public User(String firstName, String lastName, String team, String experienceLevel,
-                List<String> dietaryRestrictions, List<String> foodPreferences) {
+                List<String> dietaryRestrictions, List<String> foodPreferences,
+                List<String> experiencePreferences, List<String> teamPreferences) {
         _firstName = firstName;
         _lastName = lastName;
         _team = parseTeam(team);
         _experienceLevel = parseExperienceLevel(experienceLevel);
         _dietaryRestrictions = parseDietaryRestrictions(dietaryRestrictions);
         _foodPreferences = parseFoodPreferences(foodPreferences);
+        _experiencePreferences = parseExperiencePreferences(experiencePreferences);
+        _teamPreferences = parseTeamPreferences(teamPreferences);
     }
 
     private Team parseTeam(String team) {
@@ -164,6 +189,26 @@ class User {
         return foodPreferences;
     }
 
+    private List<ExperienceLevel> parseExperiencePreferences(List<String> preferences) {
+        List<ExperienceLevel> experiencePreferences = new ArrayList<>();
+        for (String pref: preferences) {
+            if (EXPERIENCE_LEVELS.containsKey(pref)) {
+                experiencePreferences.add(EXPERIENCE_LEVELS.get(pref));
+            }
+        }
+        return experiencePreferences;
+    }
+
+    private List<Team> parseTeamPreferences(List<String> preferences) {
+        List<Team> teamPreferences = new ArrayList<>();
+        for (String pref: preferences) {
+            if (TEAMS.containsKey(pref)) {
+                teamPreferences.add(TEAMS.get(pref));
+            }
+        }
+        return teamPreferences;
+    }
+
     public String getFirstName() {
         return _firstName;
     }
@@ -186,6 +231,14 @@ class User {
 
     public List<FoodPreferences> getFoodPreferences() {
         return _foodPreferences;
+    }
+
+    public List<ExperienceLevel> getExperiencePreferences() {
+        return _experiencePreferences;
+    }
+
+    public List<Team> getTeamPreferences() {
+        return _teamPreferences;
     }
 
     public boolean accountCreated() { return _accountCreated; }
