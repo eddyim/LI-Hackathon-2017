@@ -1,0 +1,39 @@
+<%@ import demo.model.* %>
+<%@ import demo.model.User.* %>
+<%@ import java.util.* %>
+<%@ extends bb.sparkjava.BBSparkTemplate %>
+<%@ layout Layout %>
+<%@ params(UserPairing pair) %>
+
+<link rel="stylesheet" href="../css/site.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.4/jquery-jvectormap.min.css">
+<script src="js/site.js"></script>
+
+    <title>Confirm</title>
+</head>
+<body>
+<h1 style="text-align:center;">Please Confirm:</h1>
+<% User otherPerson = pair.getSecond(); %>
+<div class="profile-panel profile-panel-orange" style="margin: 0 auto; display: block;">
+    <div class="profile-header">
+        <h1>
+            ${otherPerson.getFirstName()} ${otherPerson.getLastName()}
+        </h1>
+        <h2>
+            ${otherPerson.getExperienceLevel()}, ${otherPerson.getTeam()}
+        </h2>
+        <h2>${pair.getPercentage()}% MATCH</h2>
+        <div class="profile-image">
+            <img src="../img/${otherPerson.getPictureName()}" />
+            <div class="profile-status profile-status-away"></div>
+        </div>
+    </div>
+    <div class="profile-social-links">
+        <h2>Shared Food Interests: <% for (FoodPreferences pref: pair.getSharedPreference()) { %> ${pref} <% } %></h2>
+    </div>
+    <div class="profile-footer">
+        <a class="btn" href="/confirmationSuccess">Schedule Lunch</a>
+    </div>
+</div></body>
+</html>

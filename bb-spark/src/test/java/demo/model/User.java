@@ -59,7 +59,7 @@ public class User {
         TEAMS.put("Finance", FINANCE);
         TEAMS.put("Human Resources", HUMAN_RESOURCES);
         TEAMS.put("Marketing", MARKETING);
-        TEAMS.put("Product Development", PRODUCT_DEVELOPMENT);
+        TEAMS.put("Product Development", SOFTWARE);
         TEAMS.put("Sales", SALES);
     }
     private String _firstName;
@@ -108,7 +108,7 @@ public class User {
         FINANCE,
         HUMAN_RESOURCES,
         MARKETING,
-        PRODUCT_DEVELOPMENT,
+        SOFTWARE,
         SALES,
     }
 
@@ -145,7 +145,7 @@ public class User {
             case "Marketing":
                 return MARKETING;
             case "Product Development":
-                return PRODUCT_DEVELOPMENT;
+                return SOFTWARE;
             case "Sales":
                 return SALES;
             default:
@@ -259,7 +259,9 @@ public class User {
         return maxScore;
     }
 
-
+    public static Set<String> getAllFoodPreferences() {
+        return FOOD_PREFERENCES.keySet();
+    }
 
 
 }

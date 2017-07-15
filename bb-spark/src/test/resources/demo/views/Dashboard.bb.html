@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.4/jquery-jvectormap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Raleway|News+Cycle" rel="stylesheet">
 <script src="js/site.js"></script>
 
 
@@ -23,12 +24,12 @@
                     <a href="#" class="rad-logo"><i class=" fa fa-recycle"></i> Radar</a>
                     <a href="#" class="rad-toggle-btn pull-right"><i class="fa fa-bars"></i></a>
                 </div>
-                <a href="#" class="rad-logo-hidden">DASHBOARD</a>
+                <div class="rad-logo-hidden">lunchmeet</div>
                 <div class="rad-top-nav-container">
                     <a href="" class="brand-icon"><i class="fa fa-recycle"></i></a>
                     <ul class="pull-right links">
                         <li class="rad-dropdown no-color">
-                            <a class="rad-menu-item" href="#"><img class="rad-list-img sm-img" src="https://lh4.googleusercontent.com/-GXmmnYTuWkg/AAAAAAAAAAI/AAAAAAAAAAA/oK6DEDS7grM/w56-h56/photo.jpg" alt="me" /></a>
+                            <a class="rad-menu-item" href="#"><img class="rad-list-img sm-img" src="img/edward.png" alt="me" /></a>
                             <ul class="rad-dropmenu-item sm-menu">
                                 <li class="rad-notification-item">
                                     <a class="rad-notification-content lg-text" href="#"><i class="fa fa-edit"></i> My Profile</a>
@@ -200,6 +201,7 @@
                     <header class="rad-page-title">
                         <span>Dashboard</span>
                         <small class="md-txt">Welcome ${account.getUser().getFirstName()}, <a href="https://www.google.com/maps/place/3720+Emerald+St,+Torrance,+CA+90503/@33.8403836,-118.3543828,17z/data=!4m18!1m15!4m14!1m6!1m2!1s0x80c2b4d407f58b11:0xdedca55964c89054!2s3720+Emerald+St,+Torrance,+CA+90503!2m2!1d-118.3520761!2d33.8403792!1m6!1m2!1s0x80c2b4d407f58b11:0xdedca55964c89054!2s3720+Emerald+St,+Torrance,+CA+90503!2m2!1d-118.3520761!2d33.8403792!3m1!1s0x80c2b4d407f58b11:0xdedca55964c89054" target="_blank"><i class="fa fa-map-marker rad-txt-danger"></i> California</a></small>					</header>
+                    <div class="row">
                     <% for (int i = 0; i < 3; i += 1) {
                     UserPairing pair = pairings.get(i); %>
                     <!-- Design Credit: https://codepen.io/benhanks040888/pen/vcAnd -->
@@ -223,11 +225,12 @@
                             <h2>Shared Food Interests: <% for (FoodPreferences pref: pair.getSharedPreference()) { %> ${pref} <% } %></h2>
                         </div>
                         <div class="profile-footer">
-                            <a class="btn" href="#">Schedule Lunch</a>
+                            <a class="btn" href="/confirm/${otherPerson.getFirstName()}">Schedule Lunch</a>
                         </div>
                     </div>
                     <%@ end section %>
                     <% } %>
+                    </div>
                     <div class="row">
                         <div class="col-lg-3 col-md-4 col-xs-12">
                             <div class="panel panel-default">

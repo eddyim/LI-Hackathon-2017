@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign Up • lunchmeet</title>
+  <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
+  <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link rel="stylesheet" href="css/signup.css">
+  <link href="https://fonts.googleapis.com/css?family=Raleway|News+Cycle" rel="stylesheet">
+</head>
+<body background="img/lunch.jpeg">
+<div class="container">
+  <form class="form-horizontal" action="/register" method="post" autocomplete="off">
+    <h2 class="form-signin-heading">lunchmeet</h2>
+    <div class="control-group">
+      <label class="control-label" for="inputUser">Username</label>
+      <div class="controls">
+        <input type="text" id="inputUser" placeholder="Username" name="username">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputpwd">Password</label>
+      <div class="controls">
+        <input type="password" id="inputpwd" placeholder="Password" name="pwd">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputFirstName">First Name</label>
+      <div class="controls">
+        <input type="text" id="inputFirstName" placeholder="What is your first name?" name="fname">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputLastName">Last Name</label>
+      <div class="controls">
+        <input type="text" id="inputLastName" placeholder="What is your last name?" name="lname">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="team">Team</label>
+      <div class="controls">
+        <select name = "team">
+          <option>Finance</option>
+          <option>Human Resources</option>
+          <option>Marketing</option>
+          <option>Software</option>
+          <option>Sales</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="role">Role</label>
+      <div class="controls">
+        <select name="role">
+          <option>Intern</option>
+          <option>Contractor</option>
+          <option>Low Management</option>
+          <option>Middle Management</option>
+          <option>Senior Management</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputPlace">Place</label>
+      <div class="controls">
+        <input type="text" id="inputPlace" placeholder="Where are you from?">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputSchool">School</label>
+      <div class="controls">
+        <input type="text" id="inputSchool" placeholder="Where did you go to school?">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputInterests">Interests</label>
+      <div class="controls">
+        <input type="text" id="inputInterests" placeholder="What are your interests?">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputRestrictions">Food Restrictions</label>
+      <div class="controls">
+        <input type="text" id="inputRestrictions" placeholder="Do you have any food restrictions?" name="restrictions">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputCuisine">Cuisine</label>
+      <div class="controls">
+        <input type="text" id="inputCuisine" placeholder="What food would you like to eat?" name="cuisine">
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <div class="x">
+          <button type="submit" class="btn btn-inverse">Sign up</button>
+          <button type="submit" class="btn btn-default">Log in Here</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>-->
+<script src="js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -101,6 +101,19 @@ public class UserBase {
                 new ArrayList<>(Arrays.asList("American", "Chinese", "Japanese", "Korean")),
                 new ArrayList<String>(Arrays.asList("Intern", "Middle Management", "Senior Management")),
                 new ArrayList<String>(Arrays.asList("Product Development", "Sales", "Marketing")), "melissa.png");
+        addUser("Michael", "Scott", "Sales", "Middle Management", new ArrayList<String>(),
+                new ArrayList<String>(Arrays.asList("American", "Chinese", "Japanese", "Mexican")),
+                new ArrayList<String>(Arrays.asList("Intern", "Senior Management", "Low Management")),
+                new ArrayList<String>(Arrays.asList("Sales", "Marketing", "Product Development")), "michaelscott.jpeg");
+        addUser("Pam", "Beesley", "Sales", "Contractor", new ArrayList<String>(),
+                new ArrayList<String>(Arrays.asList("American", "Chinese", "Japanese", "Thai")),
+                new ArrayList<String>(Arrays.asList("Intern")),
+                new ArrayList<String>(Arrays.asList("Sales", "Marketing", "Product Development")), "pambeesley.jpeg");
+        addUser("Jim", "Halpert", "Sales", "Low Management", new ArrayList<String>(),
+                new ArrayList<String>(Arrays.asList("American", "Chinese", "Japanese", "Mexican")),
+                new ArrayList<String>(Arrays.asList("Intern", "Senior Management", "Contractor")),
+                new ArrayList<String>(Arrays.asList("Sales", "Marketing", "Product Development")), "jimhalpert.jpeg");
+
     }
 
     public static List<UserPairing> getTopPairings(User user) {

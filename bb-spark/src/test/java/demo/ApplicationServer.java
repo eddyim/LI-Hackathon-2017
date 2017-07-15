@@ -12,6 +12,9 @@ import demo.model.*;
 import demo.views.*;
 
 import javax.management.Notification;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -27,15 +30,7 @@ public class ApplicationServer {
         UserBase.addDummyData();
         BBSparkTemplate.init();
 
-        get("/", (req, resp) -> {
-            if (req.session().attribute("userName") == null) {
-                resp.redirect("/login");
-
-                return null;
-            } else {
-                return Index.render(Message.getAllMessages(), req.session().attribute("userName"));
-            }
-        });
+        get("/", (req, resp) -> First.render());
 
         get("/login", (req, resp) -> {
             if (req.session().attribute("account")!= null) {
@@ -48,6 +43,31 @@ public class ApplicationServer {
                     return Login.render(req.session().attribute("loginErrorMessage"));
                 }
             }
+        });
+
+        get("/register", (req, resp) -> Signup.render());
+
+        post("/register", (req, resp) -> {
+           String username = req.queryParams("username");
+           String password = req.queryParams("pwd");
+           String first = req.queryParams("fname");
+           String last = req.queryParams("lname");
+           String team = req.queryParams("team");
+           String role = req.queryParams("role");
+           List<String> restrictions = new ArrayList<>();
+           List<String> cuisine = new ArrayList<>();
+           String[] rest = req.queryParams("restrictions").split(",");
+           String[] cuis = req.queryParams("cuisine").split(",");
+           for(String r: rest) {
+               restrictions.add(r.trim());
+           }
+           for(String c: cuis) {
+               cuisine.add(c.trim());
+           }
+           UserBase.addAccount(username, password, first, last, team, role, restrictions,
+                   cuisine, new ArrayList<>(), new ArrayList<>(), "");
+           resp.redirect("/login");
+           return null;
         });
 
         post("/login", (req, resp) -> {
@@ -85,5 +105,38 @@ public class ApplicationServer {
         });
 
         get("/who", (req, resp) -> Index.who.render());
+
+        get("/confirm/:confirmWith", (req, resp) -> {
+            UserBase.Account currentAcct = req.session().attribute("account");
+            String firstName = req.params(":confirmWith");
+            if (currentAcct == null) {
+                resp.redirect("/login");
+                return null;
+            }
+            List<UserPairing> pairings = UserBase.getTopPairings(currentAcct.getUser());
+            for (UserPairing pair: pairings) {
+                if (pair.getSecond().getFirstName().equals(firstName)) {
+                    return ConfirmPage.render(pair);
+                }
+            }
+            return null;
+        });
+
+        get("/confirmationSuccess", (req, resp) -> {
+            NotificationFactory factory = new NotificationFactory(ThemePackagePresets.cleanLight());
+            NotificationManager plain = new SimpleManager(NotificationFactory.Location.NORTHEAST);
+            TextNotification notification = factory.buildTextNotification("Lunchmeet Success!",
+                    "A notification has been sent.");
+            notification.setCloseOnClick(true);
+            plain.addNotification(notification, Time.seconds(5));
+            resp.redirect("/dashboard");
+            return null;
+        });
+
+        get("/logout", (req, resp) -> {
+            req.session().attribute("account", null);
+            resp.redirect("/login");
+            return null;
+        });
     }
 }

@@ -1,0 +1,40 @@
+div.container {
+  border-radius: 250px;
+  width:250px;
+  height:500px;
+  position: relative;
+  width: 50%;
+  height: 50%;
+  transform: translateY(+25%);
+}
+
+h2 {
+  margin-left: 180px;
+  font-family: 'Andalusia';
+  font-size: 40px;
+}
+
+img {
+  position: relative;
+}
+
+div {
+  font-family: 'News Cycle', sans-serif;
+}
+
+body {
+  background-size: 100% auto;
+}
+
+@font-face {
+    font-family: Andalusia;
+    src: url(Andalusia.otf) format("opentype");
+    src: url(Andalusia.ttf);
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'News Cycle', sans-serif;
+}

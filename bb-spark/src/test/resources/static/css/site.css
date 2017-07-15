@@ -8,7 +8,7 @@ body {
   line-height: normal;
   font-size: 16px;
   overflow-Y: scroll;
-  font-family: 'Roboto Condensed', "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-family: 'Roboto Condensed', "News Cycle", sans-serif;
   -webkit-font-smoothing: antialiased !important;
 }
 
@@ -39,7 +39,7 @@ a:active {
 
 .rad-page-title {
   margin-bottom: 20px;
-  text-shadow: 1px 4px 6px #c6c6c6, 0 0 0 #000, 1px 4px 6px #c6c6c6;
+  //text-shadow: 1px 4px 6px #c6c6c6, 0 0 0 #000, 1px 4px 6px #c6c6c6;
 }
 .rad-page-title span {
   font-size: 22px;
@@ -64,8 +64,7 @@ a:active {
 .rad-logo-hidden {
   line-height: 75px;
   font-weight: 900;
-  text-transform: uppercase;
-  font-size: 22px;
+  font-size: 27px;
   text-decoration: none;
   color: #222533;
   opacity: 0;
@@ -74,6 +73,7 @@ a:active {
   left: 50%;
   -webkit-transition: all .2s ease-in-out;
   transition: all .2s ease-in-out;
+  font-family: Andalusia;
 }
 
 .links {
@@ -205,7 +205,8 @@ a:active {
   display: inline-block;
   text-align: center;
   top: -10px;
-  z-index: 1;
+  //z-index: 1;
+  font-family: 'News Cycle', sans serif;
 }
 
 .sm-menu {
@@ -1549,4 +1550,10 @@ body {
   text-transform: uppercase;
   text-decoration: none;
   transition: all ease 0.3s;
+}
+
+@font-face {
+    font-family: Andalusia;
+    src: url(Andalusia.otf) format("opentype");
+    src: url(Andalusia.ttf);
 }
