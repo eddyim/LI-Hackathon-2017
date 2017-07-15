@@ -1,14 +1,10 @@
 package demo;
 
 import bb.sparkjava.BBSparkTemplate;
-import demo.model.Message;
-import demo.views.*;
-
-import java.util.List;
 
 import static spark.Spark.*;
 
-public class DemoServer {
+public class ApplicationServer {
 
 
     public static void main(String[] args) {
