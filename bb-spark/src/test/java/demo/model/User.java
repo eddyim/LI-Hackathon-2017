@@ -98,13 +98,6 @@ class User {
 
     }
 
-    public User(String firstName, String lastName, String team, String experienceLevel) {
-        _firstName = firstName;
-        _lastName = lastName;
-        _team = parseTeam(team);
-        _experienceLevel = parseExperienceLevel(experienceLevel);
-    }
-
     public User(String firstName, String lastName, String team, String experienceLevel,
                 List<String> dietaryRestrictions, List<String> foodPreferences) {
         _firstName = firstName;
