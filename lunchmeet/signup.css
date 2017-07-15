@@ -5,10 +5,18 @@ h2 {
 }
 
 input {
-  width: 148px;
+  width: 204px;
 }
 
 div {
+  font-family: 'News Cycle', sans-serif;
+}
+
+select {
+  font-family: 'News Cycle', sans-serif;
+}
+
+option {
   font-family: 'News Cycle', sans-serif;
 }
 
@@ -42,11 +50,11 @@ div.container {
   width: 50%;
   position: relative;
   top: 50%;
-  transform: translateY(+50%);
+  transform: translateY(+5%);
 }
 
 div.control-group {
-  max-width: 50px;
+  max-width: 130px;
 }
 
 a {
