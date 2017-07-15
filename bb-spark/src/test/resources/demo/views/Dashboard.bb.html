@@ -201,9 +201,10 @@
                         <span>Dashboard</span>
                         <small class="md-txt">Welcome ${account.getUser().getFirstName()}, <a href="https://www.google.com/maps/place/3720+Emerald+St,+Torrance,+CA+90503/@33.8403836,-118.3543828,17z/data=!4m18!1m15!4m14!1m6!1m2!1s0x80c2b4d407f58b11:0xdedca55964c89054!2s3720+Emerald+St,+Torrance,+CA+90503!2m2!1d-118.3520761!2d33.8403792!1m6!1m2!1s0x80c2b4d407f58b11:0xdedca55964c89054!2s3720+Emerald+St,+Torrance,+CA+90503!2m2!1d-118.3520761!2d33.8403792!3m1!1s0x80c2b4d407f58b11:0xdedca55964c89054" target="_blank"><i class="fa fa-map-marker rad-txt-danger"></i> California</a></small>					</header>
                     <% for (int i = 0; i < 3; i += 1) {
-                    UserPairing pair = pairings.get(i);
-                    User otherPerson = pair.getSecond(); %>
+                    UserPairing pair = pairings.get(i); %>
                     <!-- Design Credit: https://codepen.io/benhanks040888/pen/vcAnd -->
+                    <%@ section profilePanel(pair) %>
+                    <% User otherPerson = pair.getSecond(); %>
                     <div class="profile-panel profile-panel-orange">
                         <div class="profile-header">
                             <h1>
@@ -225,59 +226,9 @@
                             <a class="btn" href="#">Schedule Lunch</a>
                         </div>
                     </div>
+                    <%@ end section %>
                     <% } %>
                     <div class="row">
-                        <div class="col-xs-12">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title">World Map<ul class="rad-panel-action">
-                                        <li><i class="fa fa-chevron-down"></i></li>
-                                        <li><i class="fa fa-rotate-right"></i></li>
-                                        <li><i class="fa fa-cog"></i>
-                                        <li><i class="fa fa-close"></i>
-                                        </li>
-                                    </ul></h3>
-                                </div>
-                                <div class="panel-body rad-map-container">
-                                    <div id="world-map" class="rad-map"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-xs-12 col-md-6">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title">Area Chart<ul class="rad-panel-action">
-                                        <li><i class="fa fa-chevron-down"></i></li>
-                                        <li><i class="fa fa-rotate-right"></i></li>
-                                        <li><i class="fa fa-cog"></i>
-                                        <li><i class="fa fa-close"></i>
-                                        </li>
-                                    </ul></h3>
-                                </div>
-                                <div class="panel-body">
-                                    <div id="areaChart" class="rad-chart"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xs-12 col-md-6">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title">Area Chart<ul class="rad-panel-action">
-                                        <li><i class="fa fa-chevron-down"></i></li>
-                                        <li><i class="fa fa-rotate-right"></i></li>
-                                        <li><i class="fa fa-cog"></i>
-                                        <li><i class="fa fa-close"></i>
-                                        </li>
-                                    </ul></h3>
-                                </div>
-                                <div class="panel-body">
-                                    <div id="areaChart2" class="rad-chart"></div>
-                                </div>
-
-                            </div>
-                        </div>
                         <div class="col-lg-3 col-md-4 col-xs-12">
                             <div class="panel panel-default">
                                 <div class="panel-heading">
@@ -292,33 +243,27 @@
                                     <div class="rad-activity-body">
                                         <div class="rad-list-group group">
                                             <div class="rad-list-group-item">
-                                                <div class="rad-list-icon icon-shadow rad-bg-danger pull-left"><i class="fa fa-phone"></i></div>
+                                                <div class="rad-list-icon icon-shadow rad-bg-danger pull-left"><i class="fa fa-phone" style="position: relative;top: 12px;"></i></div>
                                                 <div class="rad-list-content"><strong>Client meeting</strong>
                                                     <div class="md-text">Meeting at 10:00 AM</div>
                                                 </div>
                                             </div>
                                             <div class="rad-list-group-item">
-                                                <div class="rad-list-icon icon-shadow rad-bg-primary pull-left"><i class="fa fa-refresh"></i></div>
-                                                <div class="rad-list-content"><strong>Created ticket</strong>
-                                                    <div class="md-text">Ticket assigned to Dev team</div>
+                                                <div class="rad-list-icon icon-shadow rad-bg-primary pull-left"><i class="fa fa-refresh" style="position: relative;top: 12px;"></i></div>
+                                                <div class="rad-list-content"><strong>Lunch With Melissa</strong>
+                                                    <div class="md-text">Rachas Cafe, 12:00 PM</div>
                                                 </div>
                                             </div>
                                             <div class="rad-list-group-item">
-                                                <div class="rad-list-icon icon-shadow rad-bg-success pull-left"><i class="fa fa-check"></i></div>
+                                                <div class="rad-list-icon icon-shadow rad-bg-success pull-left"><i class="fa fa-check" style="position: relative;top: 12px;"></i></div>
                                                 <div class="rad-list-content"><strong>Activity completed</strong>
                                                     <div class="md-text">Completed the dashboard html demo</div>
                                                 </div>
                                             </div>
                                             <div class="rad-list-group-item">
-                                                <div class="rad-list-icon icon-shadow rad-bg-violet pull-left"><i class="fa fa-envelope"></i></div>
+                                                <div class="rad-list-icon icon-shadow rad-bg-violet pull-left"><i class="fa fa-envelope" style="position: relative;top: 12px;"></i></div>
                                                 <div class="rad-list-content"><strong>New Invitation</strong>
-                                                    <div class="md-text">Max has invited you to join Inbox</div>
-                                                </div>
-                                            </div>
-                                            <div class="rad-list-group-item">
-                                                <div class="rad-list-icon icon-shadow rad-bg-success pull-left"><i class="fa fa-pencil"></i></div>
-                                                <div class="rad-list-content"><strong>New post</strong>
-                                                    <div class="md-text">Created new post</div>
+                                                    <div class="md-text">Christine has invited you to lunch</div>
                                                 </div>
                                             </div>
                                         </div>
