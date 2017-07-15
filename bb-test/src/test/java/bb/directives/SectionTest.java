@@ -23,4 +23,19 @@ public class SectionTest {
         assertEquals("Section with Params (Carson is 9001 years old)", SectionWithParams.render());
     }
 
+    @Test
+    public void simpleInferenceWorks() {
+        assertEquals("Inference Test (Carson is 9001 years old)", SimpleInference.render());
+    }
+
+    @Test
+    public void inferenceInParamsWorks() {
+        assertEquals("Infer in Params Test (Carson is 9001 years old)", InferenceInParams.render("Carson", 9001));
+    }
+
+    @Test
+    public void inferenceInCodeBlockWorks() {
+        assertEquals("Inference in Code Block (0)(1)(2)(3)(4)", InferenceInCodeBlock.render());
+    }
+
 }
